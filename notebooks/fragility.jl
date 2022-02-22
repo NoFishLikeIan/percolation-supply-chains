@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.18.0
+# v0.17.7
 
 using Markdown
 using InteractiveUtils
@@ -48,7 +48,7 @@ and sizes $\lvert red \rvert = \lvert green \rvert = 1, \lvert blue \rvert = 2.$
 
 # ╔═╡ d8a3c082-b71d-4128-bcf3-aca002a017e9
 begin
-	goods = ["1", "2", "3", "4"]
+	firms = 1:4 |> collect
 	G = SimpleDiGraph([
 		0 0 0 0;
 		1 0 0 0;
@@ -56,13 +56,21 @@ begin
 		0 1 1 0
 	])
 
+	D = [
+		0 0 0;
+		1 0 0;
+		0 1 0
+	] # dependency of [green, blue, red]
+
 	green = RGB(0, 153/255, 51/255)
 	blue = RGB(0, 51/255, 204/255)
 
 	colors = [RGB(1, 0, 0), blue, blue, green]
 
 
-	gplot(G, nodelabel = goods, nodefillc = colors, layout=spectral_layout)
+	gplot(
+		G, nodelabel = firms, 
+		nodefillc = colors, layout=spectral_layout)
 end
 
 # ╔═╡ 19d546bc-3ff6-4fe3-8d39-0ceaa1bab2dd
@@ -81,16 +89,47 @@ If a firm produces a good that requires no input, then it will always be potenti
 
 Each firm is endowed with a reliability $\mu_i$. A firm's reliability increases its probability of being functional. Furthermore, each firm $j$ can invest in order to increase the probability of firm $i$ of being functional. We can write such probability as
 
-$p_i(x, Y) := \mathbb{P}\Big(i \in \mathcal{F} \ \Big\vert \ i \in \Omega(x) \Big) = b(\mu_i, Y_{ji})$
+$\mathbb{P}\Big(i \in \mathcal{F} \ \Big\vert \ i \in \Omega(x) \Big) = b(\mu_i, Y_{ji})$
 
 where $b^\prime > 0$ and $Y$ is a matrix of investments from $j$ to $i$. We can then write recursively the unconditional probability
 
 $\begin{align}
 \mathbb{P}\Big(i \in \mathcal{F} \Big) &= \mathbb{P}\Big(i \in \mathcal{F} \ \Big\vert \ i \in \Omega(x) \Big) \times \mathbb{P}\Big( i \in \Omega(x) \Big) \\
- &= \mathbb{P}\Big(i \in \mathcal{F} \ \Big\vert \ i \in \Omega(x) \Big) \times  \prod_{s \in I(g)} \left( \cdot  \right)
+ &= b(\mu_i, Y_{ji}) \times p_i(x)
 \end{align}$
 
+### Cost of investment and suppliers
+
+Firms have to choices. Pick the set of suppliers $x_i(s)$ for each input goods $s$ and invest in the reliability of other firms in the network $Y_{ij}$. Both actions have a cost. There is a fixed marginal cost to each new supplier $\kappa$ and an increasing marginal cost to each new investment unit $\beta\left( \sum_{j} Y_{ij} \right)$.
 "
+
+# ╔═╡ fd16cc54-ac21-4c85-aa4e-ba504672367e
+md"## Solution of the example"
+
+# ╔═╡ 0384b760-bbf1-4f4c-9731-8f4c893bdd2e
+md"
+For convenience let 
+
+$\overline{Y}_i = \sum_j Y_{ij}$.
+"
+
+# ╔═╡ 52a03f77-6767-4698-b526-dacabead27da
+begin
+	k = 1.
+	π = ones(length(firms))
+	β(x) = x^2
+
+	S(x) = inv(1 + exp(-x))
+	b(total_investment) = S(total_investment)
+	b′(x) = S(x) * S(-x)
+end
+
+# ╔═╡ d7a42565-55fe-4d3b-9c4e-36c8981ac880
+function examplesolve(π::Vector{Float64})
+end
+
+# ╔═╡ 26aaf54a-9245-4f5c-8898-380c349b84bb
+
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1114,5 +1153,10 @@ version = "0.9.1+5"
 # ╟─d52a76e7-19be-4a6a-9122-caf0b13df4d1
 # ╟─d8a3c082-b71d-4128-bcf3-aca002a017e9
 # ╟─19d546bc-3ff6-4fe3-8d39-0ceaa1bab2dd
+# ╟─fd16cc54-ac21-4c85-aa4e-ba504672367e
+# ╟─0384b760-bbf1-4f4c-9731-8f4c893bdd2e
+# ╠═52a03f77-6767-4698-b526-dacabead27da
+# ╠═d7a42565-55fe-4d3b-9c4e-36c8981ac880
+# ╠═26aaf54a-9245-4f5c-8898-380c349b84bb
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
