@@ -19,6 +19,9 @@ using Plots, GraphPlot
 # ╔═╡ da750647-4ae0-487f-b819-262a62929c1b
 using LaTeXStrings
 
+# ╔═╡ a8af70a0-bd7b-43b9-a5f8-788700ab3823
+using Roots
+
 # ╔═╡ 63c22e3d-d095-4040-8155-f46959941e54
 begin
 	theme(:dao)
@@ -26,23 +29,21 @@ end
 
 # ╔═╡ d52a76e7-19be-4a6a-9122-caf0b13df4d1
 md"
-# Learning Fragility of Supply Chains
+# Static model of complete information
 
-## Static Model
-
-### Production
+## Production
 
 There is a set $\mathcal{G} = \{ a, b, c, \ldots \}$ of goods. Each good is produced by a set of firms. We say firm $i$ produces good $g \in \mathcal{G}$ if $i \in g$. Each good requires a set of inputs. The function $I: \mathcal{G} \to 2^\mathcal{G}$, maps a good to its inputs, i.e. $I(g) \subseteq \mathcal{G}$. A firm $i$ producing $g$ picks, for each good $s \in I(g)$, its suppliers $x_i(s) \subseteq s$. If, for any $s$, $x_i(s) = \emptyset$, then the firm cannot produce.
 
 Consider, for example, the production network below, with three goods
 
-$\mathcal{G} = \{red, blue, green \},$
+$\mathcal{G} = \{r, b, g \},$
 
 dependencies
 
-$I(red) = \emptyset, \ I(blue) = \{red\}, \text{ and } I(green) = \{blue\},$
+$I(r) = \emptyset, \ I(b) = \{r\}, \text{ and } I(g) = \{b\},$
 
-and sizes $\lvert red \rvert = \lvert green \rvert = 1, \lvert blue \rvert = 2.$
+and sizes $\lvert r \rvert = \lvert g \rvert = 1, \lvert b \rvert = 2.$
 
 "
 
@@ -75,9 +76,7 @@ end
 
 # ╔═╡ 19d546bc-3ff6-4fe3-8d39-0ceaa1bab2dd
 md"
-Firm $4$, in order to produce, needs to have among its suppliers firm $3$ or/and firm $2$ (such that $x_4(blue) \neq \emptyset$).
-
-### Functional nodes
+## Functional nodes
 
 Firm might be unable to produce. Let $\mathcal{F}$ be the set of \"functional\" firms. If among the firms supplying a given good to a firm $i$ producing good $g$, none are functional, then the firm itself is also not functional. Namely, if there is a $s \in I(g)$ such that $x_i(s) \cap \mathcal{F} = \emptyset$, then $i \not\in \mathcal{F}$. Given a choice of suppliers for an input $s$, $x_i(s)$, let the set of firms that are potentially functional, namely those $i$ such that $x_i(s) \cap \mathcal{F} = \emptyset$, be 
 
@@ -85,7 +84,7 @@ $\Omega(x).$
 
 If a firm produces a good that requires no input, then it will always be potentially functional. Informally, the \"depper down\" a firm is the supply chain, the less likely it is to be potentially functional. In the example above, if $1 \notin \mathcal{F}$, then this immediately implies that no firm is potentially functional ($\Omega(x) = \emptyset$).
 
-### Probability of being functional
+## Probability of being functional
 
 Each firm is endowed with a reliability $\mu_i$. A firm's reliability increases its probability of being functional. Furthermore, each firm $j$ can invest in order to increase the probability of firm $i$ of being functional. We can write such probability as
 
@@ -98,37 +97,227 @@ $\begin{align}
  &= b(\mu_i, Y_{ji}) \times p_i(x)
 \end{align}$
 
-### Cost of investment and suppliers
+## Cost of investment and suppliers
 
-Firms have to choices. Pick the set of suppliers $x_i(s)$ for each input goods $s$ and invest in the reliability of other firms in the network $Y_{ij}$. Both actions have a cost. There is a fixed marginal cost to each new supplier $\kappa$ and an increasing marginal cost to each new investment unit $\beta\left( \sum_{j} Y_{ij} \right)$.
+Firms have two choices: pick the set of suppliers $x_i(s)$ for each input goods $s$ and invest in the reliability of other firms in the network $Y_{ij}$ but cannot invest in their own reliability $Y_{i i} = 0$. Both actions have a cost. There is a fixed marginal cost to each new supplier $\kappa$ and an increasing marginal cost to each new investment unit $\beta\left( \sum_{j} Y_{ij} \right)$.
+
+## Payoffs
+
+Each firm has a payoff of being functional $\pi_i$. Hence the expected payoff of firm $i$ producing good $g$ is
+
+$\begin{align}
+	\Pi_i(x_i, Y) &= \pi_i \ \mathbb{P}\left(i 
+\in \mathcal{F} \right) - \underbrace{\beta\left( \overline{Y}_i \right)}_{\text{investment cost}} - \kappa \ \underbrace{\sum_{s \in I(g)} \lvert x_i(s) \rvert}_{\text{number of suppliers}} 
+\end{align}$
+
+In the setup a firm wants to maximise its probability of being functional. To do so it can decide to increase redundancy by increasing the number of suppliers or to invest in existing relationships. We can draw already two simple results:
+
+- A firm will never invest downstream. In a goods network without cycles, this implies that $Y$ is triangular.
+- A firm will always have a supplier, hence $x_i(s) \neq \emptyset$.
 "
 
 # ╔═╡ fd16cc54-ac21-4c85-aa4e-ba504672367e
-md"## Solution of the example"
-
-# ╔═╡ 0384b760-bbf1-4f4c-9731-8f4c893bdd2e
 md"
+## Solution of the example
+
 For convenience let 
 
-$\overline{Y}_i = \sum_j Y_{ij}$.
+$\overline{Y}_i = \sum_j Y_{ij}.$
+
+Assume $\mu_i = 0$, 
+
+$\begin{align}
+	b\left( y \right) &= \frac{1}{1 + \exp \left(  -y  \right)}, \\
+	b^\prime \left( y  \right) &= b\left( -y  \right) \ b\left( y  \right) = b(y) \Big(1 - b(y)\Big),
+\end{align}$
+
+and
+
+$\beta(y) = y^2.$
 "
 
-# ╔═╡ 52a03f77-6767-4698-b526-dacabead27da
+# ╔═╡ e70b4a54-af83-4573-83b5-c0fb21c0cfdf
 begin
-	k = 1.
-	π = ones(length(firms))
-	β(x) = x^2
-
-	S(x) = inv(1 + exp(-x))
-	b(total_investment) = S(total_investment)
-	b′(x) = S(x) * S(-x)
+	b(y) = inv(1 + exp(-y))
+	b′(y) = b(y) * b(-y)
+	β(y) = y^2
+	κ = 1
 end
 
-# ╔═╡ d7a42565-55fe-4d3b-9c4e-36c8981ac880
-function examplesolve(π::Vector{Float64})
+# ╔═╡ d42cd0be-4785-4e4b-8998-bc116fac235d
+function Π(π::Vector{Float64}, Y::Matrix{Float64}, X::Matrix{Int64})
+	n = length(π)
+ 	Ȳ = sum(Y, dims = 2)
+
+	b⃗ = b.(Ȳ)
+	p = zeros(n)
+
+	for j ∈ reverse(1:n) # go backwards
+		xⱼ = X[j, :]
+		
+		if all(xⱼ .== 0)
+			p[j] = b⃗[j]
+		else
+			p[j] = b⃗[j] * xⱼ'p
+		end		
+	end
+	
+	
+
+	return p
+	
 end
+
+# ╔═╡ 0ab9dc5e-174b-4f33-a2b7-e67254929118
+md"
+### Problem of firm 4
+
+Firm $4$ is producing a good that requires no inputs, since $I(g) = \emptyset$. The probability that 4 is functional depends only on the investment in it by other firms, namely
+
+$\mathbb{P}(4 \in \mathcal{F}) = b\left( \overline{Y}_4 \right)$
+
+### Problem of firm 2 and 3
+
+Firm 2 and 3 face the sample problem, hence, without loss of generality, we can talk about the problem of firm 2.
+
+Firm 2 is also fixed in its supplier's choices, namely
+
+$x_2(g) = \{4\}.$
+
+Hence
+
+$\begin{align}
+\mathbb{P}(2 \in \mathcal{F}) &= \mathbb{P}(4 \in \mathcal{F}) \ b\left( \overline{Y}_2 \right) \\
+&= b\left( \overline{Y}_4 \right) \ b\left( \overline{Y}_2 \right)
+\end{align}$
+
+and payoff
+
+$\begin{align}
+\Pi_2 (\{4\}, Y) &= \pi_2 \ \mathbb{P}(2 \in \mathcal{F}) - \overbrace{\beta\left(\sum_j Y_{2 j}\right)}^{\text{investment from 2}} - \kappa \ \overbrace{ \lvert \{4\} \rvert}^{= 1} \\
+&= b\left( \overline{Y}_4 \right) \ b\left( \overline{Y}_2 \right) - \left(\sum_j Y_{2 j}\right)^2 - \kappa
+\end{align}$
+
+Again, firm 2 will only invest in firm 4, since investing in firm 3 or 1 does not affect is probability of being functional, hence $\sum_j Y_{2, j} = Y_{2, 4}$. Furthermore, the only downstream firm of 2 is firm 1, hence $\overline{Y}_2 = Y_{1, 2}$.
+
+We can then write the first order condition as
+
+$\begin{align}
+	\frac{\partial \ \Pi_2 (\{4\}, Y)}{\partial \ Y_{2, 4}} &= \pi_2 \  b\left( \overline{Y}_4 \right) \ b\left( Y_{1, 2} \right) b\left( -\overline{Y}_4 \right) - 2 \ Y_{2, 4} = 0 \\
+Y_{2, 4} &= \frac{\pi_2}{2} \ b\left( \overline{Y}_4 \right) \ b\left( Y_{1, 2} \right) b\left( -\overline{Y}_4 \right) 
+\end{align}$
+
+
+Note that, by symmetry, this implies that
+
+$\frac{Y_{2, 4}}{b\left( Y_{1, 2} \right) } = \frac{Y_{3, 4}}{b\left( Y_{1, 3} \right) }.$"
 
 # ╔═╡ 26aaf54a-9245-4f5c-8898-380c349b84bb
+md"
+### Problem of firm 1
+
+The problem of firm 1 is slightly more involved. In particular the choice of 
+
+$x_1(b) \in \left\{ \{3\}, \{2\}, \{2, 3\}\right\}.$
+
+By simmetry again, $\{3\}$ and $\{2\}$ are equivalent so I will just consider one of them.
+
+#### Case $x_1(b) = \{2\}$
+
+In this case, the payoff of firm 1 is
+
+$\Pi_1(\{2\}, Y) = \pi_1 \ \mathbb{P}(1 \in \mathcal{F}) - \kappa - \left( \sum_{j} Y_{1, j} \right)^2.$
+
+Clearly, no firm will invest in firm $1$, hence $\overline{Y}_1 = 0$ and
+
+$b\left( \overline{Y}_1 \right) = \frac{1}{2},$
+
+which implies
+
+$\mathbb{P}(1 \in \mathcal{F}) = \frac{1}{2} \ \mathbb{P}(2\in \mathcal{F}) = \frac{1}{2} \ b\left( \overline{Y}_4 \right) \ b\left( Y_{1, 2} \right)$
+
+hence we can rewrite the payoff of firm 1 as
+
+$\Pi_1(\{2\}, Y) = \frac{\pi_1}{2} \ b\left( \overline{Y}_4 \right) \ b\left( Y_{1, 2} \right) - \kappa - \left( Y_{1, 2} + Y_{1, 4} \right)^2.$
+
+Using the fact that $b(\cdot)$ is strictly increasing, the first order condition yields
+
+$\overline{Y}_4 = Y_{1, 2}.$
+
+#### Case $x_1(b) = \{2, 3\}$
+
+In this case
+
+$\begin{align}
+\mathbb{P}(1 \in \mathcal{F}) &= b(0) \ \mathbb{P}(2\in \mathcal{F} \ \lor \ 3 \in \mathcal{F}).
+\end{align}$
+
+Note that $2 \in \mathcal{F}$ and $3 \in \mathcal{F}$ are independent conditional on $4 \in \mathcal{F}$, hence we can write
+
+$\begin{align}
+\mathbb{P}(2\in \mathcal{F} \ \lor \ 3 \in \mathcal{F}) &= \mathbb{P}(4 \in \mathcal{F}) \ \mathbb{P}(2\in \mathcal{F} \ \lor \ 3 \in \mathcal{F} \ \vert \ 4 \in \mathcal{F}) \\
+&= \mathbb{P}(4 \in \mathcal{F}) \Big( \mathbb{P}(2\in \mathcal{F} \ \vert \ 4 \in \mathcal{F}) + \mathbb{P}(3 \in \mathcal{F} \ \vert \ 4 \in \mathcal{F}) \\
+&- \mathbb{P}(2\in \mathcal{F} \ \vert \ 4 \in \mathcal{F}) \ \mathbb{P}(3\in \mathcal{F} \ \vert \ 4 \in \mathcal{F})\Big) \\
+&= b\left(\overline{Y}_4\right) \ \Big( b\left(Y_{1, 2}\right) + b\left(Y_{1, 3}\right) - b\left(Y_{1, 2}\right) \ b\left(Y_{1, 3}\right) \Big)
+\end{align}$
+
+We can hence write the payoffs such that
+
+$\begin{align}
+\Pi_1(\{2, 3\}, Y) = &\frac{\pi_1}{2} \ b\left( \overline{Y}_4 \right) \ \Big( b\left( Y_{1, 2} \right) + b\left( Y_{1, 3} \right) -  b\left( Y_{1, 2} \right) \ b\left( Y_{1, 3} \right) \Big) \\
+- &2 \kappa + \Big(Y_{1, 2} + Y_{1, 3} + Y_{1, 4} \Big)^2
+\end{align}$
+
+
+In equilibrium
+
+
+$\begin{align}
+Y_{1, 2} &= Y_{1, 3} \\
+\exp\left(Y_{1, 2}\right) &= \frac{1}{2} \left( \sqrt{5 + 4 \ \exp\left( \overline{Y}_4 \right)} - 3 \right).
+\end{align}$
+
+"
+
+# ╔═╡ e6733f02-fa1f-4d50-bb0a-9c0d1519a6f3
+function examplesolve(π::Vector{Float64})
+	n = length(firms)
+	Y = zeros(n, n)
+
+	# TODO: General solution
+	# Case 1
+
+	Y[1, 2] = find_zero(
+		x -> b(x) * b′(x) * (2π[1] + π[2] + π[3])/4,
+		0.
+	)
+	Y[2, 4] = b(Y[1, 2]) * b′(Y[1, 2]) * π[2] / 2
+	Y[3, 4] = b(Y[1, 2]) * b′(Y[1, 2]) * π[3] / 2
+	Y[1, 4] = - Y[1, 2] + b(Y[1, 2]) * b′(Y[1, 2]) * π[1] / 4 
+
+	# Case 2
+
+	return Y
+end
+
+# ╔═╡ 13ef656c-bc9a-475a-8e0c-de184070483a
+md"
+## Linear algebra formulation (tentative)
+
+We can formulate the above problem in terms of matrices and vectors, rather than sets. Let $n$ be the number of firms and $m$ the number of goods in the economy. Letting
+
+- the supplier matrix, $X \in \mathbb{R}^{n \times n}$ with $X_{ij} = \mathbb{1}\{j \in x_i(s) \text{ for some } s\}$,
+- the functional firms vector, $F \in \mathbb{R}^{n}$ with $F_i = \mathbb{1}\{i \in \mathcal{F}\}$,
+- the goods-to-firms matrix $G \in \mathbb{R}^{n \times m}$ with $G_{ig} = \mathbb{1}\{ \text{firm } i \text{ produces good } g\}$.
+
+Note that the vector
+
+$\Omega = G^T X \ F$
+
+is such that, if $\Omega_i = 0$ then $i$ is not potentially functional. 
+"
+
+# ╔═╡ ded08b3e-177b-43f9-b54e-9181785704d5
 
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -140,6 +329,7 @@ Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+Roots = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
 
 [compat]
 Distributions = "~0.25.49"
@@ -148,6 +338,7 @@ Graphs = "~1.6.0"
 LaTeXStrings = "~1.3.0"
 Plots = "~1.25.10"
 PlutoUI = "~0.7.23"
+Roots = "~1.3.14"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -223,6 +414,11 @@ git-tree-sha1 = "417b0ed7b8b838aa6ca0a87aadf1bb9eb111ce40"
 uuid = "5ae59095-9a9b-59fe-a467-6f913c188581"
 version = "0.12.8"
 
+[[CommonSolve]]
+git-tree-sha1 = "68a0743f578349ada8bc911a5cbd5a2ef6ed6d1f"
+uuid = "38540f10-b2f7-11e9-35d8-d573e4eb0ff2"
+version = "0.2.0"
+
 [[Compat]]
 deps = ["Base64", "Dates", "DelimitedFiles", "Distributed", "InteractiveUtils", "LibGit2", "Libdl", "LinearAlgebra", "Markdown", "Mmap", "Pkg", "Printf", "REPL", "Random", "SHA", "Serialization", "SharedArrays", "Sockets", "SparseArrays", "Statistics", "Test", "UUIDs", "Unicode"]
 git-tree-sha1 = "44c37b4636bc54afac5c574d2d02b625349d6582"
@@ -238,6 +434,12 @@ deps = ["Base64", "Colors", "DataStructures", "Dates", "IterTools", "JSON", "Lin
 git-tree-sha1 = "9a2695195199f4f20b94898c8a8ac72609e165a4"
 uuid = "a81c6b42-2e10-5240-aca2-a61377ecd94b"
 version = "0.9.3"
+
+[[ConstructionBase]]
+deps = ["LinearAlgebra"]
+git-tree-sha1 = "f74e9d5388b8620b4cee35d4c5a618dd4dc547f4"
+uuid = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
+version = "1.3.0"
 
 [[Contour]]
 deps = ["StaticArrays"]
@@ -354,6 +556,10 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "aa31987c2ba8704e23c6c8ba8a4f769d5d7e4f91"
 uuid = "559328eb-81f9-559d-9380-de523a88c83c"
 version = "1.0.10+0"
+
+[[Future]]
+deps = ["Random"]
+uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
 
 [[GLFW_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libglvnd_jll", "Pkg", "Xorg_libXcursor_jll", "Xorg_libXi_jll", "Xorg_libXinerama_jll", "Xorg_libXrandr_jll"]
@@ -800,6 +1006,12 @@ git-tree-sha1 = "68db32dff12bb6127bac73c209881191bf0efbb7"
 uuid = "f50d1b31-88e8-58de-be2c-1cc44531875f"
 version = "0.3.0+0"
 
+[[Roots]]
+deps = ["CommonSolve", "Printf", "Setfield"]
+git-tree-sha1 = "0abe7fc220977da88ad86d339335a4517944fea2"
+uuid = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
+version = "1.3.14"
+
 [[SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 
@@ -811,6 +1023,12 @@ version = "1.1.0"
 
 [[Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
+
+[[Setfield]]
+deps = ["ConstructionBase", "Future", "MacroTools", "Requires"]
+git-tree-sha1 = "38d88503f695eb0301479bc9b0d4320b378bafe5"
+uuid = "efcf1570-3423-57d1-acb7-fd33fddbac46"
+version = "0.8.2"
 
 [[SharedArrays]]
 deps = ["Distributed", "Mmap", "Random", "Serialization"]
@@ -1149,14 +1367,18 @@ version = "0.9.1+5"
 # ╠═5d22ba0e-90c7-11ec-17f2-33cef94736e9
 # ╠═84e73884-e91c-4083-83cf-c0368b80cea9
 # ╠═da750647-4ae0-487f-b819-262a62929c1b
+# ╠═a8af70a0-bd7b-43b9-a5f8-788700ab3823
 # ╠═63c22e3d-d095-4040-8155-f46959941e54
 # ╟─d52a76e7-19be-4a6a-9122-caf0b13df4d1
 # ╟─d8a3c082-b71d-4128-bcf3-aca002a017e9
 # ╟─19d546bc-3ff6-4fe3-8d39-0ceaa1bab2dd
 # ╟─fd16cc54-ac21-4c85-aa4e-ba504672367e
-# ╟─0384b760-bbf1-4f4c-9731-8f4c893bdd2e
-# ╠═52a03f77-6767-4698-b526-dacabead27da
-# ╠═d7a42565-55fe-4d3b-9c4e-36c8981ac880
-# ╠═26aaf54a-9245-4f5c-8898-380c349b84bb
+# ╠═e70b4a54-af83-4573-83b5-c0fb21c0cfdf
+# ╠═d42cd0be-4785-4e4b-8998-bc116fac235d
+# ╟─0ab9dc5e-174b-4f33-a2b7-e67254929118
+# ╟─26aaf54a-9245-4f5c-8898-380c349b84bb
+# ╠═e6733f02-fa1f-4d50-bb0a-9c0d1519a6f3
+# ╟─13ef656c-bc9a-475a-8e0c-de184070483a
+# ╠═ded08b3e-177b-43f9-b54e-9181785704d5
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
