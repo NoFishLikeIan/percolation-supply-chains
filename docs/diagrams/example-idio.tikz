@@ -1,6 +1,6 @@
 \begin{tikzpicture}
 	\begin{pgfonlayer}{nodelayer}
-		\node [style=Yellow firm] (10) at (0, -3.5) {$1$};
+		\node [style=Yellow firm] (10) at (0, -3) {$1$};
 		\node [style=Red firm] (11) at (-2, 0) {$2$};
 		\node [style=Red firm] (12) at (2, 0) {$3$};
 		\node [style=Blue firm] (13) at (-2, 3) {4};

@@ -8,7 +8,7 @@
 \tikzstyle{Yellow firm}=[fill={rgb,255: red,255; green,193; blue,7}, draw=black, shape=circle]
 \tikzstyle{Blue firm}=[fill={rgb,255: red,30; green,136; blue,229}, draw=black, shape=circle]
 \tikzstyle{Hidden blue firm}=[fill={rgb,255: red,30; green,136; blue,229}, draw=black, shape=circle, dashed, opacity=0.5]
-\tikzstyle{Information}=[fill=white, draw=black, shape=rectangle]
+\tikzstyle{Not functional}=[fill=white, draw=black, shape=rectangle]
 
 % Edge styles
 \tikzstyle{Supplies}=[->, line width=0.5mm]

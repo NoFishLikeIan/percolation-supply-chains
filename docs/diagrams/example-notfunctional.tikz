@@ -1,0 +1,14 @@
+\begin{tikzpicture}
+	\begin{pgfonlayer}{nodelayer}
+		\node [style=Red firm] (1) at (2, 0.25) {$3$};
+		\node [style=Blue firm] (2) at (2, 3) {5};
+		\node [style=Not functional] (3) at (-2, 3) {$4$};
+		\node [style=Not functional] (4) at (-2, 0) {$2$};
+		\node [style=Not functional] (5) at (0, -3) {$1$};
+	\end{pgfonlayer}
+	\begin{pgfonlayer}{edgelayer}
+		\draw [style=Supplies] (2) to (1);
+		\draw [style=Supplies] (3) to (4);
+		\draw [style=Supplies] (4) to (5);
+	\end{pgfonlayer}
+\end{tikzpicture}

@@ -1,10 +1,9 @@
 \begin{tikzpicture}
 	\begin{pgfonlayer}{nodelayer}
-		\node [style=Yellow firm] (0) at (0, -3.5) {1};
+		\node [style=Yellow firm] (0) at (0, -3) {1};
 		\node [style=Red firm] (1) at (-2, 0) {$2$};
 		\node [style=Red firm] (2) at (2, 0) {$3$};
-		\node [style=Blue firm] (3) at (-2, 3) {4};
-		\node [style=Blue firm] (4) at (2, 3) {5};
+		\node [style=Blue firm] (3) at (0, 3) {4};
 	\end{pgfonlayer}
 	\begin{pgfonlayer}{edgelayer}
 		\draw [style=Supplies] (3) to (1);
