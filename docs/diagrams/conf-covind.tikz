@@ -1,0 +1,26 @@
+\begin{tikzpicture}
+	\begin{pgfonlayer}{nodelayer}
+		\node [style=Red firm] (0) at (-2, 3) {$2$};
+		\node [style=Red firm] (1) at (2, 3) {$3$};
+		\node [style=Blue firm] (2) at (-2, 7) {4};
+		\node [style=Blue firm] (3) at (2, 7) {$5$};
+		\node [style=Red firm] (4) at (-6, -3) {$2$};
+		\node [style=Red firm] (5) at (-2, -3) {$3$};
+		\node [style=Blue firm] (6) at (-6, 1) {4};
+		\node [style=Blue firm] (7) at (-2, 1) {$5$};
+		\node [style=Red firm] (8) at (2, -3) {$2$};
+		\node [style=Red firm] (9) at (6, -3) {$3$};
+		\node [style=Blue firm] (10) at (2, 1) {4};
+		\node [style=Blue firm] (11) at (6, 1) {$5$};
+	\end{pgfonlayer}
+	\begin{pgfonlayer}{edgelayer}
+		\draw [style=Supplies] (2) to (0);
+		\draw [style=Supplies] (3) to (1);
+		\draw [style=Supplies] (7) to (4);
+		\draw [style=Supplies] (10) to (8);
+		\draw [style=Supplies] (10) to (9);
+		\draw [style=Supplies] (7) to (5);
+		\draw [style=Supplies] (3) to (0);
+		\draw [style=Supplies] (2) to (1);
+	\end{pgfonlayer}
+\end{tikzpicture}
