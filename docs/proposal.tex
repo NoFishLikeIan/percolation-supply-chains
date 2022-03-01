@@ -73,6 +73,7 @@
     \newcommand{\uH}[2][s]{\int^\frac{1}{2}_0 #2 \ \text{d} #1}
     \newcommand{\uF}[2][s]{\int^1_\frac{1}{2} #2 \ \text{d} #1}
     \newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+    \newcommand{\abs}[1]{\left\lvert#1\right\rvert}
 
     % Bibliography
 
@@ -97,7 +98,7 @@
 
 It has long been recognized that increasingly complex production networks drive economic growth by allowing the production of more technically sophisticated goods and fostering specialisation (\cite{acemoglu_endogenous_2020}). At the same time, highly complex production networks increase the probability of cascading failures, thereby exacerbating fluctuations caused by idiosyncratic shocks (\cite{baqaee_macroeconomic_2019}). In light of this, endogenising the supplier decisions of firms is central in understanding the opportunities and threats posed by complex production networks. Recent work by \citein{elliott_supply_2022} shows how endogenous production networks can organise towards fragility, when firms operate under uncertainty. This is an important result but it does not account for the fact that firms have limited information about their supplier risk, particularly further up the production network (\cite{pwc_supply_2019}). 
 
-I develop a model in which firms endogenously pick suppliers in order to minimise the risk of production failures. First, in line with \citein{elliott_supply_2022}, I show that, under complete information, firms do not internalise the downstream cost of their production failures, such that their decisions induce a greater aggregate risk than the social optimum. Second, I show that this result gives rise to fundamental non-linearities in the firms suppliers' decisions which do not ``smooth out'' once aggregated at the production network level. Third, when firms have limited information on the structure of the production network beyond their immediate suppliers, the degree of diversification will depend on their beliefs on the covariance of the risk of the potential suppliers. I show that, if firms learn over time the distribution of the risk by observing their suppliers, their choices bring the production network closer to the social optimum.
+To address this, I develop a model in which firms endogenously pick suppliers in order to minimise the risk of production failures. First, in line with \citein{elliott_supply_2022}, I show that, under complete information, firms do not internalise the downstream cost of their production failures, such that their decisions induce a greater aggregate risk than the social optimum. Second, I show that this result gives rise to fundamental non-linearities in the firms suppliers' decisions which do not ``smooth out'' once aggregated at the production network level. Third, when firms have limited information on the structure of the production network beyond their immediate suppliers, the degree of diversification will depend on their beliefs on the covariance of the risk of the potential suppliers. I show that, if firms learn over time the distribution of the risk by observing their suppliers, their choices bring the production network closer to the social optimum.
 
 \subsection{Example}
 
@@ -107,13 +108,13 @@ To understand these results, consider the two simple production networks illustr
   \centering
   \begin{subfigure}{.5\textwidth}
     \centering
-    \inputTikZ{0.7}{diagrams/example-idio.tikz} 
+    \inputTikZ{0.5}{diagrams/example-idio.tikz} 
     \caption{Idiosyncratic upstream risk}
     \label{fig:example:idio}  
   \end{subfigure}%
   \begin{subfigure}{.5\textwidth}
     \centering
-    \inputTikZ{0.7}{diagrams/example-covariate.tikz} 
+    \inputTikZ{0.5}{diagrams/example-covariate.tikz} 
     \caption{Covariate upstream risk}
     \label{fig:example:cov}
   \end{subfigure}
@@ -122,12 +123,12 @@ To understand these results, consider the two simple production networks illustr
 \end{figure}
 
 Now assume that \textit{one} cannot observe the supplier decisions of the red good producers but assigns equal probability to every possible configuration. Given that there are more configurations in which diversification is optimal\footnote{
-  Diversification is optimal if \inputTikZ{0.12}{diagrams/conf-idyof.tikz} or, with equal probability, \inputTikZ{0.12}{diagrams/conf-covpref.tikz}, and not optimal if \inputTikZ{0.12}{diagrams/conf-covind.tikz}
+  Diversification is optimal if \inputTikZ{0.1}{diagrams/conf-idyof.tikz} or, with equal probability, \inputTikZ{0.1}{diagrams/conf-covpref.tikz}, and not optimal if \inputTikZ{0.1}{diagrams/conf-covind.tikz}
 }, diversification under incomplete information and with uniform priors will be closer to the social optimum. This simple example makes it immediately clear that firms beliefs play a crucial role in the endogenous formation of production networks. 
 
 \begin{figure}[H]
   \centering
-  \inputTikZ{0.7}{diagrams/example-limited.tikz} 
+  \inputTikZ{0.5}{diagrams/example-limited.tikz} 
   \caption{Same production network as in Figure \ref{fig:example}, but with limited information. Firm $1$ cannot observe edges stemming from opaque nodes.}
   \label{fig:example:unknown}  
 \end{figure}
@@ -150,41 +151,53 @@ In the economy there are $n$ firms $\N = \{1, 2, 3, 4, \ldots, n \}$. Each firm 
     \G = \{ \overbrace{\{1, 2, 3, \ldots, n_a\}}^{a},  \overbrace{\{n_a + 1, n_a + 2, \ldots, n_b\}}^{b}, \ldots \},
 \end{equation*}
 
-then we can write $i \in g$ with $g \in \G$ if $i$ produces $g$. Only a random subset of the firms, $\F \subseteq \N$, is functional and hence able to deliver supply intermediate goods. The probability with which a firm is functional depends on an idiosyncratic component and on the choice of its suppliers. 
+then we can write $i \in g$ with $g \in \G$ if $i$ produces $g$. Only a random subset of the firms, $\F \subseteq \N$, is functional and hence able to produce and supply goods. The probability with which a firm is functional depends on an idiosyncratic component and on the choice of its suppliers. 
 
 \subsection{Supplier Decisions and Production}
 
-Each good $g$ requires a set of inputs to be produced, $\mathcal{I}(g) \subseteq \mathcal{G}$. Before observing the set of functional firms $\F$, each firm $i \in g$ needs to pick, for each input good $s \in \mathcal{I}(g)$, a set of suppliers producing that good, denoted $x_i^s \subseteq s$. Establishing a relation with a supplier has a fixed cost $\kappa$. If, among the suppliers of a necessary input, none are functional (that is, $x_i^s \cap \F$ is empty), then the firm $i$ cannot be functional. Hence the fundamental trade-off that firms face is between paying the cost of diversifying and its added benefit to the probability of being functional. Hereafter, I will say that a firm $i \in g$ is ``potentially'' functional if it satisfies $x_i^s \cap \F$ is not empty for all $s \in \I(g)$. Given a list of sequence of suppliers $x_i$ for each firm $i$, we can let $\PF$, with $\F \subseteq \PF \subseteq \N$, be the set of potentially functional firms.
+Each good $g$ requires a set of inputs to be produced, $\mathcal{I}(g) \subseteq \mathcal{G}$. Before observing the set of functional firms $\F$, each firm $i \in g$ needs to pick, for each input good $s \in \mathcal{I}(g)$, a set of suppliers producing that good, denoted $x_i^s \subseteq s$. Establishing a relation with a supplier has a fixed cost $\kappa$. If, among the suppliers of a necessary input, none are functional (that is, $x_i^s \cap \F$ is empty), then firm $i$ cannot be functional. Hence the fundamental trade-off that firms face is between paying the cost of diversifying and its added benefit to the probability of being functional. Hereafter, I will say that a firm $i \in g$ is ``potentially'' functional if it satisfies $x_i^s \cap \F$ is not empty for all $s \in \I(g)$. Given a set of suppliers $x_i$ for each firm $i$, we can let $\PF$, with $\F \subseteq \PF \subseteq \N$, be the set of potentially functional firms.
 
-Going back to the example production network introduced above, consider the case in which firm \textit{four} is not functional, illustrated in Figure \ref{fig:functional_example}. This immediately implies that firm $2$ is not functional. Hence, firm $1$ would be functional only if it had decided to diversify its input and pay $2\kappa$ fixed costs (\ref{fig:functional_example:yes}) instead of sourcing exclusively from $2$ and paying simply $\kappa$ (\ref{fig:functional_example:no}).
+Going back to the example production network introduced above, consider the case in which firm \textit{four} is not functional, illustrated in Figure \ref{fig:functional_example}. This immediately implies that firm \textit{two} is not functional. Hence, firm \textit{one} would be functional only if it had decided to diversify its input and pay $2\kappa$ fixed costs (\ref{fig:functional_example:yes}) instead of sourcing exclusively from \textit{two} and paying simply $\kappa$ (\ref{fig:functional_example:no}).
 
 \begin{figure}[H]
   \centering
   \begin{subfigure}{.5\textwidth}
     \centering
-    \inputTikZ{0.7}{diagrams/example-functional.tikz} 
+    \inputTikZ{0.5}{diagrams/example-functional.tikz} 
     \caption{Functional $1$}
     \label{fig:functional_example:yes}  
   \end{subfigure}%
   \begin{subfigure}{.5\textwidth}
     \centering
-    \inputTikZ{0.7}{diagrams/example-notfunctional.tikz} 
+    \inputTikZ{0.5}{diagrams/example-notfunctional.tikz} 
     \caption{Not functional $1$}
     \label{fig:functional_example:no}
   \end{subfigure}
-  \caption{Production network of Figure \ref{fig:example} denoting as $\square$ a non-functional firm.}
+  \caption{Production network of Figure \ref{fig:example}, where $\square$ represents a non-functional firm.}
   \label{fig:functional_example}
 \end{figure}
 
 \subsection{Conditional and Unconditional Probability of Being Functional}
 
-As mentioned above, there are two sources of uncertainty on whether a given firm is functional: an idiosyncratic ``private'' risk and the choice of its suppliers. The former is determined by an heterogeneous firm ``reliability'' measure $\mu_i$, such that  
+As mentioned above, there are two sources of uncertainty on whether a given firm is functional: an idiosyncratic ``private'' risk and the choice of its suppliers\footnote{Note that $\F \subseteq \PF$ implies that $\P\Big(i \in \F \Big) = \P\Big(i \in \F \ \vert \ i \in \PF \Big) \times \P\Big( i \in \PF \Big)$}. The former is determined by an heterogeneous firm ``reliability'' measure $\mu_i$, such that  
 
 \begin{equation*}
   \P\Big(i \in \F \ \vert \ i \in \PF \Big) = \mu_i.
 \end{equation*}
 
+The latter depends on the probability of the chosen suppliers being functional, namely
 
+\begin{equation*}
+  \P\Big( i \in \PF \Big) = \P\Big( \forall s \in \I(g): \ x_i^s \cap \F \neq \emptyset \Big).
+\end{equation*}
+
+\subsection{Payoffs}
+
+Firm operate for an exogenous payoff $\pi_i$\footnote{This can be easily microfounded using an endogenous production network model, as in \citein{acemoglu_endogenous_2020}.} and pay a cost $\kappa$ of establishing relationships with a supplier. Hence, the expected payoff of the firm can be written as
+
+\begin{equation*}
+  \Pi(x_i) = \pi_i \ \P\Big( i \in \F \Big) - \kappa \sum_{s \in \I(g)} \abs{x^s_i}.
+\end{equation*}
 
 % --- Bibliography
 \newpage
