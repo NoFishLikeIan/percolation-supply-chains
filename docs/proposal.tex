@@ -26,7 +26,7 @@
     % Diagrams
     \usepackage{tikz} 
     \usepackage{tikzit}
-    \usetikzlibrary{fit}
+    \usetikzlibrary{positioning,fit,calc}
     \input{diagrams/percolation.tikzstyles}
 
     \newcommand{\inputTikZ}[2]{%  
@@ -147,9 +147,9 @@ Particularly relevant are the models developed by \citein{dasaratha_bayesian_201
 
 In the economy there are $n$ firms $\N = \{1, 2, 3, 4, \ldots, n \}$. Each firm produces a unique good, such that the goods can be thought of as a partition of $\N$. Namely, let the set of goods be
 
-\begin{equation*}
+\begin{equation}
     \G = \{ \overbrace{\{1, 2, 3, \ldots, n_a\}}^{a},  \overbrace{\{n_a + 1, n_a + 2, \ldots, n_b\}}^{b}, \ldots \},
-\end{equation*}
+\end{equation}
 
 then we can write $i \in g$ with $g \in \G$ if $i$ produces $g$. Only a random subset of the firms, $\F \subseteq \N$, is functional and hence able to produce and supply goods. The probability with which a firm is functional depends on an idiosyncratic component and on the choice of its suppliers. 
 
@@ -179,25 +179,85 @@ Going back to the example production network introduced above, consider the case
 
 \subsection{Conditional and Unconditional Probability of Being Functional}
 
-As mentioned above, there are two sources of uncertainty on whether a given firm is functional: an idiosyncratic ``private'' risk and the choice of its suppliers\footnote{Note that $\F \subseteq \PF$ implies that $\P\Big(i \in \F \Big) = \P\Big(i \in \F \ \vert \ i \in \PF \Big) \times \P\Big( i \in \PF \Big)$}. The former is determined by an heterogeneous firm ``reliability'' measure $\mu_i$, such that  
+As mentioned above, there are two sources of uncertainty on whether a given firm is functional: an idiosyncratic ``private'' risk and the choice of its suppliers\footnote{Note that $\F \subseteq \PF$ implies that $\P\Big(i \in \F \Big) = \P\Big(i \in \F \ \vert \ i \in \PF \Big) \times \P\Big( i \in \PF \Big)$}. The former is determined by an heterogeneous firm risk measure $\mu_i$, such that  
 
-\begin{equation*}
-  \P\Big(i \in \F \ \vert \ i \in \PF \Big) = \mu_i.
-\end{equation*}
+\begin{equation}
+  \P\Big(i \in \F \ \vert \ i \in \PF \Big) = 1 - \mu_i.
+\end{equation}
 
 The latter depends on the probability of the chosen suppliers being functional, namely
 
-\begin{equation*}
+\begin{equation}
   \P\Big( i \in \PF \Big) = \P\Big( \forall s \in \I(g): \ x_i^s \cap \F \neq \emptyset \Big).
-\end{equation*}
+\end{equation}
 
 \subsection{Payoffs}
 
 Firm operate for an exogenous payoff $\pi_i$\footnote{This can be easily microfounded using an endogenous production network model, as in \citein{acemoglu_endogenous_2020}.} and pay a cost $\kappa$ of establishing relationships with a supplier. Hence, the expected payoff of the firm can be written as
 
-\begin{equation*}
+\begin{equation}
   \Pi(x_i) = \pi_i \ \P\Big( i \in \F \Big) - \kappa \sum_{s \in \I(g)} \abs{x^s_i}.
-\end{equation*}
+\end{equation}
+
+\section{Vertical economy}
+
+Consider the simple example of a vertical economy (Figure \ref{fig:vertical}) with three goods
+
+\begin{equation}
+  \G = \{g_0, g_1, g_2\}.
+\end{equation}
+
+Each good $g_i$ is produced by $m_i$ firms and firms producing the same good have the same payoff $\pi_i$ and risk $\mu_i$.
+
+\begin{figure}[H]
+  \centering
+  \inputTikZ{0.7}{diagrams/vertical-economy.tikz} 
+  \caption{One possible realization of a vertical economy with three goods}
+  \label{fig:vertical}
+\end{figure}
+
+\subsection[The problem of good one]{The problem of $j \in g_1$}
+
+Firms producing $g_0$ do not have inputs, such that their probability of being functional is simply $1 - \mu_0$. Now consider a firm $j \in g_1$. The firm needs to pick a set of suppliers $x_j \subseteq g_0$ to maximise
+
+\begin{equation}
+  \begin{split}
+    \Pi(x_j) &= \pi_1 \ \P(j \in \F) - \kappa \ \abs{x_j} \\
+    &= \pi_1 (1 - \mu_1) \  \P(x_j \cap \F \neq \emptyset) - \kappa \ \abs{x_j} \\
+    &= \pi_1 (1 - \mu_1) \  \Big(1 - \P\left(\forall k \in x_j: \ k \notin \F \right) \Big) - \kappa \ \abs{x_j}
+  \end{split}
+\end{equation}
+
+given that the risk of firms in $g_0$ is equal and idiosyncratic we can write
+
+\begin{equation}
+    \Pi(x_j) = \pi_1 (1 - \mu_1) \  \left(1 - \mu_0^{\abs{x_j}}\right) - \kappa \ \abs{x_j}.
+\end{equation}
+
+Since all firms in $g_0$ have idiosyncratic and equal risk, firm $j$ will optimise only over the number of firms it supplies from, $\abs{x_j}$,based on their risk $\mu_0$. We can call this quantity
+
+\begin{equation}
+  K_1(\mu_0) := \left\lfloor \frac{\log(\pi_1 / \kappa) - \log(1 - \mu_0)}{\log(\mu_0)} \right\rfloor.
+\end{equation}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width = \textwidth]{plots/kplot.pdf} 
+  \caption{Optimal number of suppliers for $j \in g_1$ as a function of $\mu_0$ for different levels of $\kappa / \pi_1$}
+  \label{fig:kplot}
+\end{figure}
+
+Hereafter I will assume that each firm $j \in g_1$ picks at random $K_1(\mu_0)$ firms out of the possible $m_0$ producing $g_0$.
+
+\subsection[The problem of good two]{The problem of $k \in g_2$}
+
+Hereafter I assume that firms producing $g_2$ do not observe $x_j$ for $j \in g_1$ but know its optimisation problem. Hence the problem of a firm $k \in g_2$ is more complicated. As before, the objective function can be written as 
+
+\begin{equation}
+  \begin{split}
+    \Pi(x_k) = \pi_2 (1 - \mu_2) \  \Big(1 - \P\left(\forall j \in x_k: \ j \notin \F \right) \Big) - \kappa \ \abs{x_k}
+  \end{split}
+\end{equation}
 
 % --- Bibliography
 \newpage
