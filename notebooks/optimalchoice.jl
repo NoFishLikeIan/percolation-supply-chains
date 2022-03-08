@@ -59,7 +59,7 @@ begin
 			c = c[i]
 		)
 		plot!(Kfig,
-			M, μ -> floor(Int64, K(μ, r)),
+			M, μ -> ceil(Int64, K(μ, r)),
 			label = nothing, c = c[i], alpha = 0.5, linestyle = :dash
 		)
 	end
@@ -68,7 +68,7 @@ begin
 end
 
 # ╔═╡ 58171ae6-a41c-4f79-9d47-d5fa61914448
-savefig(Kfig, joinpath(plotpath, "kplot.pdf"))
+# savefig(Kfig, joinpath(plotpath, "kplot.pdf"))
 
 # ╔═╡ 9576ff24-9849-4f97-a41a-bfec9049b0bb
 md"
