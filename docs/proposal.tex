@@ -201,10 +201,10 @@ Firm operate for an exogenous payoff $\pi_i$\footnote{This can be easily microfo
 
 \section{Vertical economy}
 
-Consider the simple example of a vertical economy (Figure \ref{fig:vertical}) with three goods
+Consider a vertical economy (Figure \ref{fig:vertical}) with $n$ goods
 
 \begin{equation}
-  \G = \{g_0, g_1, g_2\}.
+  \G = \{g_0, g_1, g_2, \ldots, g_n\}.
 \end{equation}
 
 Each good $g_i$ is produced by $m_i$ firms and firms producing the same good have the same payoff $\pi_i$ and risk $\mu_i$.
@@ -216,38 +216,56 @@ Each good $g_i$ is produced by $m_i$ firms and firms producing the same good hav
   \label{fig:vertical}
 \end{figure}
 
-\subsection[The problem of good one]{The problem of $j \in g_1$}
+If firms cannot observe the realisation of their suppliers' network, ex ante, all potential suppliers are equivalent from a firms' point of view. Hence, the problem of a firm $f_i$ producing $g_i$ reduces to picking the size of its suppliers $S_i = \abs{x_{f_i}}$ where $x_{f_i} \subseteq g_{i - 1}$. Once the size is chosen, each supplier will be chosen with equal probability. We can then write the probability of $f_i$ being functional recursively as
 
-Firms producing $g_0$ do not have inputs, such that their probability of being functional is simply $1 - \mu_0$. Now consider a firm $j \in g_1$. The firm needs to pick a set of suppliers $x_j \subseteq g_0$ to maximise
+\begin{alignat*}{2}
+  \P\Big( f_i \in \F \Big) &= \ &&\overbrace{\P\Big( f_i \in \F \ \vert \ f_i \in \PF \Big)}^{= 1 - \mu_i} \ \P\Big( f_i \in \PF \Big) \\
+  &+ &&\underbrace{\P\Big( f_i \in \F \ \vert \ f_i \notin \PF \Big)}_{= 0} \  \P\Big( f_i \notin \PF \Big) \\
+  &= &&(1 - \mu_i) \left( 1 - \P\Big( f_{i-1} \notin \F \Big)^{S_i} \right) \\
+  &= &&(1 - \mu_i) \left( 1 - \left(1 - \P\Big( f_{i-1} \in \F \Big)\right)^{S_i} \right)
+\end{alignat*}
+
+Renaming $p_i \coloneqq \P\Big( f_i \in \F \Big)$ we have the recursive definition
 
 \begin{equation}
   \begin{split}
-    \Pi(x_j) &= \pi_1 \ \P(j \in \F) - \kappa \ \abs{x_j} \\
-    &= \pi_1 (1 - \mu_1) \  \P(x_j \cap \F \neq \emptyset) - \kappa \ \abs{x_j} \\
-    &= \pi_1 (1 - \mu_1) \  \Big(1 - \P\left(\forall k \in x_j: \ k \notin \F \right) \Big) - \kappa \ \abs{x_j}
+    p_{i} &= (1 - \mu_i) \left( 1 - (1 - p_{i-1})^{S_i} \right) \\
+    \text{with } p_0 &= (1 - \mu_0).
   \end{split}
 \end{equation}
 
-given that the risk of firms in $g_0$ is equal and idiosyncratic we can write
+
+\subsection{Problem of the firm}
+
+Given this recursive definition, the problem of firm $f_i$ can be formulated as having to choose an $S_i \in \mathbb{Z}$ to maximise
 
 \begin{equation}
-    \Pi(x_j) = \pi_1 (1 - \mu_1) \  \left(1 - \mu_0^{\abs{x_j}}\right) - \kappa \ \abs{x_j}.
+  \Pi_i(S_i) = \pi_i \ p_i(S_i) - \kappa \ S_i.
 \end{equation}
 
-Since all firms in $g_0$ have idiosyncratic and equal risk, firm $j$ will optimise only over the number of firms it supplies from, $\abs{x_j}$,based on their risk $\mu_0$. We can call this quantity
+The optimal $S_i$ will be such that $S_i + 1$ yields lower marginal benefits than marginal costs, that is,
 
 \begin{equation}
-  K_1(\mu_0) := \left\lfloor \frac{\log(\pi_1 / \kappa) - \log(1 - \mu_0)}{\log(\mu_0)} \right\rfloor.
+  \begin{split}
+    (1 - p_{i-1})^{S_i} - (1 - p_{i-1})^{S_i + 1} &\leq \frac{\kappa}{\pi_i \ (1 - \mu_i)} \\
+    (1 - p_{i-1})^{S_i} p_{i - 1} &\leq \frac{\kappa}{\pi_i \ (1 - \mu_i)} \\
+    S_i&\leq \frac{\log\left( \kappa / \pi_i \right) - \log(1 - \mu_i) - \log p_{i - 1}}{\log(1 - p_{i-1})}
+  \end{split}
 \end{equation}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width = \textwidth]{plots/kplot.pdf} 
-  \caption{Optimal number of suppliers for $j \in g_1$ as a function of $\mu_0$ for different levels of $\kappa / \pi_1$}
-  \label{fig:kplot}
+  \includegraphics[width = \textwidth]{plots/splot.pdf} 
+  \caption{Optimal number of suppliers of $f_i \in g_i$ as a function of $p_{i - 1}$ for different levels of $\kappa \Big/ \pi_i (1 - \mu_i)$}
+  \label{fig:splot}
 \end{figure}
 
-Hereafter I will assume that each firm $j \in g_1$ picks at random $K_1(\mu_0)$ firms out of the possible $m_0$ producing $g_0$.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width = \textwidth]{plots/pplot.pdf} 
+  \caption{Induced probability $p_i$ given $p_{i - 1}$ for different $\mu_i$, assuming $\kappa / \pi_i = 1/20$}
+  \label{fig:pplot}
+\end{figure}
 
 \subsection[The problem of good two]{The problem of $k \in g_2$}
 

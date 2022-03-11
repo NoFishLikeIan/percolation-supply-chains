@@ -33,33 +33,51 @@ plotpath = "../docs/plots"
 
 # ╔═╡ 07eeb55a-d2a7-419f-b290-c2220da68099
 md"
-## Determining $K_1(\mu_0)$
+## Determining $S_1$
 "
 
 # ╔═╡ d2203da7-dc97-405c-a13f-2ba161d69023
 R = range(0.01, 0.5, length = 99)
 
+# ╔═╡ c1014a93-ec9d-4b05-917a-ec762a2ddf86
+function S(p, κ, π, μ)
+	
+	n = log(κ / (π * (1 - μ))) - log(-log(1 - p))
+	d = log(1 - p)
+
+	return n / d
+
+end
+
+# ╔═╡ dcb26836-3261-4880-a9d8-9316063d956e
+
+
 # ╔═╡ afc59701-b84f-4a99-9c8a-40854c03ecec
 begin
 	M = range(0.01, 0.99, length = 200)
-	K(μ, r) = (log(r) - log(1 - μ)) / log(μ)
+	S(p, r) = (log(r) - log(p)) / log(1 - p)
 
 	Kfig = plot(
-		ylabel = L"K_1\left(\mu_0\right)", 
-		xlabel = L"\mu_0", xlims = (0, 1),
+		ylabel = L"S_i", 
+		xlabel = L"p_{i - 1}", xlims = (0, 1),
 		ylims = (0, 8), yticks = 1:8,
+		legendtitle = latexstring("\$  \\kappa / \\left(1 - \\mu_i\\right)\\pi_i \$"),
+		legendtitlefontsize = 7,
 		dpi = 250
 	)
+
+	
 	c = [:darkred, :darkblue, :darkgreen, :darkorange]
 
 	for (i, r) ∈ [0.05, 0.1, 0.2] |> enumerate
-		label = latexstring("\$ \\kappa / \\pi_1 = $(r)\$")
+		label = latexstring("\$$(r)\$")
+		
 		plot!(Kfig,
-			M, μ -> K(μ, r); label = label,
+			M, p -> S(p, r); label = label,
 			c = c[i]
 		)
 		plot!(Kfig,
-			M, μ -> ceil(Int64, K(μ, r)),
+			M, p -> ceil(Int64, S(p, r)),
 			label = nothing, c = c[i], alpha = 0.5, linestyle = :dash
 		)
 	end
@@ -68,85 +86,112 @@ begin
 end
 
 # ╔═╡ 58171ae6-a41c-4f79-9d47-d5fa61914448
-# savefig(Kfig, joinpath(plotpath, "kplot.pdf"))
+savefig(Kfig, joinpath(plotpath, "splot.pdf"))
+
+# ╔═╡ 98f995ce-a4f4-46f8-907c-58f2d3452b04
+function p′(p, μ, π, κ; theo = false)
+	Ŝ = max(S(p, κ / ((1 - μ) * π)), 0)
+	Sᵢ = theo ? Ŝ : ceil(Int64, Ŝ)
+	
+	return (1 - μ) * (1 - (1 - p)^Sᵢ)
+end
+
+# ╔═╡ 442cb752-abfa-424a-bfd5-6916869227af
+begin
+
+	pfig = plot(
+		ylabel = L"p_i", 
+		xlabel = L"p_{i - 1}", xlims = (0, 1),
+		ylims = (0, 1),
+		legendtitle = latexstring("\$ \\mu_i \$"),
+		legendtitlefontsize = 7,
+		dpi = 250
+	)
+	
+
+	for (i, μ) ∈ [0., 0.05, 0.15] |> enumerate
+		
+		label = latexstring("\$$(μ)\$")
+		
+		plot!(pfig,
+			M, p -> p′(p, μ, 20., 1.; theo = true); label = label,
+			c = c[i]
+		)
+
+				
+		plot!(pfig,
+			M, p -> p′(p, μ, 20., 1.; theo = false); label = false,
+			c = c[i], alpha = 0.5, linestyle = :dash
+		)
+	
+	end
+
+	pfig
+end
+
+# ╔═╡ 1cebf3fb-93ec-4c3f-b678-35f3a4edc2db
+savefig(pfig, joinpath(plotpath, "pplot.pdf"))
 
 # ╔═╡ 9576ff24-9849-4f97-a41a-bfec9049b0bb
 md"
-# Distribution of $x_j$ for $j$ in $g_2$
+# Constant $\mu$ and $\pi$
 "
 
-# ╔═╡ 06cf4550-1ffe-46a5-a72c-823a3fe6c182
-md"
-``\kappa / \pi_1``: $(@bind r Slider(R, show_value = true, default = 0.05))
-"
+# ╔═╡ 2ae16984-5fe7-4f9c-ba7a-f739c75e34b6
+κ = 1
 
 # ╔═╡ 95ca4619-5ccf-401d-8ae3-5d14d7258674
 md"
-``\mu_1``: $(@bind μ̄ Slider(range(0., 1., length = 101), show_value = true, default = 0.5))
+``\mu``: $(@bind μ Slider(range(0.01, 0.4, length = 101), show_value = true, default = 0.05))
 "
 
-# ╔═╡ 02bc3705-c970-404a-a0df-31352ab0846c
-begin
-	m = [50, 3, 2]
-	μ = [μ̄, 0., 0.05]
+# ╔═╡ d33d657e-966a-4450-8c45-fa42ed75d13f
+function sequence(L::Int64, π, μ; params...)
+	p = Vector{Float64}(undef, L)
+	sup = zeros(Int64, L)
+	p[1] = 1 - μ
 
-	K₂ = min(m[2], ceil(Int64, K(μ[1], r)))
-	
-end
+	for j ∈ 2:L
+		p[j] = p′(p[j - 1], μ, π, κ; params...)
+		Ŝ = S(p[j], κ / (π * (1 - μ)))
 
-# ╔═╡ be45627c-69ca-40fa-9f1e-12318b2e82b6
-function drawX(m, μ)
-	g₁ = 1:m[1]
-	g₂ = 1:m[2]
-	
-	K₂ = min(m[2], ceil(Int64, K(μ[1], r)))
-	X = zeros(Int64, m[2], m[1])
-
-	for m ∈ g₂
-		xₘ = sample(g₁, K₂; replace = false)
-		for k ∈ xₘ
-			X[m, k] = 1
-		end
+		sup[j] = ceil(Int64, Ŝ)
 	end
-		
-	return X
+
+	return p, sup
 end
 
-# ╔═╡ ccc2491f-c6c8-423a-8058-b3103e3bda94
-function drawF(m, μ)
-	n = length(μ)
-	
-	F₁ = @. Int64([ rand() ≥ μ[1] for j ∈ 1:m[1] ])
-	PF₂ = min.(1, drawX(m, μ) * F₁)
-		
-	F₂ = @. Int64([ rand() ≥ μ[2] for j ∈ 1:m[2] ])
-
-	return PF₂ .* F₂
-end
-
-# ╔═╡ 6cebd1cb-7c0e-4365-9e77-96c5c856b4f9
+# ╔═╡ 974adc2d-3f7d-4b21-a532-d609b8986da9
 begin
-	T = 10_000
-	sim = Matrix{Int64}(undef, T, m[2])
-	for n ∈ 1:T
-		sim[n, :] = drawF(m, μ)
-	end
+	L = 20
+	π = 20
+
+	p, sup = sequence(L, π, μ)
+
 end
 
-# ╔═╡ 346ca81e-4625-4631-ab59-1e2cfeec75af
-begin
-	varcov = zeros(m[2], m[2])
-	
-	for j ∈ 1:m[2], k ∈ (j + 1):m[2]
-		varcov[j, k] = varcov[k, j] = cov(sim[:, k], sim[:, j])
-	end
+# ╔═╡ 916251cb-8fd6-4739-9afe-d535799548b0
+let
+
+	lfig = plot(ylims = (0.8, 1), ylabel = L"p_{i}", xlabel = L"i")
+
+	plot!(lfig, 
+		1:L, p; 
+		label = "Discrete")
+
+	lfig
 end
 
-# ╔═╡ 5630111f-414f-4380-9cf4-67cebf15f56a
-heatmap(
-	varcov;
-	title = latexstring("Covariance matrix of \$\\mathcal{F}\$ in layer 2"),
-	c = :Blues, aspect_ratio = 1, xlims = (0.5, m[2] + 0.5))
+# ╔═╡ c9cf9dad-0583-486f-bf22-d969f81e235b
+let
+	supfig = plot(ylabel = L"S_{i}", xlabel = L"i")
+
+	plot!(supfig, 
+		1:L, sup; 
+		label = "Discrete")
+
+	supfig
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1281,16 +1326,19 @@ version = "0.9.1+5"
 # ╠═460cce7d-0763-4b34-bc59-44538b7312bb
 # ╟─07eeb55a-d2a7-419f-b290-c2220da68099
 # ╠═d2203da7-dc97-405c-a13f-2ba161d69023
+# ╠═c1014a93-ec9d-4b05-917a-ec762a2ddf86
+# ╠═dcb26836-3261-4880-a9d8-9316063d956e
 # ╠═afc59701-b84f-4a99-9c8a-40854c03ecec
 # ╠═58171ae6-a41c-4f79-9d47-d5fa61914448
+# ╠═98f995ce-a4f4-46f8-907c-58f2d3452b04
+# ╟─442cb752-abfa-424a-bfd5-6916869227af
+# ╠═1cebf3fb-93ec-4c3f-b678-35f3a4edc2db
 # ╟─9576ff24-9849-4f97-a41a-bfec9049b0bb
-# ╟─06cf4550-1ffe-46a5-a72c-823a3fe6c182
-# ╟─95ca4619-5ccf-401d-8ae3-5d14d7258674
-# ╠═02bc3705-c970-404a-a0df-31352ab0846c
-# ╟─be45627c-69ca-40fa-9f1e-12318b2e82b6
-# ╟─ccc2491f-c6c8-423a-8058-b3103e3bda94
-# ╟─6cebd1cb-7c0e-4365-9e77-96c5c856b4f9
-# ╟─346ca81e-4625-4631-ab59-1e2cfeec75af
-# ╟─5630111f-414f-4380-9cf4-67cebf15f56a
+# ╠═2ae16984-5fe7-4f9c-ba7a-f739c75e34b6
+# ╠═95ca4619-5ccf-401d-8ae3-5d14d7258674
+# ╟─d33d657e-966a-4450-8c45-fa42ed75d13f
+# ╟─974adc2d-3f7d-4b21-a532-d609b8986da9
+# ╠═916251cb-8fd6-4739-9afe-d535799548b0
+# ╠═c9cf9dad-0583-486f-bf22-d969f81e235b
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
