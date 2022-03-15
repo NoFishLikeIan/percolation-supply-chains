@@ -11,6 +11,8 @@ mutable struct Firm <: AbstractAgent
 
     p::Float64
     k::Float64
+
+    realized::Float64
 end
 
 function good(f::Firm, G::Goods)

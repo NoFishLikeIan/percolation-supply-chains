@@ -1,16 +1,24 @@
 function model_step!(model)
 
-    for (g, firms) ∈ enumerate(model.goods), i ∈ firms        
+    print("Step $(model.t) \r")
+    model.t += 1
+
+    for firms ∈ model.goods, i ∈ firms        
         picksuppliers!(model[i], model)
         updatebeliefs!(model[i], model)
         drawfunctional!(model[i], model)
+        computepayoffs!(model[i], model)
     end
-
 end
 
 function getF(firm::Firm, model)
     s = potentialsuppliers(firm, model.goods)
     return [ model[i].isfunctional ? 1 : 0 for i in s ]
+end
+
+function computepayoffs!(firm::Firm, model)
+    F = getF(firm, model)
+    firm.realized = firm.p * max.(F'firm.x) - firm.k * sum(firm.x)
 end
 
 function updatebeliefs!(firm::Firm, model)
