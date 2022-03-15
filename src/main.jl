@@ -23,17 +23,17 @@ include("step.jl")
 # Plotting
 include("plots.jl")
 
-m = [10, 5, 5, 5] # Market sizes
-μ = 0.01 * ones(sum(m)) # Idyosincratic risk    
+m = [10, 1] # Market sizes
+μ = 0.02 * ones(sum(m)) # Idyosincratic risk    
 
 θ = [ ones(2^mᵢ) ./ 2^mᵢ for mᵢ ∈ m[1:end-1] ] # Uniform priors
 Fₛ = [ nthproductmatrix([0, 1], mᵢ) for mᵢ ∈ m[1:end - 1] ]
-payoff = ones(sum(m))
+payoff = 10. * ones(sum(m))
 
 function verticaleconomy(
     m::Vector{Int64}, μ::Vector{Float64}, payoff::Vector{Float64},
     θ::Vector{Vector{Float64}}, Fₛ::Vector{Matrix{Int64}};
-    k = 1, seed = 1212
+    k = 1, seed = 1212, λ = 1/2
 )
 
     rng = Random.MersenneTwister(seed)
@@ -53,7 +53,7 @@ function verticaleconomy(
         x₀ = isbasal ? Int64[] : repeat([true], m[g - 1])
 
         for i ∈ good
-            firm = Firm(i, θ₀, μ[i], true, x₀, payoff[i], k, 0.)
+            firm = Firm(i, θ₀, μ[i], true, x₀, λ, payoff[i], k, 0.)
             add_agent!(firm, model) 
         end
 
@@ -62,12 +62,3 @@ function verticaleconomy(
     return model
 
 end
-
-model = verticaleconomy(m, μ, payoff, θ, Fₛ)
-
-T = 250
-
-data, _ = run!(
-    model, dummystep, model_step!, T; 
-    adata = [:isfunctional, :x, :θ]
-)

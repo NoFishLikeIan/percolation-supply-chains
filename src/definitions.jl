@@ -8,11 +8,12 @@ mutable struct Firm <: AbstractAgent
 
     isfunctional::Bool
     x::Vector{Bool} # Boolean array of suppliers
+    λ::Float64 # Learning rate
 
     p::Float64
     k::Float64
 
-    realized::Float64
+    realized::Float64 # Realized profits
 end
 
 function good(f::Firm, G::Goods)

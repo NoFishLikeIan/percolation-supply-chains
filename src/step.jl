@@ -21,21 +21,24 @@ function computepayoffs!(firm::Firm, model)
     firm.realized = firm.p * max.(F'firm.x) - firm.k * sum(firm.x)
 end
 
-function updatebeliefs!(firm::Firm, model)
-    if isempty(firm.x) return end
+function bayesianupdate!(θ, s, λ)
+    θ[s] = λ * θ[s] + (1 - λ) * (θ[s] + 1) / 2
+    θ[1:s-1] = @. λ * θ[1:s-1] + (1 - λ) * θ[1:s-1] / 2
+    θ[s+1:end] = @. λ * θ[s+1:end] + (1 - λ) * θ[s+1:end] / 2
+end
 
-    F = getF(firm, model)
-    g = good(firm, model.goods)
+function updatebeliefs!(f::Firm, model)
+    if isempty(f.x) return end
+
+    F = getF(f, model)
+    g = good(f, model.goods)
 
     s = findfirst(
         row -> all(row .== F), 
         eachrow(model.Fₛ[g - 1]) |> collect
     )
 
-    firm.θ[s] = (firm.θ[s] + 1) / 2
-
-    firm.θ[1:s-1] = firm.θ[1:s-1] ./ 2
-    firm.θ[s+1:end] = firm.θ[s+1:end] ./ 2
+    bayesianupdate!(f.θ, s, f.λ)
 
 end
 
