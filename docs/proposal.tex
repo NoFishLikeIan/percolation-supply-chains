@@ -12,7 +12,6 @@
     \usepackage{xcolor-solarized}
     \usepackage{bm}
 
-
     \usepackage{graphicx}
     \usepackage{wrapfig}
     \usepackage{relsize}
@@ -284,13 +283,19 @@ The first order condition\footnote{The function $W(S)$ is concave, hence the max
 In the model there is no upstream spillover ($\partial p_i / \partial S_j = 0$ if $i < j$), hence we can recursively write
 
 \begin{equation}
-  \frac{\partial p_i}{\partial S_j} = S_i \ \frac{p_i(S)}{1 - p_{i-1}(S)} \ \frac{\partial p_{i-1}}{\partial S_j}
+  \frac{\partial p_i}{\partial S_j} = \underbrace{\prod^{i - j - 1}_{k = 0} \Big[ -(1 - \mu_{i - k}) \ S_{i - k} \ (1 - p_{i - k - 1}(S))^{S_{i - k} - 1} \Big]}_{D_S(i, j)} \ \frac{\partial p_j(S)}{\partial S_j}
 \end{equation}
 
-with base case $i = j$
+with base case, $i = j$,
 
 \begin{equation}
   \frac{\partial p_j}{\partial S_j} = -(1 - \mu_j) \ \Big( 1 - p_{j-1}(S) \Big)^{S_i} \ \ln\Big(1 - p_{j-1}(S)\Big).
+\end{equation}
+
+Hence we can write the first order condition as
+
+\begin{equation}
+  \frac{\partial p_j}{\partial S_j} \Bigg( \underbrace{\sum_{i > j} \frac{m_i}{m_j} \ \frac{\pi_i}{\pi_j} \ D_S(i, j)}_{\text{downstream externality}} \ + \ 1 \Bigg) = \frac{\kappa}{\pi_j}
 \end{equation}
 
 % --- Bibliography
