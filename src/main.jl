@@ -2,6 +2,8 @@
 using Agents
 using Graphs
 using StatsBase
+using Combinatorics
+using IterTools
 
 # Plotting
 using Plots, GraphPlot
@@ -12,35 +14,49 @@ theme(:dao)
 # Random
 using Random
 
-rng = Random.MersenneTwister(1212)
-
 # Subfiles
 include("utils.jl")
 include("definitions.jl")
-include("agentstep.jl")
+include("step.jl")
 
 include("plots.jl")
 
-m = [3, 3, 3]
-μ = 0.05 * ones(sum(m))
+m = [3, 3, 3] # Market sizes
+μ = 0.05 * ones(sum(m)) # Idyosincratic risk    
+θ = [ones(2^mᵢ) ./ 2^mᵢ for mᵢ ∈ m[2:end]] # Uniform priors
+Fₛ = [
+    nthproductmatrix([0, 1], mᵢ) for mᵢ ∈ m[2:end]
+]
 
-function verticaleconomy(m::Vector{Int64}, μ::Vector{Float64})
+p, k = 10., 1.
 
-    n = sum(m)
+function verticaleconomy(
+    m::Vector{Int64}, μ::Vector{Float64};
+    seed = 1212
+)
+
+    rng = Random.MersenneTwister(seed)
     goods = partitiongoods(m)
 
-    model = ABM(
-        Firm, 
-        properties = Dict(:goods => goods),
-        scheduler = Schedulers.by_id
+    properties = Dict(
+        :goods => goods,
+        :Fₛ => Fₛ, # State space
+        :rng => rng
     )
 
-    for i ∈ 1:n 
-        firm = Firm(i, [], true, μ[i])
-        s = potentialsuppliers(firm, goods)
+    model = ABM(Firm; properties = properties)
 
-        firm.x = isempty(s) ? Int64[] : [sample(s)]
-        add_agent!(firm, model) 
+    for (g, good) ∈ enumerate(goods)
+        isbasal = g == 1
+
+        θ₀ = isbasal ? Float64[] : θ[g - 1]
+        x₀ = isbasal ? Int64[] : repeat([true], m[g - 1])
+
+        for i ∈ good
+            firm = Firm(i, θ₀, μ[i], true, x₀, p, k)
+            add_agent!(firm, model) 
+        end
+
     end
 
     return model
@@ -48,16 +64,22 @@ function verticaleconomy(m::Vector{Int64}, μ::Vector{Float64})
 end
 
 model = verticaleconomy(m, μ)
-T = 30
 
-data, _ = run!(model, agent_step!, dummystep, T; adata = [:isfunctional, :x])
+T = 1_000
+
+data, _ = run!(model, dummystep, model_step!, T; adata = [:isfunctional, :x, :θ])
 
 
-function plott(t)
+if false
 
-    tindex = data.step .== t
-    functional = data[tindex, :isfunctional]
-    x = data[tindex, :x]
-    plotgraph(partitiongoods(m), functional, x)
 
+    function plott(t)
+
+        tindex = data.step .== t
+        functional = data[tindex, :isfunctional]
+        x = data[tindex, :x]
+        plotgraph(partitiongoods(m), functional, x)
+
+    end
 end
+

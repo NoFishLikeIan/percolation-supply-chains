@@ -15,3 +15,16 @@ function partitiongoods(m::Vector{Int64})
     return firms
 
 end
+
+nthproduct(base, n) = Iterators.product(ntuple(i -> base, n)...)
+
+function nthproductmatrix(base, n)
+    F = Matrix{Int64}(undef, length(base)^n, n)
+
+    for (i, tup) in enumerate(nthproduct(base, n) |> collect)
+        F[i, :] .= tup
+    end 
+
+    return F
+
+end

@@ -2,11 +2,15 @@ Goods = Vector{Vector{Int64}}
 
 mutable struct Firm <: AbstractAgent
     id::Int64
-    isfunctional::Bool # i ∈ F
 
-    x::Vector{Int64} # Suppliers
-    b::Matrix{Float64} # Perceived probability over neighbors
+    θ::Vector{Float64} # Perceived probability over neighbors
     μ::Float64 # Idiosyncratic risk
+
+    isfunctional::Bool
+    x::Vector{Bool} # Boolean array of suppliers
+
+    p::Float64
+    k::Float64
 end
 
 function good(f::Firm, G::Goods)
