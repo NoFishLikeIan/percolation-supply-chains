@@ -77,8 +77,8 @@
 
     % Bibliography
 
-    \usepackage[bibencoding=utf8, style=apa]{biblatex}
-    \bibliography{supply-chain-reallocation}
+    \usepackage[bibencoding=utf8, style=apa, backend=biber]{biblatex}
+    \addbibresource{supply-chain-reallocation.bib}
 
     \newcommand{\citein}[1]{\citeauthor{#1} (\citeyear{#1})}
 
@@ -267,19 +267,36 @@ The optimal $S_i$ will be such that $S_i + 1$ yields lower marginal benefits tha
   \label{fig:pplot}
 \end{figure}
 
-\subsection[The problem of good two]{The problem of $k \in g_2$}
+\subsection{Social optimum}
 
-Hereafter I assume that firms producing $g_2$ do not observe $x_j$ for $j \in g_1$ but know its optimisation problem. Hence the problem of a firm $k \in g_2$ is more complicated. As before, the objective function can be written as 
+Consider the social planner problem of maximizing the total firms payoff. Letting $S = \begin{pmatrix} S_1 & S_2 & \ldots & S_n \end{pmatrix}$ be the sequence of suppliers size, the problem of the firm can be formulated as
 
 \begin{equation}
-  \begin{split}
-    \Pi(x_k) = \pi_2 (1 - \mu_2) \  \Big(1 - \P\left(\forall j \in x_k: \ j \notin \F \right) \Big) - \kappa \ \abs{x_k}
-  \end{split}
+  \max_{S \in \mathbb{Z}^n} W(S) = \max_{S \in \mathbb{Z}^n} \sum^n_{i = 0} m_i \ \Pi_i(S).
+\end{equation}
+
+The first order condition\footnote{The function $W(S)$ is concave, hence the maximum over $\mathbb{Z}^n$ is one of the vertices of the cube containing the maximum over $\Re^n$.} with respect to the number of suppliers of a layer $j$ yields
+
+\begin{equation}
+  \underbrace{\sum_{i > j} m_i \ \pi_i \ \frac{\partial p_i}{\partial S_j}}_{\text{downstream externality}} + m_j  \underbrace{\left( \pi_j \frac{\partial p_j}{\partial S_j} - \kappa\right)}_{\text{firm's optimization}} = 0.
+\end{equation}
+
+In the model there is no upstream spillover ($\partial p_i / \partial S_j = 0$ if $i < j$), hence we can recursively write
+
+\begin{equation}
+  \frac{\partial p_i}{\partial S_j} = S_i \ \frac{p_i(S)}{1 - p_{i-1}(S)} \ \frac{\partial p_{i-1}}{\partial S_j}
+\end{equation}
+
+with base case $i = j$
+
+\begin{equation}
+  \frac{\partial p_j}{\partial S_j} = -(1 - \mu_j) \ \Big( 1 - p_{j-1}(S) \Big)^{S_i} \ \ln\Big(1 - p_{j-1}(S)\Big).
 \end{equation}
 
 % --- Bibliography
 \newpage
 \nocite{*}
 \printbibliography
+
 
 \end{document}
