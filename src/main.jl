@@ -4,6 +4,7 @@ using Graphs
 using StatsBase
 using Combinatorics
 using IterTools
+using Random
 
 # Plotting
 using Plots, GraphPlot
@@ -11,37 +12,36 @@ using Plots, GraphPlot
 default(size = 500 .* (√2, 1))
 theme(:dao)
 
-# Random
-using Random
 
-# Subfiles
+# Utilities
 include("utils.jl")
+
+# Agents
 include("definitions.jl")
 include("step.jl")
 
+# Plotting
 include("plots.jl")
 
-m = [3, 3, 3] # Market sizes
-μ = 0.05 * ones(sum(m)) # Idyosincratic risk    
-θ = [ones(2^mᵢ) ./ 2^mᵢ for mᵢ ∈ m[2:end]] # Uniform priors
-Fₛ = [
-    nthproductmatrix([0, 1], mᵢ) for mᵢ ∈ m[2:end]
-]
+m = [10, 5, 5, 5] # Market sizes
+μ = 0.01 * ones(sum(m)) # Idyosincratic risk    
 
-p, k = 10., 1.
+θ = [ ones(2^mᵢ) ./ 2^mᵢ for mᵢ ∈ m[1:end-1] ] # Uniform priors
+Fₛ = [ nthproductmatrix([0, 1], mᵢ) for mᵢ ∈ m[1:end - 1] ]
+payoff = ones(sum(m))
 
 function verticaleconomy(
-    m::Vector{Int64}, μ::Vector{Float64};
-    seed = 1212
+    m::Vector{Int64}, μ::Vector{Float64}, payoff::Vector{Float64},
+    θ::Vector{Vector{Float64}}, Fₛ::Vector{Matrix{Int64}};
+    k = 1, seed = 1212
 )
 
     rng = Random.MersenneTwister(seed)
     goods = partitiongoods(m)
 
     properties = Dict(
-        :goods => goods,
-        :Fₛ => Fₛ, # State space
-        :rng => rng
+        :goods => goods, :Fₛ => Fₛ, # State space
+        :t => 1, :rng => rng
     )
 
     model = ABM(Firm; properties = properties)
@@ -53,7 +53,7 @@ function verticaleconomy(
         x₀ = isbasal ? Int64[] : repeat([true], m[g - 1])
 
         for i ∈ good
-            firm = Firm(i, θ₀, μ[i], true, x₀, p, k)
+            firm = Firm(i, θ₀, μ[i], true, x₀, payoff[i], k, 0.)
             add_agent!(firm, model) 
         end
 
@@ -63,23 +63,11 @@ function verticaleconomy(
 
 end
 
-model = verticaleconomy(m, μ)
+model = verticaleconomy(m, μ, payoff, θ, Fₛ)
 
-T = 1_000
+T = 250
 
-data, _ = run!(model, dummystep, model_step!, T; adata = [:isfunctional, :x, :θ])
-
-
-if false
-
-
-    function plott(t)
-
-        tindex = data.step .== t
-        functional = data[tindex, :isfunctional]
-        x = data[tindex, :x]
-        plotgraph(partitiongoods(m), functional, x)
-
-    end
-end
-
+data, _ = run!(
+    model, dummystep, model_step!, T; 
+    adata = [:isfunctional, :x, :θ]
+)
