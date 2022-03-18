@@ -10,6 +10,12 @@ using NLsolve
 # ╔═╡ da55360e-d48a-4975-aa6e-ebf5c69b3b96
 using Plots, LaTeXStrings
 
+# ╔═╡ d1e1c127-e3c9-4710-9eed-b7bbbe2d7259
+using Roots
+
+# ╔═╡ f38760df-3d3d-45c1-ba05-c1627978ed09
+using PlutoUI
+
 # ╔═╡ d6007018-1870-41f5-8e93-51d79ad0bbe8
 begin
 	theme(:dao)
@@ -30,28 +36,53 @@ with base case $p_1 = 1 - \mu_1$
 
 # ╔═╡ 791a0287-5104-4e8f-917b-5c44e931b5d7
 begin
-	m = repeat([20], 40)
+	m = reverse([10 for i ∈ 1:3])
 	n = length(m)
 	μ = 0.01 .* ones(n)
 	π = 100. .* ones(n)
 	κ = 1.
 end
 
-# ╔═╡ 1a21b368-139b-4afd-91e2-c5e6c353b921
-function p(i, S)
-	indirect = i == 1 ? 1 : (1 - (1 - p(i - 1, S))^S[i])
-	
-	indirect * (1 - μ[i])
+# ╔═╡ ccce3b3f-4f44-4aa1-af10-213405ced5e8
+let
+	fig = plot(
+		m;
+		xlabel = "Layer", ylabel = latexstring("Size \$m\$"),
+		label = false, yguidefontcolor = :darkred, c = :darkred
+	)
+
+	plot!(twinx(fig),
+		μ; ylabel = L"\mu", label = false, c = :darkblue,
+		yguidefontcolor = :darkblue
+	)
 end
 
 # ╔═╡ ecb18ba7-4af0-48b6-bdde-af5b84af9ebe
-function ∂p(j, S)
-	pⱼ₋₁ = p(j - 1, S)
-	return -(1 - μ[j]) * (1 - pⱼ₋₁)^S[j] * log(1 - pⱼ₋₁)
+begin
+	function p(i::Int64, S::Vector{Float64}) # Social optimum
+		indirect = i == 1 ? 1 : (1 - (1 - p(i - 1, S))^S[i])
+		
+		indirect * (1 - μ[i])
+	end
+
+	S(p, r) = (log(r) - log(p)) / log(1 - p)
+	function p(i::Int64, pᵢ₋₁::Float64) # Firm optimum
+		r = κ / ((1 - μ[i]) * π[i])
+		
+		return (1 - μ[i]) * (1 - (1 - pᵢ₋₁)^S(pᵢ₋₁, r))
+	end
+		
+	function ∂p(j, S)
+		pⱼ₋₁ = p(j - 1, S)
+		return -(1 - μ[j]) * (1 - pⱼ₋₁)^S[j] * log(1 - pⱼ₋₁)
+	end
+
 end
 
 # ╔═╡ 647e47be-6214-4dbe-8330-d4915cec4010
 function D(i, j, S)
+	if i == j return 1. end
+	
 	prod(
 		-(1 - μ[i - k]) * S[i - k] 
 		* (1 - p(i - k - 1, S))^(S[i - k] - 1)
@@ -60,80 +91,136 @@ function D(i, j, S)
 end
 
 # ╔═╡ 8a9a311f-f3c7-401c-9acf-5606ece78ab0
-function foc!(F, S′)
-	@assert length(S′) == length(μ) - 1
-	S = vcat([0], S′) # The suppliers of the first firm are irrelevant
+begin
+	foc(S) = foc!(Vector{Float64}(undef, length(S)), S)
+	function foc!(F, X)
+		@assert length(X) == length(μ) - 1
+		S = [1, X...] # The suppliers of the first firm are irrelevant
+		
+		n = length(X)
 	
-	n = length(S′)
-
-	for idx ∈ 1:n
-		j = idx + 1
-		
-		downstream = 0.
-		for i ∈ (j + 1):n
-			downstream += D(i, j, S) * (m[i] * π[i]) / (m[j] * π[j])
-	 	end
-
-		F[idx] = (downstream + 1) * ∂p(j, S) - (κ / π[j])
-		
+		for idx ∈ 1:n
+			j = idx + 1
+			
+			downstream = 0.
+			for i ∈ (j + 1):n
+				println(i)
+				r = (m[i] * π[i]) / (m[j] * π[j])
+				downstream += D(i, j, S) * r
+		 	end
+	
+			F[idx] = (downstream + 1) * ∂p(j, S) - (κ / π[j])
+			
+		end
+	
+		return F
+			
 	end
-
-	return F
-		
 end
 
-# ╔═╡ ded4d970-eda6-4380-8802-0e7e64d8c49f
-foc(S) = foc!(Vector{Float64}(undef, length(S)), S)
-
 # ╔═╡ 5c3d0a80-9cf8-443a-b703-2aba53d8b5b2
-res = nlsolve(foc, ones(n - 1))
-
-# ╔═╡ 47242bd8-8ead-4fbc-8bab-eb1c84baa7e0
-Sₛ = max.(res.zero, 0)
+begin
+	res = nlsolve(foc, ones(n - 1)); @assert res.f_converged
+	Sₛ = res.zero
+end
 
 # ╔═╡ 033bbaa5-a446-40dd-a3ec-609fbf6b5e99
 md"# Firm problem"
 
-# ╔═╡ 65933bcc-eb47-4530-abac-6b3606b0f702
-S(p, r) = (log(r) - log(p)) / log(1 - p)
-
-# ╔═╡ 900790f4-1364-48fb-b6f4-e61c50ae6d24
-function p′(p, μ, π, κ; theo = false)
-	Ŝ = max(S(p, κ / ((1 - μ) * π)), 0)
-	Sᵢ = theo ? Ŝ : ceil(Int64, Ŝ)
-	
-	return (1 - μ) * (1 - (1 - p)^Sᵢ)
-end
-
 # ╔═╡ 5586da29-a745-4c34-874c-bf302a61c4bd
-function sequence(L::Int64, π, μ; params...)
-	p = Vector{Float64}(undef, L)
-	sup = zeros(Float64, L)
-	p[1] = 1 - μ[1]
+function sequence(L::Int64)
+	probabilities = Vector{Float64}(undef, L)
+	suppliers = zeros(Float64, L)
+	probabilities[1] = 1 - μ[1]
 
 	for j ∈ 2:L
-		p[j] = p′(p[j - 1], μ[j], π[j], κ; params...)
-		Ŝ = S(p[j], κ / (π[j] * (1 - μ[j])))
+		r = κ / (π[j] * (1 - μ[j]))
 
-		sup[j] = Ŝ
+		probabilities[j] = p(j, probabilities[j - 1])
+		suppliers[j] = S(probabilities[j - 1], r)
 	end
 
-	return p, sup
+	return probabilities, suppliers
 end
 
 # ╔═╡ 63e0b221-491e-4834-b83d-992e16c011f4
-_, Sₖ = sequence(n, π, μ)
+_, Sₖ = sequence(n)
 
 # ╔═╡ 47a721ac-0e91-4573-a994-b20d1ac656b4
 md"## Comparison"
 
 # ╔═╡ cbd2a3ad-c745-4940-a7c0-0aa71a8dfd46
 begin
-	plot(xlabel = "Layer", ylabel = L"S_i", xticks = 2:n)
+	plot(xlabel = "Layer", ylabel = L"S_i", xticks = (1:(n-1), 2:n))
 	
 	plot!(Sₛ; marker = :o, label = "Social planner")
 	plot!(Sₖ[2:n]; marker = :o, label = "Firm problem")
 end
+
+# ╔═╡ cb5a1108-a96e-40be-9f14-8501c677543f
+
+
+# ╔═╡ 38566a14-63e1-4c88-8b63-491e54a2d6a8
+md"
+## Externality size for $2\times 2$ case
+"
+
+# ╔═╡ 22f308d6-9b59-44a0-8d0e-5bb1233e97c2
+function externality(j, S)
+	Sₚ = [1., S...]
+	downstream = 0.
+	for i ∈ (j + 1):n
+		downstream += D(i, j, Sₚ) * (m[i] * π[i]) / (m[j] * π[j])
+	end
+
+	return downstream
+end
+
+# ╔═╡ dacd256b-d32b-4f12-9537-07e6c76bf20e
+begin
+	e(S₂, S₃) = ((m[3] * π[3]) / (m[2] * π[2])) * D(3, 2, [1., S₂, S₃])
+
+	∂p₂(S₂, S₃) = ∂p(2, [1., S₂, S₃])
+	∂p₃(S₂, S₃) = ∂p(3, [1., S₂, S₃])
+
+	Sspace = range(1., 3., length = 100)	
+end
+
+# ╔═╡ 276b5271-4a1f-4589-b1e7-6e4f0f6b99c0
+∂p(2, [1, Sₛ[1], Sₛ[2]]) * (e(Sₛ[1], Sₛ[2]) + 1) - κ / π[2]
+
+# ╔═╡ 7848cd96-774e-46d6-9939-e7bada5b1d07
+begin
+
+	S₃ = Sₛ[end]
+
+	function rhs(S₂)
+		∂p₂(S₂, S₃)
+	end
+
+	function lhs(S₂)
+		return κ / (π[2] * (1 + e(S₂, S₃)))
+	end
+
+end
+
+# ╔═╡ 1bb0c085-3f3d-4a2d-8ae8-4b2742852ae2
+begin
+	focfig = plot(Sspace, rhs)
+
+	plot!(focfig, Sspace, lhs)
+	hline!(focfig, [κ / π[2]])
+	
+end
+
+# ╔═╡ 008fda3b-ae0c-4a0c-be3f-3d6cf7325048
+s = find_zero(x -> lhs(x) - rhs(x), [1, 2])
+
+# ╔═╡ c463de59-6fe4-4610-8317-2e165dec37e8
+
+
+# ╔═╡ 2888530d-04a5-4531-a1b8-9ed63998c071
+contourf(Sspace, Sspace, e; xlabel = L"S_2", ylabel = L"S_3")
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -141,16 +228,26 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 NLsolve = "2774e3e8-f4cf-5e23-947b-6d7e65073b56"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+Roots = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
 
 [compat]
 LaTeXStrings = "~1.3.0"
 NLsolve = "~4.5.1"
 Plots = "~1.27.0"
+PlutoUI = "~0.7.37"
+Roots = "~1.3.15"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
+
+[[AbstractPlutoDingetjes]]
+deps = ["Pkg"]
+git-tree-sha1 = "8eaf9f1b4921132a4cff3f36a1d9ba923b14a481"
+uuid = "6e696c72-6542-2067-7265-42206c756150"
+version = "1.1.4"
 
 [[Adapt]]
 deps = ["LinearAlgebra"]
@@ -215,6 +312,11 @@ git-tree-sha1 = "417b0ed7b8b838aa6ca0a87aadf1bb9eb111ce40"
 uuid = "5ae59095-9a9b-59fe-a467-6f913c188581"
 version = "0.12.8"
 
+[[CommonSolve]]
+git-tree-sha1 = "68a0743f578349ada8bc911a5cbd5a2ef6ed6d1f"
+uuid = "38540f10-b2f7-11e9-35d8-d573e4eb0ff2"
+version = "0.2.0"
+
 [[CommonSubexpressions]]
 deps = ["MacroTools", "Test"]
 git-tree-sha1 = "7b8a93dba8af7e3b42fecabf646260105ac373f7"
@@ -230,6 +332,12 @@ version = "3.42.0"
 [[CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
+
+[[ConstructionBase]]
+deps = ["LinearAlgebra"]
+git-tree-sha1 = "f74e9d5388b8620b4cee35d4c5a618dd4dc547f4"
+uuid = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
+version = "1.3.0"
 
 [[Contour]]
 deps = ["StaticArrays"]
@@ -359,6 +467,10 @@ git-tree-sha1 = "aa31987c2ba8704e23c6c8ba8a4f769d5d7e4f91"
 uuid = "559328eb-81f9-559d-9380-de523a88c83c"
 version = "1.0.10+0"
 
+[[Future]]
+deps = ["Random"]
+uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
+
 [[GLFW_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libglvnd_jll", "Pkg", "Xorg_libXcursor_jll", "Xorg_libXi_jll", "Xorg_libXinerama_jll", "Xorg_libXrandr_jll"]
 git-tree-sha1 = "51d2dfe8e590fbd74e7a842cf6d13d8a2f45dc01"
@@ -417,6 +529,23 @@ deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll",
 git-tree-sha1 = "129acf094d168394e80ee1dc4bc06ec835e510a3"
 uuid = "2e76f6c2-a576-52d4-95c1-20adfe4de566"
 version = "2.8.1+1"
+
+[[Hyperscript]]
+deps = ["Test"]
+git-tree-sha1 = "8d511d5b81240fc8e6802386302675bdf47737b9"
+uuid = "47d2ed2b-36de-50cf-bf87-49c2cf4b8b91"
+version = "0.0.4"
+
+[[HypertextLiteral]]
+git-tree-sha1 = "2b078b5a615c6c0396c77810d92ee8c6f470d238"
+uuid = "ac1192a8-f4b3-4bfe-ba22-af5b92cd3ab2"
+version = "0.9.3"
+
+[[IOCapture]]
+deps = ["Logging", "Random"]
+git-tree-sha1 = "f7be53659ab06ddc986428d3a9dcc95f6fa6705a"
+uuid = "b5f81e59-6552-4d32-b1f0-c071b021bf89"
+version = "0.2.2"
 
 [[IfElse]]
 git-tree-sha1 = "debdd00ffef04665ccbb3e150747a77560e8fad1"
@@ -722,6 +851,12 @@ git-tree-sha1 = "9213b4c18b57b7020ee20f33a4ba49eb7bef85e0"
 uuid = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 version = "1.27.0"
 
+[[PlutoUI]]
+deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "Markdown", "Random", "Reexport", "UUIDs"]
+git-tree-sha1 = "bf0a1121af131d9974241ba53f601211e9303a9e"
+uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+version = "0.7.37"
+
 [[Preferences]]
 deps = ["TOML"]
 git-tree-sha1 = "d3538e7f8a790dc8903519090857ef8e1283eecd"
@@ -774,6 +909,12 @@ git-tree-sha1 = "838a3a4188e2ded87a4f9f184b4b0d78a1e91cb7"
 uuid = "ae029012-a4dd-5104-9daa-d747884805df"
 version = "1.3.0"
 
+[[Roots]]
+deps = ["CommonSolve", "Printf", "Setfield"]
+git-tree-sha1 = "554149b8b82e167c1fa79df99aeabed4f8404119"
+uuid = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
+version = "1.3.15"
+
 [[SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 
@@ -785,6 +926,12 @@ version = "1.1.0"
 
 [[Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
+
+[[Setfield]]
+deps = ["ConstructionBase", "Future", "MacroTools", "Requires"]
+git-tree-sha1 = "38d88503f695eb0301479bc9b0d4320b378bafe5"
+uuid = "efcf1570-3423-57d1-acb7-fd33fddbac46"
+version = "0.8.2"
 
 [[SharedArrays]]
 deps = ["Distributed", "Mmap", "Random", "Serialization"]
@@ -1115,22 +1262,30 @@ version = "0.9.1+5"
 # ╔═╡ Cell order:
 # ╠═748342b8-0eb7-46ac-add9-226bb87039da
 # ╠═da55360e-d48a-4975-aa6e-ebf5c69b3b96
+# ╠═d1e1c127-e3c9-4710-9eed-b7bbbe2d7259
+# ╠═f38760df-3d3d-45c1-ba05-c1627978ed09
 # ╠═d6007018-1870-41f5-8e93-51d79ad0bbe8
 # ╟─ab25850a-a45d-11ec-0282-814dddef4077
 # ╠═791a0287-5104-4e8f-917b-5c44e931b5d7
-# ╠═1a21b368-139b-4afd-91e2-c5e6c353b921
+# ╟─ccce3b3f-4f44-4aa1-af10-213405ced5e8
 # ╠═ecb18ba7-4af0-48b6-bdde-af5b84af9ebe
 # ╠═647e47be-6214-4dbe-8330-d4915cec4010
 # ╠═8a9a311f-f3c7-401c-9acf-5606ece78ab0
-# ╠═ded4d970-eda6-4380-8802-0e7e64d8c49f
 # ╠═5c3d0a80-9cf8-443a-b703-2aba53d8b5b2
-# ╠═47242bd8-8ead-4fbc-8bab-eb1c84baa7e0
+# ╠═276b5271-4a1f-4589-b1e7-6e4f0f6b99c0
 # ╟─033bbaa5-a446-40dd-a3ec-609fbf6b5e99
-# ╠═65933bcc-eb47-4530-abac-6b3606b0f702
-# ╠═900790f4-1364-48fb-b6f4-e61c50ae6d24
 # ╠═5586da29-a745-4c34-874c-bf302a61c4bd
 # ╠═63e0b221-491e-4834-b83d-992e16c011f4
 # ╟─47a721ac-0e91-4573-a994-b20d1ac656b4
 # ╠═cbd2a3ad-c745-4940-a7c0-0aa71a8dfd46
+# ╠═cb5a1108-a96e-40be-9f14-8501c677543f
+# ╟─38566a14-63e1-4c88-8b63-491e54a2d6a8
+# ╠═22f308d6-9b59-44a0-8d0e-5bb1233e97c2
+# ╠═dacd256b-d32b-4f12-9537-07e6c76bf20e
+# ╠═7848cd96-774e-46d6-9939-e7bada5b1d07
+# ╠═1bb0c085-3f3d-4a2d-8ae8-4b2742852ae2
+# ╠═008fda3b-ae0c-4a0c-be3f-3d6cf7325048
+# ╠═c463de59-6fe4-4610-8317-2e165dec37e8
+# ╠═2888530d-04a5-4531-a1b8-9ed63998c071
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

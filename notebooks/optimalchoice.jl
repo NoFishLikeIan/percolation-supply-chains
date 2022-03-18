@@ -24,6 +24,7 @@ begin
 	using Distributions
 	using StatsBase
 	using Statistics
+	using Roots
 
 	
 end
@@ -129,6 +130,93 @@ end
 # ╔═╡ 1cebf3fb-93ec-4c3f-b678-35f3a4edc2db
 savefig(pfig, joinpath(plotpath, "pplot.pdf"))
 
+# ╔═╡ 7fcba4c6-12c8-4c4f-a866-e3273d0dec23
+begin
+	function plotevolution(xs, fn::Function, args...; kwargs...)
+		figure = plot(); plotevolution!(figure, xs, fn, args...; kwargs...)
+	end
+	function plotevolution!(fig, xs, fn::Function, args...; kwargs...)
+		xlims = extrema(xs)
+				
+		plot!(
+			fig, xs, fn, 
+			aspect_ratio = 1, xlims = xlims, ylims = xlims, 
+			args...; kwargs...
+		)
+		
+		plot!(fig, xs, x -> x, linestyle = :dash, c = :black, label = nothing)
+		
+		try 
+			roots = find_zeros(x -> fn(x) - x, xlims...)
+			colors = [abs(∂(fn, x₀)) < 1 ? :green : :red for x₀ ∈ roots]
+			scatter!(fig, roots, fn.(roots), label = nothing, c = colors)
+		catch end
+		
+	end
+
+	# Cobweb plot
+	"""
+	Overlay the cobweb dynamics on function plot
+	"""
+	function cobwebplot(xs, fn::Function, x₀, T::Int, args...; kwargs...)
+		figure = plot()
+		cobwebplot!(figure, xs, fn, x₀, T, args...; kwargs...)
+		return figure
+	end
+	function cobwebplot!(figure, xs, fn::Function, x₀, T::Int, args...; kwargs...)
+		
+		plotevolution!(figure, xs, fn;
+			label = get(kwargs, :label, L"f_a(x)"),
+			kwargs...
+		)
+		
+		x, y = x₀, fn(x₀)
+		scatter!([x], [y], label = nothing, color = :black)
+		for t in 2:T
+			plot!(figure, [x, y], [y, y], 
+				color = :black, label = nothing)
+			plot!(figure, [y, y], [y, fn(y)], 
+				color = :black, label = nothing)
+			x, y = y, fn(y)
+		end
+	end
+end
+
+
+# ╔═╡ 79d07774-a8c9-400d-8242-2444b7f4fc22
+md"
+
+- ``p_0`` $(@bind p₀ Slider(0:0.01:1; default=0.5, show_value=true))
+- ``\mu`` $(@bind μₛ Slider(0:0.01:1; default=0.5, show_value=true))
+- ``\kappa / \pi`` $(@bind rₛ Slider(0:0.01:1; default=0.01, show_value=true))
+
+"
+
+# ╔═╡ 893c6784-f117-4ba9-8e05-cf03dd1abc38
+begin
+	g(p) = p′(p, μₛ, inv(rₛ), 1.; theo = false)
+
+	function g²(x)
+		try
+			(g ∘ g)(x)
+		catch
+			NaN
+		end
+	end
+
+	cobfig = cobwebplot(M, g², p₀, 20; 
+		xlabel = L"p_{i - 1}", ylabel = L"p_i", label = nothing)
+
+	roots = find_zeros(x -> g²(x) - x, [0.01, 0.99])
+
+	for root ∈ roots
+		scatter!(cobfig, [root], [root], label = nothing, c = :green)
+	end
+
+	cobfig
+
+end
+
 # ╔═╡ 9576ff24-9849-4f97-a41a-bfec9049b0bb
 md"
 # Constant $\mu$ and $\pi$
@@ -163,7 +251,7 @@ begin
 	L = 20
 	π = 20
 
-	p, sup = sequence(L, π, μ)
+	p, sup = sequence(L, π, μ; theo = false)
 
 end
 
@@ -197,6 +285,7 @@ Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+Roots = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 StatsPlots = "f3b207a7-027a-5e70-b257-86293d7955fd"
@@ -206,6 +295,7 @@ Distributions = "~0.25.49"
 LaTeXStrings = "~1.3.0"
 Plots = "~1.26.0"
 PlutoUI = "~0.7.35"
+Roots = "~1.3.15"
 StatsBase = "~0.33.16"
 StatsPlots = "~0.14.33"
 """
@@ -307,6 +397,11 @@ git-tree-sha1 = "417b0ed7b8b838aa6ca0a87aadf1bb9eb111ce40"
 uuid = "5ae59095-9a9b-59fe-a467-6f913c188581"
 version = "0.12.8"
 
+[[CommonSolve]]
+git-tree-sha1 = "68a0743f578349ada8bc911a5cbd5a2ef6ed6d1f"
+uuid = "38540f10-b2f7-11e9-35d8-d573e4eb0ff2"
+version = "0.2.0"
+
 [[Compat]]
 deps = ["Base64", "Dates", "DelimitedFiles", "Distributed", "InteractiveUtils", "LibGit2", "Libdl", "LinearAlgebra", "Markdown", "Mmap", "Pkg", "Printf", "REPL", "Random", "SHA", "Serialization", "SharedArrays", "Sockets", "SparseArrays", "Statistics", "Test", "UUIDs", "Unicode"]
 git-tree-sha1 = "44c37b4636bc54afac5c574d2d02b625349d6582"
@@ -316,6 +411,12 @@ version = "3.41.0"
 [[CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
+
+[[ConstructionBase]]
+deps = ["LinearAlgebra"]
+git-tree-sha1 = "f74e9d5388b8620b4cee35d4c5a618dd4dc547f4"
+uuid = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
+version = "1.3.0"
 
 [[Contour]]
 deps = ["StaticArrays"]
@@ -456,6 +557,10 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "aa31987c2ba8704e23c6c8ba8a4f769d5d7e4f91"
 uuid = "559328eb-81f9-559d-9380-de523a88c83c"
 version = "1.0.10+0"
+
+[[Future]]
+deps = ["Random"]
+uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
 
 [[GLFW_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libglvnd_jll", "Pkg", "Xorg_libXcursor_jll", "Xorg_libXi_jll", "Xorg_libXinerama_jll", "Xorg_libXrandr_jll"]
@@ -951,6 +1056,12 @@ git-tree-sha1 = "68db32dff12bb6127bac73c209881191bf0efbb7"
 uuid = "f50d1b31-88e8-58de-be2c-1cc44531875f"
 version = "0.3.0+0"
 
+[[Roots]]
+deps = ["CommonSolve", "Printf", "Setfield"]
+git-tree-sha1 = "554149b8b82e167c1fa79df99aeabed4f8404119"
+uuid = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
+version = "1.3.15"
+
 [[SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 
@@ -968,6 +1079,12 @@ version = "1.3.12"
 
 [[Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
+
+[[Setfield]]
+deps = ["ConstructionBase", "Future", "MacroTools", "Requires"]
+git-tree-sha1 = "38d88503f695eb0301479bc9b0d4320b378bafe5"
+uuid = "efcf1570-3423-57d1-acb7-fd33fddbac46"
+version = "0.8.2"
 
 [[SharedArrays]]
 deps = ["Distributed", "Mmap", "Random", "Serialization"]
@@ -1327,8 +1444,11 @@ version = "0.9.1+5"
 # ╠═afc59701-b84f-4a99-9c8a-40854c03ecec
 # ╠═58171ae6-a41c-4f79-9d47-d5fa61914448
 # ╠═98f995ce-a4f4-46f8-907c-58f2d3452b04
-# ╟─442cb752-abfa-424a-bfd5-6916869227af
+# ╠═442cb752-abfa-424a-bfd5-6916869227af
 # ╠═1cebf3fb-93ec-4c3f-b678-35f3a4edc2db
+# ╠═7fcba4c6-12c8-4c4f-a866-e3273d0dec23
+# ╟─79d07774-a8c9-400d-8242-2444b7f4fc22
+# ╠═893c6784-f117-4ba9-8e05-cf03dd1abc38
 # ╟─9576ff24-9849-4f97-a41a-bfec9049b0bb
 # ╠═2ae16984-5fe7-4f9c-ba7a-f739c75e34b6
 # ╟─95ca4619-5ccf-401d-8ae3-5d14d7258674
