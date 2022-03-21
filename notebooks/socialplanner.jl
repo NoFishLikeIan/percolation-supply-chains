@@ -16,211 +16,159 @@ using Roots
 # ╔═╡ f38760df-3d3d-45c1-ba05-c1627978ed09
 using PlutoUI
 
+# ╔═╡ 4431ec1d-1a58-4dda-a9d3-00252b70bdca
+begin
+	include("../theory/definitions.jl")
+	include("../theory/optimum/agent.jl")
+	include("../theory/optimum/planner.jl")
+end
+
 # ╔═╡ d6007018-1870-41f5-8e93-51d79ad0bbe8
 begin
 	theme(:dao)
 	default(size = 500 .* (√2, 1))
 end
 
+# ╔═╡ 02595afe-9234-4517-b45b-6dccd8ebb776
+plotpath = "../docs/plots/"
+
 # ╔═╡ ab25850a-a45d-11ec-0282-814dddef4077
 md"
 # Social planner problem
-
-The functional probability can be written recursively as
-
-$p_i(S) = (1 - \mu_i) \ \Bigg(1 - \Big(1 - p_{i-1}(S)\Big)^{S_i}\Bigg)$
-
-with base case $p_1 = 1 - \mu_1$
-
 "
 
 # ╔═╡ 791a0287-5104-4e8f-917b-5c44e931b5d7
 begin
-	m = reverse([10 for i ∈ 1:3])
-	n = length(m)
-	μ = 0.01 .* ones(n)
-	π = 100. .* ones(n)
-	κ = 1.
-end
-
-# ╔═╡ ccce3b3f-4f44-4aa1-af10-213405ced5e8
-let
-	fig = plot(
-		m;
-		xlabel = "Layer", ylabel = latexstring("Size \$m\$"),
-		label = false, yguidefontcolor = :darkred, c = :darkred
+	n = 6
+	
+	model = VerticalModel(
+	    repeat([40], n),
+	    0.01 .* ones(n),
+	    100. .* ones(n),
+	    1.
 	)
 
-	plot!(twinx(fig),
-		μ; ylabel = L"\mu", label = false, c = :darkblue,
-		yguidefontcolor = :darkblue
-	)
-end
-
-# ╔═╡ ecb18ba7-4af0-48b6-bdde-af5b84af9ebe
-begin
-	function p(i::Int64, S::Vector{Float64}) # Social optimum
-		indirect = i == 1 ? 1 : (1 - (1 - p(i - 1, S))^S[i])
-		
-		indirect * (1 - μ[i])
-	end
-
-	S(p, r) = (log(r) - log(p)) / log(1 - p)
-	function p(i::Int64, pᵢ₋₁::Float64) # Firm optimum
-		r = κ / ((1 - μ[i]) * π[i])
-		
-		return (1 - μ[i]) * (1 - (1 - pᵢ₋₁)^S(pᵢ₋₁, r))
-	end
-		
-	function ∂p(j, S)
-		pⱼ₋₁ = p(j - 1, S)
-		return -(1 - μ[j]) * (1 - pⱼ₋₁)^S[j] * log(1 - pⱼ₋₁)
-	end
-
-end
-
-# ╔═╡ 647e47be-6214-4dbe-8330-d4915cec4010
-function D(i, j, S)
-	if i == j return 1. end
-	
-	prod(
-		-(1 - μ[i - k]) * S[i - k] 
-		* (1 - p(i - k - 1, S))^(S[i - k] - 1)
-		for k ∈ 0:(i - j - 1)
-	)
-end
-
-# ╔═╡ 8a9a311f-f3c7-401c-9acf-5606ece78ab0
-begin
-	foc(S) = foc!(Vector{Float64}(undef, length(S)), S)
-	function foc!(F, X)
-		@assert length(X) == length(μ) - 1
-		S = [1, X...] # The suppliers of the first firm are irrelevant
-		
-		n = length(X)
-	
-		for idx ∈ 1:n
-			j = idx + 1
-			
-			downstream = 0.
-			for i ∈ (j + 1):n
-				println(i)
-				r = (m[i] * π[i]) / (m[j] * π[j])
-				downstream += D(i, j, S) * r
-		 	end
-	
-			F[idx] = (downstream + 1) * ∂p(j, S) - (κ / π[j])
-			
-		end
-	
-		return F
-			
-	end
+	foc! = focfactory(model)
 end
 
 # ╔═╡ 5c3d0a80-9cf8-443a-b703-2aba53d8b5b2
 begin
-	res = nlsolve(foc, ones(n - 1)); @assert res.f_converged
+	res = nlsolve(foc!, ones(n - 1)); @assert res.f_converged
 	Sₛ = res.zero
 end
 
 # ╔═╡ 033bbaa5-a446-40dd-a3ec-609fbf6b5e99
 md"# Firm problem"
 
-# ╔═╡ 5586da29-a745-4c34-874c-bf302a61c4bd
-function sequence(L::Int64)
-	probabilities = Vector{Float64}(undef, L)
-	suppliers = zeros(Float64, L)
-	probabilities[1] = 1 - μ[1]
-
-	for j ∈ 2:L
-		r = κ / (π[j] * (1 - μ[j]))
-
-		probabilities[j] = p(j, probabilities[j - 1])
-		suppliers[j] = S(probabilities[j - 1], r)
-	end
-
-	return probabilities, suppliers
-end
-
 # ╔═╡ 63e0b221-491e-4834-b83d-992e16c011f4
-_, Sₖ = sequence(n)
+pagent, Sₐ = sequence(n; m = model)
 
 # ╔═╡ 47a721ac-0e91-4573-a994-b20d1ac656b4
 md"## Comparison"
 
 # ╔═╡ cbd2a3ad-c745-4940-a7c0-0aa71a8dfd46
 begin
-	plot(xlabel = "Layer", ylabel = L"S_i", xticks = (1:(n-1), 2:n))
+	compfig = plot(
+	    xlabel = "Layer", ylabel = L"S_i",
+	    xticks = 2:n
+	)
 	
-	plot!(Sₛ; marker = :o, label = "Social planner")
-	plot!(Sₖ[2:n]; marker = :o, label = "Firm problem")
+	plot!(compfig, 2:n, Sₛ; 
+		c = :darkred,
+	    marker = :o, label = "Social planner")
+	
+	plot!(compfig, 2:n, Sₐ[2:n]; 
+		c = :darkgreen,
+	    marker = :o, label = "Firm problem")
 end
 
-# ╔═╡ cb5a1108-a96e-40be-9f14-8501c677543f
-
+# ╔═╡ 8a4ab79e-49f7-45cc-aa92-9ed98cb80743
+savefig(compfig, joinpath(plotpath, "vert_comp.pdf"))
 
 # ╔═╡ 38566a14-63e1-4c88-8b63-491e54a2d6a8
 md"
 ## Externality size for $2\times 2$ case
 "
 
-# ╔═╡ 22f308d6-9b59-44a0-8d0e-5bb1233e97c2
-function externality(j, S)
-	Sₚ = [1., S...]
-	downstream = 0.
-	for i ∈ (j + 1):n
-		downstream += D(i, j, Sₚ) * (m[i] * π[i]) / (m[j] * π[j])
-	end
-
-	return downstream
-end
-
 # ╔═╡ dacd256b-d32b-4f12-9537-07e6c76bf20e
 begin
-	e(S₂, S₃) = ((m[3] * π[3]) / (m[2] * π[2])) * D(3, 2, [1., S₂, S₃])
-
-	∂p₂(S₂, S₃) = ∂p(2, [1., S₂, S₃])
-	∂p₃(S₂, S₃) = ∂p(3, [1., S₂, S₃])
-
-	Sspace = range(1., 3., length = 100)	
+	base_node = 2
+	
+	function Sbase(s)
+		Scopy = [1., Sₛ...]
+		Scopy[base_node] = s
+			
+		return Scopy
+	end
+	
+	∂pbase(s) = ∂p(base_node, base_node, Sbase(s); m = model)
+	
+	function effective_profits(s)
+		
+	    ext = sum(
+	        E(i, base_node, Sbase(s); m = model) * (
+				model.m[i] * model.profits[i]) / (
+				model.m[base_node] * model.profits[base_node]
+			)
+	        for i ∈ 1:n
+	    )
+	
+	    return model.κ / (model.profits[base_node] * (ext + 1))
+	end
 end
 
-# ╔═╡ 276b5271-4a1f-4589-b1e7-6e4f0f6b99c0
-∂p(2, [1, Sₛ[1], Sₛ[2]]) * (e(Sₛ[1], Sₛ[2]) + 1) - κ / π[2]
-
-# ╔═╡ 7848cd96-774e-46d6-9939-e7bada5b1d07
+# ╔═╡ 79ddeee7-f1ae-4750-b465-ef75c4a83da5
 begin
 
-	S₃ = Sₛ[end]
+	noext = model.κ / model.profits[base_node]
 
-	function rhs(S₂)
-		∂p₂(S₂, S₃)
-	end
+	cs = [:black, :darkred, :darkblue]
+	
+	sol_p = find_zero(s -> ∂pbase(s) - effective_profits(s), [1., 10.])
+	sol_f = find_zero(s -> ∂pbase(s) - noext, [1., 10.])
+	
+	sspace = range(1., 2., length = 101)
 
-	function lhs(S₂)
-		return κ / (π[2] * (1 + e(S₂, S₃)))
-	end
+	focfig = plot(
+		xlims = extrema(sspace),
+		ylims = (0., 0.03),
+		xlabel = L"S_j"
+	)
+	
+	plot!(
+		focfig, sspace, ∂pbase; 
+		c = cs[1],
+		label = L"\frac{\partial p_j}{\partial S_j}"
+	)
+	
+	plot!(
+		sspace, effective_profits; 
+		c = cs[2], linestyle = :dash,
+		label = L"\frac{\kappa}{\pi_j (1 + e_j(S))}"
+	)
 
-end
+	plot!(focfig, [sol_p, sol_p], [0, ∂pbase(sol_p)], 
+		c = :black, linestyle = :dash, 
+		label = nothing)
+	scatter!(focfig, [sol_p], [∂pbase(sol_p)]; c = :black, 
+		label = nothing)
+	
+	hline!(
+		focfig, [noext]; 
+		c = cs[3], linestyle = :dash,
+		label = L"\frac{\kappa}{\pi_j }"
+	)
 
-# ╔═╡ 1bb0c085-3f3d-4a2d-8ae8-4b2742852ae2
-begin
-	focfig = plot(Sspace, rhs)
-
-	plot!(focfig, Sspace, lhs)
-	hline!(focfig, [κ / π[2]])
+	plot!(focfig, [sol_f, sol_f], [0, ∂pbase(sol_f)], 
+		c = :black, linestyle = :dash, 
+		label = nothing)
+	scatter!(focfig, [sol_f], [∂pbase(sol_f)]; c = :black, 
+		label = nothing)
 	
 end
 
-# ╔═╡ 008fda3b-ae0c-4a0c-be3f-3d6cf7325048
-s = find_zero(x -> lhs(x) - rhs(x), [1, 2])
-
-# ╔═╡ c463de59-6fe4-4610-8317-2e165dec37e8
-
-
-# ╔═╡ 2888530d-04a5-4531-a1b8-9ed63998c071
-contourf(Sspace, Sspace, e; xlabel = L"S_2", ylabel = L"S_3")
+# ╔═╡ a5d1a99c-34b5-441a-9468-a11cc16574d1
+savefig(focfig, joinpath(plotpath, "vert_foc.pdf"))
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1265,27 +1213,19 @@ version = "0.9.1+5"
 # ╠═d1e1c127-e3c9-4710-9eed-b7bbbe2d7259
 # ╠═f38760df-3d3d-45c1-ba05-c1627978ed09
 # ╠═d6007018-1870-41f5-8e93-51d79ad0bbe8
+# ╠═4431ec1d-1a58-4dda-a9d3-00252b70bdca
+# ╠═02595afe-9234-4517-b45b-6dccd8ebb776
 # ╟─ab25850a-a45d-11ec-0282-814dddef4077
 # ╠═791a0287-5104-4e8f-917b-5c44e931b5d7
-# ╟─ccce3b3f-4f44-4aa1-af10-213405ced5e8
-# ╠═ecb18ba7-4af0-48b6-bdde-af5b84af9ebe
-# ╠═647e47be-6214-4dbe-8330-d4915cec4010
-# ╠═8a9a311f-f3c7-401c-9acf-5606ece78ab0
 # ╠═5c3d0a80-9cf8-443a-b703-2aba53d8b5b2
-# ╠═276b5271-4a1f-4589-b1e7-6e4f0f6b99c0
 # ╟─033bbaa5-a446-40dd-a3ec-609fbf6b5e99
-# ╠═5586da29-a745-4c34-874c-bf302a61c4bd
 # ╠═63e0b221-491e-4834-b83d-992e16c011f4
 # ╟─47a721ac-0e91-4573-a994-b20d1ac656b4
 # ╠═cbd2a3ad-c745-4940-a7c0-0aa71a8dfd46
-# ╠═cb5a1108-a96e-40be-9f14-8501c677543f
+# ╠═8a4ab79e-49f7-45cc-aa92-9ed98cb80743
 # ╟─38566a14-63e1-4c88-8b63-491e54a2d6a8
-# ╠═22f308d6-9b59-44a0-8d0e-5bb1233e97c2
 # ╠═dacd256b-d32b-4f12-9537-07e6c76bf20e
-# ╠═7848cd96-774e-46d6-9939-e7bada5b1d07
-# ╠═1bb0c085-3f3d-4a2d-8ae8-4b2742852ae2
-# ╠═008fda3b-ae0c-4a0c-be3f-3d6cf7325048
-# ╠═c463de59-6fe4-4610-8317-2e165dec37e8
-# ╠═2888530d-04a5-4531-a1b8-9ed63998c071
+# ╠═79ddeee7-f1ae-4750-b465-ef75c4a83da5
+# ╠═a5d1a99c-34b5-441a-9468-a11cc16574d1
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
