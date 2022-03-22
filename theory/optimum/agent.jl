@@ -15,16 +15,20 @@ function Sr(i, pₛ; m::VerticalModel)
 
     f = S -> log(risk) * (risk)^S + ratio
 
-    return find_zero(f, [1., 10.])
+    if f(1.) * f(100.) < 0
+        return find_zero(f, [1., 10.])
+    else
+        return find_zero(f, 2.)
+    end
 end
 
 function p(i::Int64, pₛ::Float64; m::VerticalModel)
     if i == 1 return (1 - m.μ[i]) end
 
     Sᵢ = Sr(i, pₛ; m)
-    risk = (1 - pₛ)
+    supres = 1 - pₛ
 
-    return (1 - m.μ[i]) * (1 - risk)^Sᵢ
+    return (1 - m.μ[i]) * (1 - supres^Sᵢ)
 end
 
 function sequence(L::Int64; m::VerticalModel)
