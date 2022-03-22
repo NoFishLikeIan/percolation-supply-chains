@@ -190,6 +190,12 @@ The latter depends on the probability of the chosen suppliers being functional, 
   \P\Big( i \in \PF \Big) = \P\Big( \forall s \in \I(g): \ x_i^s \cap \F \neq \emptyset \Big).
 \end{equation}
 
+The risk associated with the choice of suppliers can be idiosyncratic or covariate. The former is guaranteed \textit{ex ante} when the supply chain structure presents no cycles. In this case, the supplier risk probability can be written as 
+
+\begin{equation}
+  \P\Big( i \in \PF \Big) = \prod_{s \in \I(g)} 1 - \P\Big( x^s_i \cap \F = \emptyset\Big).
+\end{equation}
+
 \subsection{Payoffs}
 
 Firm operate for an exogenous payoff $\pi_i$\footnote{This can be easily microfounded using an endogenous production network model, as in \citein{acemoglu_endogenous_2020}.} and pay a cost $\kappa$ of establishing relationships with a supplier. Hence, the expected payoff of the firm can be written as
@@ -198,7 +204,11 @@ Firm operate for an exogenous payoff $\pi_i$\footnote{This can be easily microfo
   \Pi(x_i) = \pi_i \ \P\Big( i \in \F \Big) - \kappa \sum_{s \in \I(g)} \abs{x^s_i}.
 \end{equation}
 
-\section{Vertical economy}
+\section{Upstream risk is idiosyncratic}
+
+We will now consider the cases in which the supply chain is a tree, hence the upstream risk is idiosyncratic \textit{ex ante}.
+
+\subsection{Vertical economy}
 
 Consider a vertical economy (Figure \ref{fig:vertical}) with $n$ goods
 
@@ -274,34 +284,55 @@ Consider the social planner problem of maximizing the total firms payoff. Lettin
   \max_{S \in \mathbb{Z}^n} W(S) = \max_{S \in \mathbb{Z}^n} \sum^n_{i = 0} m_i \ \Pi_i(S).
 \end{equation}
 
-The first order condition\footnote{The function $W(S)$ is concave, hence the maximum over $\mathbb{Z}^n$ is one of the vertices of the cube containing the maximum over $\Re^n$.} with respect to the number of suppliers of a layer $j$ yields
+We can compute the first order condition\footnote{The function $W(S)$ is concave, hence the maximum over $\mathbb{Z}^n$ is one of the vertices of the cube containing the maximum over $\Re^n$.} with respect to the number of suppliers of a layer $j$ using the fact that downstream firms' decision to not affect the risk of upstream firms, that is, $\frac{\partial p_i}{\partial S_j} = 0$ if $i < j$. This condition yields
 
 \begin{equation}
   \underbrace{\sum_{i > j} m_i \ \pi_i \ \frac{\partial p_i}{\partial S_j}}_{\text{downstream externality}} + m_j  \underbrace{\left( \pi_j \frac{\partial p_j}{\partial S_j} - \kappa\right)}_{\text{firm's optimization}} = 0.
 \end{equation}
 
-In the model there is no upstream spillover ($\partial p_i / \partial S_j = 0$ if $i < j$), hence we can recursively write
+We can see the role of the externality by writing the optimality condition as 
 
-\begin{equation}
-  \frac{\partial p_i}{\partial S_j} = \underbrace{\prod^{i - j - 1}_{k = 0} \Big[ -(1 - \mu_{i - k}) \ S_{i - k} \ (1 - p_{i - k - 1}(S))^{S_{i - k} - 1} \Big]}_{D_S(i, j)} \ \frac{\partial p_j(S)}{\partial S_j}
+\begin{equation} \label{eq:distortion}
+  \overbrace{\Bigg(\underbrace{\sum_{i> j} \frac{m_i\pi_i}{m_j\pi_j} \ E_{i, j}(S)}_{\text{downstream externality}} + \ 1 \Bigg)\ \frac{\partial p_j}{\partial S_j}(S)}^{\text{marginal benefit}} = \frac{\kappa}{\pi_j}
 \end{equation}
 
-with base case, $i = j$,
+with
 
 \begin{equation}
-  \frac{\partial p_j}{\partial S_j} = -(1 - \mu_j) \ \Big( 1 - p_{j-1}(S) \Big)^{S_i} \ \ln\Big(1 - p_{j-1}(S)\Big).
+  E_{i, j}(S) = S_i \ (1 - \mu_i) (1 - p_{i-1})^{-1 + S_i}\ E_{i - 1, j}(S).
 \end{equation}
 
-Hence we can write the first order condition as
+An increase in the number of suppliers of a firm has a strictly positive externality on downstream firms, $E_{i, j}(S) > 0$. Hence, the downstream externalities increases the marginal benefit curve, which yields a higher number of suppliers for each, but the last, layer, as opposed to the competitive equilibrium (as displayed in Figure \ref{fig:vert_foc}).
 
-\begin{equation}
-  \frac{\partial p_j}{\partial S_j} \Bigg( \underbrace{\sum_{i > j} \frac{m_i}{m_j} \ \frac{\pi_i}{\pi_j} \ D_S(i, j)}_{\text{downstream externality}} \ + \ 1 \Bigg) = \frac{\kappa}{\pi_j}
-\end{equation}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width = \textwidth]{plots/vert_foc.pdf} 
+  \caption{The role of distortion in the }
+  \label{fig:vert_foc}
+\end{figure}
 
 % --- Bibliography
 \newpage
 \nocite{*}
 \printbibliography
 
+\newpage
+\appendix
+\section[Concavity of social planner problem]{$W(S)$ is concave}
+
+Let $W: \Re^n \to \Re$ be
+
+\begin{equation}
+  W(S) = \sum^n_{i = 0} m_i \Big( \pi_i \ p_i(S) - \kappa S_i \Big).
+\end{equation}
+
+I will prove that $W$ is concave. Note that it is sufficient to prove that $p_i$ is concave. This can be proven by induction. The base case is 
+
+\begin{equation}
+  p_2(S) = (1 - \mu_2) \ (1 - \mu_1)^{S_2}
+\end{equation}
+
+This f
 
 \end{document}

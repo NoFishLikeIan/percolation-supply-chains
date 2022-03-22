@@ -50,9 +50,29 @@ function S(p, κ, π, μ)
 
 end
 
+# ╔═╡ ea922e50-5c79-4681-b596-20e425b54993
+function Sₜ(p, κ, π, μ)
+	n = log(κ / (π * (1 - μ))) - log(p)
+	d = log(1 - p)
+
+	return n / d
+end
+
+# ╔═╡ dd4ecbd2-88b6-46a6-a7e8-3808a23fcf64
+M = range(0.01, 0.99, length = 200)
+
+# ╔═╡ 1f36a213-0aa0-4015-93f8-1729d146465d
+md"
+### Comparison between theoretical and approximated $S$
+"
+
+# ╔═╡ e6b2c1b9-6fe6-451a-ad33-32cae84ff8cd
+md"
+### $S$ as a function of $p_{i - 1}$
+"
+
 # ╔═╡ afc59701-b84f-4a99-9c8a-40854c03ecec
 begin
-	M = range(0.01, 0.99, length = 200)
 	S(p, r) = (log(r) - log(p)) / log(1 - p)
 
 	Kfig = plot(
@@ -72,15 +92,28 @@ begin
 		
 		plot!(Kfig,
 			M, p -> S(p, r); label = label,
-			c = c[i]
+			c = c[i], linestyle = :dash, alpha = 0.5
 		)
 		plot!(Kfig,
 			M, p -> ceil(Int64, S(p, r)),
-			label = nothing, c = c[i], alpha = 0.5, linestyle = :dash
+			label = nothing, c = c[i]
 		)
 	end
 
 	Kfig
+end
+
+# ╔═╡ 56644132-93f6-49f8-a76c-0d9ea6e66e44
+begin
+	prof = 100.
+
+	compfig = plot(
+		xlabel = L"p_{i - 1}", ylabel = "Number of suppliers"
+	)
+
+	plot!(compfig, M, p -> S(p, 1., prof, 0.), label = L"S")
+	plot!(compfig, M, p -> Sₜ(p, 1., prof, 0.), label = L"\tilde{S}")
+	
 end
 
 # ╔═╡ 58171ae6-a41c-4f79-9d47-d5fa61914448
@@ -113,13 +146,13 @@ begin
 		
 		plot!(pfig,
 			M, p -> p′(p, μ, 20., 1.; theo = true); label = label,
-			c = c[i]
+			c = c[i], alpha = 0.5, linestyle = :dash
 		)
 
 				
 		plot!(pfig,
 			M, p -> p′(p, μ, 20., 1.; theo = false); label = false,
-			c = c[i], alpha = 0.5, linestyle = :dash
+			c = c[i]
 		)
 	
 	end
@@ -188,7 +221,7 @@ md"
 
 - ``p_0`` $(@bind p₀ Slider(0:0.01:1; default=0.5, show_value=true))
 - ``\mu`` $(@bind μₛ Slider(0:0.01:1; default=0.5, show_value=true))
-- ``\kappa / \pi`` $(@bind rₛ Slider(0:0.01:1; default=0.01, show_value=true))
+- ``\kappa / \pi`` $(@bind rₛ Slider(range(0.01, 0.1, length = 101); default=0.01, show_value=true))
 
 "
 
@@ -204,10 +237,10 @@ begin
 		end
 	end
 
-	cobfig = cobwebplot(M, g², p₀, 20; 
+	cobfig = cobwebplot(M, g, p₀, 20; 
 		xlabel = L"p_{i - 1}", ylabel = L"p_i", label = nothing)
 
-	roots = find_zeros(x -> g²(x) - x, [0.01, 0.99])
+	roots = find_zeros(x -> g(x) - x, [0.01, 0.99])
 
 	for root ∈ roots
 		scatter!(cobfig, [root], [root], label = nothing, c = :green)
@@ -1441,6 +1474,11 @@ version = "0.9.1+5"
 # ╟─07eeb55a-d2a7-419f-b290-c2220da68099
 # ╠═d2203da7-dc97-405c-a13f-2ba161d69023
 # ╠═c1014a93-ec9d-4b05-917a-ec762a2ddf86
+# ╠═ea922e50-5c79-4681-b596-20e425b54993
+# ╠═dd4ecbd2-88b6-46a6-a7e8-3808a23fcf64
+# ╟─1f36a213-0aa0-4015-93f8-1729d146465d
+# ╠═56644132-93f6-49f8-a76c-0d9ea6e66e44
+# ╟─e6b2c1b9-6fe6-451a-ad33-32cae84ff8cd
 # ╠═afc59701-b84f-4a99-9c8a-40854c03ecec
 # ╠═58171ae6-a41c-4f79-9d47-d5fa61914448
 # ╠═98f995ce-a4f4-46f8-907c-58f2d3452b04

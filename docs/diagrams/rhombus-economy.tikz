@@ -1,0 +1,21 @@
+\begin{tikzpicture}
+	\begin{pgfonlayer}{nodelayer}
+		\node [style=Red firm] (0) at (0, -4) {};
+		\node [style=Yellow firm] (3) at (-3, 0) {};
+		\node [style=Yellow firm] (4) at (-2, 0) {};
+		\node [style=Blue firm] (6) at (-1, 4) {};
+		\node [style=Blue firm] (7) at (0, 4) {};
+		\node [style=Blue firm] (8) at (1, 4) {};
+		\node [style=Green firm] (9) at (2, 0) {};
+		\node [style=Green firm] (10) at (3, 0) {};
+	\end{pgfonlayer}
+	\begin{pgfonlayer}{edgelayer}
+		\draw [style=Supplies] (3) to (0);
+		\draw [style=Supplies] (9) to (0);
+		\draw [style=Supplies] (6) to (3);
+		\draw [style=Supplies] (7) to (3);
+		\draw [style=Supplies] (7) to (9);
+		\draw [style=Supplies] (7) to (10);
+		\draw [style=Supplies] (7) to (4);
+	\end{pgfonlayer}
+\end{tikzpicture}
