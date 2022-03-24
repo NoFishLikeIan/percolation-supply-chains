@@ -333,6 +333,64 @@ I will prove that $W$ is concave. Note that it is sufficient to prove that $p_i$
   p_2(S) = (1 - \mu_2) \ (1 - \mu_1)^{S_2}
 \end{equation}
 
-This f
+\section{Belmann formulation}
+
+There are two states. $p \in [0, 1]$ is the functional probability of the supplier firms. And 
+
+\begin{equation}
+  x \coloneqq \begin{pmatrix}
+    \mu \\ m \ \pi
+  \end{pmatrix} \in [0, 1] \times \Re_{>0}
+\end{equation}
+
+is the state vector of idiosyncratic layer characteristics. The two states evolve as
+
+\begin{equation}
+  p' = f(s, p, x) = (1 - x_1) \ (1 - (1 - p)^s)
+\end{equation}
+
+and
+
+\begin{equation}
+  x' = g(x).
+\end{equation}
+
+Then the value function can be written as 
+
+\begin{equation}
+  V(p, x) = \sup_{s \in \Re} \Big\{ x_2 \ f(s, p, x) - \kappa s + V\Big(f(s, p, x), g(x)\Big) \Big\}
+\end{equation}
+
+First it is convenient to compute
+
+\begin{equation}
+  \begin{split}
+    \frac{\partial f}{\partial s}(s, p, x) &= -s (1 - x_1) (1 - p)^{s-1} \text{ and } \\
+    \frac{\partial f}{\partial p}(s, p, x) &= -(1 - x_1) (1 - p)^{s}  \ln(1 - p). \\
+  \end{split}
+\end{equation}
+
+The first order condition implies that a maximizer $\bar{s}$ needs to satisfy
+
+\begin{equation} \label{app:eq:optimality}
+  \frac{\partial f}{\partial s}(\bar{s}, p, x) \left(x_2 + \frac{\partial V}{\partial s}\Big(f(\bar{s}, p, x), g(x)\Big) \right) = \kappa.
+\end{equation}
+
+Using $\bar{s}$ we can further compute
+
+\begin{equation}
+  \begin{split}
+    V(p, x) &=  x_2 \ f(\bar{s}, p, x) - \kappa s + V\Big(f(\bar{s}, p, x), g(x)\Big) \\
+    \frac{\partial V}{\partial p}(p, x) &= \left(x_2 + \frac{\partial V}{\partial s}\Big(f(\bar{s}, p, x), g(x)\Big) \right) \ \frac{\partial f}{\partial p}(s, p, x).
+  \end{split}
+\end{equation}
+
+We can use this in equation (\ref{app:eq:optimality}) to obtain
+
+\begin{equation}
+  \frac{\partial V}{\partial p}(p, x) = \frac{\kappa \ln(1 - p) (1 - p)}{\bar{s}}
+\end{equation}
+
+
 
 \end{document}
