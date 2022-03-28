@@ -1,4 +1,4 @@
-function p(i::Int64, S::Vector{Float64}; m::VerticalModel)
+function p(i::Int64, S::Vector; m::VerticalModel)
     if i == 0 return 1. end
 
     supres = 1 - p(i - 1, S; m)
@@ -47,4 +47,40 @@ function focfactory(m::VerticalModel)
 
         return F
     end
+end
+
+"""
+Given a solution over R, computes the solution over Z
+"""
+function integersolution(S::Vector{Float64}, m::VerticalModel)
+    n = length(S)
+
+    if n > 20
+        throw("n=$n too big")
+    end
+
+    function profit(Z)
+        probs = (i -> p(i, Z; m)).(1:n)
+        return @. m.profits * probs - m.κ * Z
+    end
+
+    space = product(((floor(Int64, s), ceil(Int64, s)) for s ∈ S)...)
+    spacesize = 2^n
+
+    maxvec = Vector{Int64}(undef, n)
+    maxprof = -Inf
+
+    for (i, Ztup) ∈ enumerate(space)
+        print("$i / $(spacesize)\r")
+
+        Z = collect(Ztup)
+        πₛ = profit(Z) |> sum
+        if πₛ > maxprof
+            maxprof = πₛ
+            maxvec .= Z
+        end
+    end
+
+    return maxvec, maxprof
+
 end
