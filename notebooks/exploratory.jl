@@ -20,6 +20,23 @@ using Plots, LaTeXStrings
 # ╔═╡ 60f03a18-565d-40d1-94de-6e5f642eaf47
 using PlutoUI
 
+# ╔═╡ 4d19e53c-7329-44b8-9cb0-eee84b0da949
+using Statistics, StatsBase, IterTools
+
+# ╔═╡ de8de2c5-3f5c-416f-b189-be413b7b54cb
+using LinearAlgebra
+
+# ╔═╡ b121159e-3b4f-44f5-b2cb-22ee5d45ea88
+using Combinatorics
+
+# ╔═╡ f950dc07-6ae5-45d7-ba59-7e3ed7da2038
+begin
+	include("../theory/definitions.jl")
+	include("../theory/optimum/agent.jl")
+	include("../theory/optimum/planner.jl")
+	include("../theory/simulate.jl")
+end
+
 # ╔═╡ 79fa1c4f-e21c-4bfb-a632-277d4c8532c1
 begin
 	theme(:dao)
@@ -52,37 +69,157 @@ begin
 	)
 end
 
-# ╔═╡ 4a1c3577-00ce-4403-bc3a-c5070464433b
-md"
-## Node correlations
-"
+# ╔═╡ 9db0e913-dd24-486d-b056-51c2e5ab4b19
+md"# Ex-ante correlation"
 
-# ╔═╡ 4772de32-91dc-4b56-856b-baf9c4077451
-V(p, s) = (κ / s) * ((p - 2) * p / 4 - (p - 1)^2 / 2 * log(1 - p))
+# ╔═╡ 20db2c4a-b6e3-465b-ae6e-15c8cf995aea
+function correlation(m, s; μ = 0.01)
 
-# ╔═╡ ebb7e81d-c058-4f04-b2fc-e52056665809
-begin
-	vfig = plot(
-		xlabel = L"p",
-		ylabel = L"s"
+	n = 3
+		
+	model = VerticalModel(
+	    repeat([m], n), # m
+	    [μ, 0., 0.], # μ
+		0. .* ones(n), 0 
 	)
 
-	sspace = range(1., 10., length = 101)
+	suppliers = [1, s, 1]
 	
-	contourf!(vfig, unit, sspace, V)
+	F = resilience(suppliers; m = model, T = 10_000)
+
+	Σ = cor(F[:, 2, :], dims = 1)
+
+	Σ
+	
+
 end
+
+# ╔═╡ 29d722e5-7c33-40cd-b89e-9bf2dba1a5b8
+begin
+	ms = 3:20
+	ns = 1:3
+	
+	corrfig = plot(xticks = ms, yticks = ns)
+
+	for m ∈ ms, n ∈ ns
+
+		scatter!(corrfig,
+			[m], [n],
+			marker_z = mean(correlation(m, n)),
+			label = nothing
+		)
+		
+	end
+	
+	corrfig
+end
+
+# ╔═╡ 9e41438a-c55a-41bf-8532-1638c8cf4044
+md"## Probability of overlap"
+
+# ╔═╡ dfde3c51-26db-495b-8272-2a83b7039a8b
+function N(i; p, q, n)
+
+	if q ≤ i
+		return 0
+	end
+
+	F = binomial(p, i) * binomial(p-i, q-i)^n / binomial(p, q)^n
+
+	S = sum(
+		(-1)^j * binomial(p-i, j) * binomial(p-i-j, q-i-j)^n / 				binomial(p-i, q-i)^n
+		for j ∈ 0:q-i
+	)
+
+	return F*S
+	
+end
+
+# ╔═╡ c8dd7651-130f-4051-86ad-e22d6e276afa
+integers = range(2, 20, step = 1)
+
+# ╔═╡ 629a7370-7429-4c8a-b332-775838b28ce6
+md"
+
+``m_{i-2}``: $(@bind size_layer Slider(2:1:40, default = 20, show_value = true)) 
+
+``S_i`` : $(@bind Sᵢ Slider(integers, default = 2, show_value = true)) 
+
+"
+
+# ╔═╡ de0f4de6-e929-43ea-b7e4-276c9bb379e7
+let
+	xs = 0:1:8
+	fig = plot(
+		xticks = xs,
+		ylims = (-0.05, 1.),
+		xlabel = L"v",
+		title = L"\mathbb{P} \left( \bigcap \ x_j = v \right)"
+	)
+
+	for Sᵢ₋₁ ∈ 2:2:last(xs) 
+		plot!(fig,
+			xs,
+			i -> N(i; p = size_layer, q = Sᵢ₋₁, n = Sᵢ);
+			marker = :o,
+			legendtitle = L"S_{i-1}",
+			label = Sᵢ₋₁
+		)
+	end
+
+		
+	fig
+end
+
+# ╔═╡ de2e626a-9e97-4411-bca3-6c1900e81158
+overlap(p, q, n) = 1 - N(0; p = p, q = q, n = n)
+
+# ╔═╡ e91312cf-9725-4534-801d-f7b11b548f26
+let
+	Sᵢ = 2
+	
+	Ss = [2, 3, 4, 5]
+	ms = 2:1:100
+	
+	sfig = plot(
+		c = :black, linestyle = :dash,
+		xlabel = L"m_{i - 2}", 
+		title = L"\mathbb{P} \left( \bigcap \ x_j > 0 \right)",
+	)
+
+	for Sᵢ₋₁ ∈ Ss
+		plot!(
+			sfig, ms, m -> overlap(m, Sᵢ₋₁, Sᵢ);
+			label = latexstring("\$ S_{i - 1} = $(Sᵢ₋₁) \$")
+		)
+	end
+
+	sfig
+	
+end
+
+# ╔═╡ a80003a0-9695-4453-b25d-36e8aac606e4
+md"## Relationship between overlap and correlation"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
+IterTools = "c8e1da08-722c-5040-9ed9-7db0dc04731e"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
+Combinatorics = "~1.0.2"
+IterTools = "~1.4.0"
 LaTeXStrings = "~1.3.0"
 Plots = "~1.27.1"
 PlutoUI = "~0.7.37"
+StatsBase = "~0.33.16"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -151,6 +288,11 @@ deps = ["ColorTypes", "FixedPointNumbers", "Reexport"]
 git-tree-sha1 = "417b0ed7b8b838aa6ca0a87aadf1bb9eb111ce40"
 uuid = "5ae59095-9a9b-59fe-a467-6f913c188581"
 version = "0.12.8"
+
+[[Combinatorics]]
+git-tree-sha1 = "08c8b6831dc00bfea825826be0bc8336fc369860"
+uuid = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
+version = "1.0.2"
 
 [[Compat]]
 deps = ["Base64", "Dates", "DelimitedFiles", "Distributed", "InteractiveUtils", "LibGit2", "Libdl", "LinearAlgebra", "Markdown", "Mmap", "Pkg", "Printf", "REPL", "Random", "SHA", "Serialization", "SharedArrays", "Sockets", "SparseArrays", "Statistics", "Test", "UUIDs", "Unicode"]
@@ -989,8 +1131,20 @@ version = "0.9.1+5"
 # ╟─51bb97fc-4475-4253-9573-974dcb26536e
 # ╠═c71b3773-52f2-4f30-a14e-b2dc3c6b9d42
 # ╠═068e940b-8781-4838-96a9-7b0c82342983
-# ╟─4a1c3577-00ce-4403-bc3a-c5070464433b
-# ╠═4772de32-91dc-4b56-856b-baf9c4077451
-# ╠═ebb7e81d-c058-4f04-b2fc-e52056665809
+# ╟─9db0e913-dd24-486d-b056-51c2e5ab4b19
+# ╠═4d19e53c-7329-44b8-9cb0-eee84b0da949
+# ╠═de8de2c5-3f5c-416f-b189-be413b7b54cb
+# ╠═f950dc07-6ae5-45d7-ba59-7e3ed7da2038
+# ╠═20db2c4a-b6e3-465b-ae6e-15c8cf995aea
+# ╠═29d722e5-7c33-40cd-b89e-9bf2dba1a5b8
+# ╟─9e41438a-c55a-41bf-8532-1638c8cf4044
+# ╠═b121159e-3b4f-44f5-b2cb-22ee5d45ea88
+# ╠═dfde3c51-26db-495b-8272-2a83b7039a8b
+# ╠═c8dd7651-130f-4051-86ad-e22d6e276afa
+# ╟─629a7370-7429-4c8a-b332-775838b28ce6
+# ╠═de0f4de6-e929-43ea-b7e4-276c9bb379e7
+# ╠═de2e626a-9e97-4411-bca3-6c1900e81158
+# ╟─e91312cf-9725-4534-801d-f7b11b548f26
+# ╟─a80003a0-9695-4453-b25d-36e8aac606e4
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
