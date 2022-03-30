@@ -55,8 +55,8 @@ begin
 	
 	model = VerticalModel(
 	    100 .* ι, # m
-	    0.05 .* ι, # μ
-	    1000. .* ι, # π
+	    0.01 .* ι, # μ
+	    100. .* ι, # π
 	    1 # κ
 	)
 
@@ -82,8 +82,8 @@ begin
 		model.profits[i] * p(i, pprev, s; m = model) - s * model.κ
 	end
 	
-	supplierspace = range(1., 20., length = 100)
-	probspace = range(0.13, 0.99, length = 101)
+	supplierspace = range(1., 10., length = 100)
+	probspace = range(0.13, 0.5, length = 101)
 
 	shapefig = plot(
 		xlabel = L"p_{i - 1}", ylabel = L"s", legend = nothing
@@ -350,29 +350,6 @@ begin
 		marker = :o, label = ["Social" "Agent" "One" "Two"]
 	)
 
-end
-
-# ╔═╡ 543df924-a179-4fe8-81e1-8169e5d6ea81
-md"
-## Probability of terminal node
-"
-
-# ╔═╡ c55ff833-b58f-4232-bd62-0c8911d78316
-begin
-	terminalres(s, π) = p(
-		n, s; 
-		m = VerticalModel(
-		    30 .* ι, # m
-		    0.01 .* ι, # μ
-		    π .* ι, # π
-		    1 # κ
-		)
-	)
-
-	plot(
-		range(1., 3., length = 101),
-		s -> terminalres(s, 1000.)
-	)
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1658,7 +1635,5 @@ version = "0.9.1+5"
 # ╠═04299b03-3873-4681-bf60-49afff96376f
 # ╠═3ca721b7-d426-4a3c-8de7-f3b8d467d087
 # ╟─f6f91916-fea1-4538-a8f8-1323fde5d119
-# ╟─543df924-a179-4fe8-81e1-8169e5d6ea81
-# ╠═c55ff833-b58f-4232-bd62-0c8911d78316
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

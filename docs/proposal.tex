@@ -67,6 +67,7 @@
     \newcommand{\PF}{\mathcal{P} \F}
 
     \renewcommand{\P}{\mathbb{P}}
+    \newcommand{\E}{\mathbb{E}}
 
     \newcommand{\uI}[2][s]{\int^1_0 #2 \ \text{d} #1}
     \newcommand{\uH}[2][s]{\int^\frac{1}{2}_0 #2 \ \text{d} #1}
@@ -204,11 +205,9 @@ Firm operate for an exogenous payoff $\pi_i$\footnote{This can be easily microfo
   \Pi(x_i) = \pi_i \ \P\Big( i \in \F \Big) - \kappa \sum_{s \in \I(g)} \abs{x^s_i}.
 \end{equation}
 
-\section{Upstream risk is idiosyncratic}
+\section{Vertical economy} \label{sec:vertical}
 
-We will now consider the cases in which the supply chain is a tree, hence the upstream risk is idiosyncratic \textit{ex ante}.
-
-\subsection{Vertical economy}
+\subsection{Ignoring correlations in suppliers' risk} \label{sec:vertical:ignoring}
 
 Consider a vertical economy (Figure \ref{fig:vertical}) with $n$ goods
 
@@ -244,7 +243,7 @@ Renaming $p_i \coloneqq \P\Big( f_i \in \F \Big)$ we have the recursive definiti
 \end{equation}
 
 
-\subsection{Problem of the firm}
+\subsubsection{Problem of the firm}
 
 Given this recursive definition, the problem of firm $f_i$ can be formulated as having to choose an $S_i \in \mathbb{Z}$ to maximise
 
@@ -276,7 +275,7 @@ The optimal $S_i$ will be such that $S_i + 1$ yields lower marginal benefits tha
   \label{fig:pplot}
 \end{figure}
 
-\subsection{Social optimum}
+\subsubsection{Social optimum}
 
 Consider the social planner problem of maximizing the total firms payoff. Letting $S = \begin{pmatrix} S_1 & S_2 & \ldots & S_n \end{pmatrix}$ be the sequence of suppliers size, the problem of the firm can be formulated as
 
@@ -311,6 +310,82 @@ An increase in the number of suppliers of a firm has a strictly positive externa
   \caption{The role of distortion in the }
   \label{fig:vert_foc}
 \end{figure}
+
+\subsection{Considering correlation in suppliers' risk} \label{sec:vertical:considering}
+
+The solution in section \ref{sec:vertical:ignoring} is valid only as $m_i$ is sufficiently large so that correlations between firms' risk, caused by having shared suppliers, is negligible. Now I will turn my attention to the case where the correlation of suppliers risk is non-negligible. 
+
+For illustration purposes consider a vertical economy with three goods,
+
+\begin{equation}
+  \G = \{g_0, g_1, g_2\}
+\end{equation}
+
+and with idiosyncratic risk only in the basal node, $\mu_0 = \mu > 0$ and $\mu_1 = \mu_2 = 0$. The probability that a firm producing good $1$ is functional is simply
+
+\begin{equation}
+  p_1(S_1) = 1 - (1 - \mu)^{S_1},
+\end{equation}
+
+hence, as before, the firm will pick at random $S_1$ suppliers, such that,
+
+\begin{equation}
+  S_1 \leq \frac{\log(\kappa / \pi) - \log \mu}{\log(1 - \mu)}.
+\end{equation}
+
+A firm producing good 2 infers that producers of good 1 will pick $S_1$, but the fact that these do so at random implies that, in expectation, their probabilities of not being functional are correlated. Hence, in contrast to the case presented before, if the firm producing good $2$ picks $S_2$ suppliers $\{j_1, j_2 \ldots j_{S_2}\}$
+
+\begin{equation}
+  \E \Big[ p_2(S_2) \ \vert \ S_1 \Big] = 1 - \E \Big[ \P\left( j_1, j_2 \ldots j_{S_2} \notin \F \right)  \ \vert \ S_1 \Big] \leq 1 - p_1(S_1)^{S_2}.
+\end{equation}
+
+The expected joint probability $\E \Big[ \P\left( j_1, j_2 \ldots j_{S_2} \notin \F \right)\ \vert \ S_1 \Big]$ depends on the expected overlap in the suppliers of $\{j_1, j_2 \ldots j_{S_2}\}$. Letting $x_{i}$ be the set of suppliers of firms $j_i$, we can write the probability that the firms $\{j_1, j_2 \ldots j_{S_2}\}$ have $c$ suppliers in common as
+
+\begin{equation}
+  \sigma_c(S_2) \coloneqq \P \Bigg( \left\lvert \bigcap^{S_2}_{i = 1} x_i \right\rvert = c \Bigg) = \binom{m_0}{c} \binom{m_0}{S_1}^{S_2} \ \sum^{S_1 - c}_{j = 0} (-1)^j \binom{m - c}{j} \binom{m - c - j}{S_2 - c - j}.
+\end{equation}
+
+Then 
+
+\begin{equation}
+  \E \Big[ \P\left( j_1, j_2 \ldots j_{S_2} \notin \F \right)\ \vert \ S_1 \Big] = \sum^{S_1}_{c = 0} (1 - \mu)^{(S_1 - c) S_2 + c} \ \sigma_c(S_2).
+\end{equation}
+
+Hence, $S_2$ will be the biggest $S_2$ that satisfies 
+
+\begin{equation}
+  \begin{split}
+    \frac{\kappa}{\pi} &\geq \E \Big[ p_2(S_2 + 1) \ \vert \ S_1 \Big] - \E \Big[ p_2(S_2) \ \vert \ S_1 \Big] \\
+    &\geq \sum^{S_1}_{c = 0} (1 - \mu)^{(S_1 - c) S_2 + c} \ \Bigg( \sigma_c(S_2) - (1 - \mu)^{S_1} \ \sigma_c(S_2 + 1) \Bigg)
+  \end{split}
+\end{equation}
+
+
+\subsection{Recursive formulation of vertical economy problem}
+
+Each layer is indexed by $i \in \{0, 1, 2, 3, \ldots\}$. Let $\F_i$ be the set of functional nodes in layer $i$, with size $\abs{f_i}$. A firm in layer $i$ picks $s_i$ suppliers. Let 
+
+\begin{equation}
+  \P\Big( \abs{\F_i} = f_i \Big) = g_i(f_i).
+\end{equation}
+
+Furthermore, let $p_i(s_i)$ be the probability that a firm in layer $i$ is functional. Assume now that a firm in $i+1$ observe the distribution $g_i$. By picking a number of suppliers $s_{i + 1}$ for a given $f_i$, its probability of being functional is
+
+\begin{equation}
+  p_{i+1}(s_{i+1}, f_i) = \binom{m_i - s_{i+1}}{m_i - f_i} \binom{m_i}{m_i - f_i}^{-1}
+\end{equation}
+
+Hence, it will pick the maximum $s_{i+1}$ that satisfies
+
+\begin{equation}
+  \sum^{m_i}_{f_i = 0} g_i(f_i) \ \binom{m_i}{m_i - f_i}^{-1} \ \left( \binom{m_i - s_{i+1} + 1}{m_i - f_i} - \binom{m_i - s_{i+1}}{m_i - f_i} \right) \leq \frac{\kappa}{\pi}.
+\end{equation}
+
+Then the distribution over failures in the next node is
+
+\begin{equation}
+  g_{i+1}(f_{i+1}) = \sum^{m_i}_{f_i = 0} f_{i+1}^{p_{i+1}} \ (1 - f_{i + 1})^{(1 - p_{i + 1})}.
+\end{equation}
 
 % --- Bibliography
 \newpage

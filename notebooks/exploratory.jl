@@ -124,10 +124,10 @@ function N(i; p, q, n)
 		return 0
 	end
 
-	F = binomial(p, i) * binomial(p-i, q-i)^n / binomial(p, q)^n
+	F = binomial(p, i)  / binomial(p, q)^n
 
 	S = sum(
-		(-1)^j * binomial(p-i, j) * binomial(p-i-j, q-i-j)^n / 				binomial(p-i, q-i)^n
+		(-1)^j * binomial(p-i, j) * binomial(p-i-j, q-i-j)^n
 		for j ∈ 0:q-i
 	)
 
@@ -179,7 +179,7 @@ let
 	Sᵢ = 2
 	
 	Ss = [2, 3, 4, 5]
-	ms = 2:1:100
+	ms = 2:1:200
 	
 	sfig = plot(
 		c = :black, linestyle = :dash,
@@ -198,8 +198,14 @@ let
 	
 end
 
-# ╔═╡ a80003a0-9695-4453-b25d-36e8aac606e4
-md"## Relationship between overlap and correlation"
+# ╔═╡ c6e7a6ba-a979-4c9e-853e-14cdd30695c5
+md"## Subsets intersections"
+
+# ╔═╡ 4471f811-b333-4db6-9b3f-d4e65e8c3820
+probfunct(m, s, v) = 1 - binomial(m - s, m - v) / binomial(m, v)
+
+# ╔═╡ 54b9fb5e-486d-4236-b8dc-c31cad027843
+probfunct(100, 13, 10)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1144,7 +1150,9 @@ version = "0.9.1+5"
 # ╟─629a7370-7429-4c8a-b332-775838b28ce6
 # ╠═de0f4de6-e929-43ea-b7e4-276c9bb379e7
 # ╠═de2e626a-9e97-4411-bca3-6c1900e81158
-# ╟─e91312cf-9725-4534-801d-f7b11b548f26
-# ╟─a80003a0-9695-4453-b25d-36e8aac606e4
+# ╠═e91312cf-9725-4534-801d-f7b11b548f26
+# ╠═c6e7a6ba-a979-4c9e-853e-14cdd30695c5
+# ╠═4471f811-b333-4db6-9b3f-d4e65e8c3820
+# ╠═54b9fb5e-486d-4236-b8dc-c31cad027843
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
