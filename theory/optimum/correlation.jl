@@ -1,6 +1,6 @@
 function p(i::Int64, s::Int64, f::Int64; m::VerticalModel)
     idx = i + 1
-    mᵢ = m.m[idx]
+    mᵢ = m.m[idx - 1]
 
     return (1 - m.μ[idx]) * (1 - binomial(mᵢ-s, f) / binomial(mᵢ, f))
 end
@@ -32,19 +32,19 @@ function gᵢ(i::Int64, gₚ::Vector{Float64}, s::Int64; m::VerticalModel)
 
     upstreamprob = p.(i, s, 0:mₚ; m)
     
-    function nextprob(f)
+    function expectedprob(f)
             
-        total = 0.
+        E = 0.
 
         for fₚ ∈ 0:mₚ
             prob = upstreamprob[fₚ + 1]
-            total += gₚ[fₚ + 1] * prob^f * (1 - prob)^(mᵢ - f)
+            E += gₚ[fₚ + 1] * prob^f * (1 - prob)^(mᵢ - f)
         end
 
-        return binomial(mᵢ, f) * total
+        return binomial(mᵢ, f) * E
     end
 
-    return nextprob.(fs)
+    return expectedprob.(fs)
 
 end
 
@@ -77,4 +77,18 @@ function solvecorrelated(m::VerticalModel)
     end
 
     return G, S
+end
+
+function ∂p(i::Int64, s::Float64, f::Int64; m::VerticalModel)
+    idx = i + 1
+    mₚ = m.m[idx - 1]
+    μᵢ = m.μ[idx]
+
+    num = gamma(1 + mₚ - s) * gamma(1 + mₚ - f) 
+    den = gamma(1 + mₚ - s - f) * gamma(1 + mₚ)
+
+    H = log(mₚ - s) - log(mₚ - f - s)
+
+    return (1 - μᵢ) * H * num / den
+
 end

@@ -1,6 +1,7 @@
 using NLsolve, Roots
 
 using IterTools, Combinatorics
+using SpecialFunctions
 using StatsBase: sample
 
 using Plots, LaTeXStrings
@@ -23,14 +24,14 @@ function withbasalrisk(n, m, μ, profit)::VerticalModel
     )
 end
 
-μ = 0.01
+μ = 0.1
 profit = 100
 layer_size = 20
 layers = 10
 
 model = withbasalrisk(layers, layer_size, μ, profit)
 
-G, S = solvecorrelated(m)
+G, S = solvecorrelated(model)
 
 labels = reshape([
     latexstring("\$i = $i\$") for i ∈ 0:(layers - 1)
