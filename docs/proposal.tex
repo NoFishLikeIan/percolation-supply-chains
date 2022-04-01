@@ -372,19 +372,19 @@ Each layer is indexed by $i \in \{0, 1, 2, 3, \ldots\}$. Let $\F_i$ be the set o
 Furthermore, let $p_i(s_i)$ be the probability that a firm in layer $i$ is functional. Assume now that a firm in $i+1$ observe the distribution $g_i$. By picking a number of suppliers $s_{i + 1}$ for a given $f_i$, its probability of being functional is
 
 \begin{equation}
-  p_{i+1}(s_{i+1}, f_i) = \binom{m_i - s_{i+1}}{m_i - f_i} \binom{m_i}{m_i - f_i}^{-1}
+  p_{i+1}(s_{i+1}, f_i) = (1 - \mu_i) \ \left(1 - \binom{m_i - s_{i+1}}{f_i} \binom{m_i}{f_i}^{-1} \right)
 \end{equation}
 
 Hence, it will pick the maximum $s_{i+1}$ that satisfies
 
 \begin{equation}
-  \sum^{m_i}_{f_i = 0} g_i(f_i) \ \binom{m_i}{m_i - f_i}^{-1} \ \left( \binom{m_i - s_{i+1} + 1}{m_i - f_i} - \binom{m_i - s_{i+1}}{m_i - f_i} \right) \leq \frac{\kappa}{\pi}.
+  \sum^{m_i}_{f_i = 0} g_i(f_i) \ \binom{m_i}{f_i}^{-1} \ \left( \binom{m_i - s_{i+1} - 1}{f_i} - \binom{m_i - s_{i+1}}{f_i} \right) \leq \frac{\kappa}{\pi}.
 \end{equation}
 
 Then the distribution over failures in the next node is
 
 \begin{equation}
-  g_{i+1}(f_{i+1}) = \sum^{m_i}_{f_i = 0} f_{i+1}^{p_{i+1}} \ (1 - f_{i + 1})^{(1 - p_{i + 1})}.
+  g_{i+1}(f_{i+1}) = \binom{m_{i+1}}{f_{i+1}} \sum^{m_i}_{f_i = 0} g_i(f_i) \ \tilde{p}_{i+1}(f_i)^{f_{i+1}} \ (1 - \tilde{p}_{i+1}(f_i))^{(m_{i+1} - f_{i + 1})}.
 \end{equation}
 
 % --- Bibliography
