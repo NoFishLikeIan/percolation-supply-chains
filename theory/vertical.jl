@@ -1,6 +1,6 @@
 using NLsolve, Roots
 
-using IterTools
+using IterTools, Combinatorics
 using StatsBase: sample
 
 using Plots, LaTeXStrings
@@ -11,25 +11,35 @@ plotpath = "../docs/plots/"
 include("definitions.jl")
 include("optimum/planner.jl")
 include("optimum/agent.jl")
+include("optimum/correlation.jl")
 include("simulate.jl")
 
-n = 3
-	
-m = VerticalModel(
-    repeat([100], n), # m
-    [0. for i ∈ 1:n], # μ
-    100. .* ones(n), # π
-    1 # κ
+function withbasalrisk(n, m, μ, profit)::VerticalModel
+    VerticalModel(
+        repeat([m], n), # size
+        repeat([μ], n),
+        repeat([profit], n),
+        1.
+    )
+end
+
+μ = 0.01
+profit = 100
+layer_size = 20
+layers = 10
+
+model = withbasalrisk(layers, layer_size, μ, profit)
+
+G, S = solvecorrelated(m)
+
+labels = reshape([
+    latexstring("\$i = $i\$") for i ∈ 0:(layers - 1)
+], (1, layers))
+
+plot(
+    0:m̄, G';
+    label = labels,
+    xlabel = L"f_i", 
+    ylabel = L"g_i(f_i)",
+    marker = :o
 )
-
-foc! = focfactory(m)
-foc(S) = foc!(Vector{Float64}(undef, n - 1), S)
-
-
-res = nlsolve(foc!, ones(n-1))
-@assert res.f_converged
-
-Sₛ = [1., res.zero...]
-Z, _ = integersolution(Sₛ, m)
-
-F = resilience(ones(Int64, n); m, T = 10_000)
