@@ -76,7 +76,7 @@ begin
 	S(p, r) = (log(r) - log(p)) / log(1 - p)
 
 	Kfig = plot(
-		ylabel = L"S_i", 
+		ylabel = L"s_i", 
 		xlabel = L"p_{i - 1}", xlims = (0, 1),
 		ylims = (0, 8), yticks = 1:8,
 		legendtitle = latexstring("\$  \\kappa / \\left(1 - \\mu_i\\right)\\pi_i \$"),

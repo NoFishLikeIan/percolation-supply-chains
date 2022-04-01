@@ -7,12 +7,16 @@ using InteractiveUtils
 # ╔═╡ 3ade46b4-b0d9-11ec-2edd-1b9d432b06f9
 using Plots, LaTeXStrings
 
+# ╔═╡ e039135a-a937-4387-a301-e210db38c9da
+using PlutoUI
+
 # ╔═╡ 2ec91672-c832-4976-9af0-86832757a91e
 begin
 	using NLsolve, Roots
 	
 	using IterTools, Combinatorics
 	using StatsBase: sample
+	using SpecialFunctions
 end
 
 # ╔═╡ 4f0b423d-53a1-476a-9a84-2358107bed15
@@ -39,8 +43,8 @@ end
 # ╔═╡ d25929e8-e875-489a-adfb-ffab58c3cc14
 begin
 	μ = 0.01
-	profit = 100
-	layer_size = 10
+	profit = 20
+	layer_size = 30
 	layers = 10
 	
 	model = VerticalModel(
@@ -51,18 +55,24 @@ begin
     )
 end
 
+# ╔═╡ 07c6e709-4366-4d5d-ad6a-9e07cbfc3dde
+begin
+	sspace = 0:model.m[1]
+	scontspace = range(0, model.m[1]; length = 101)
+end
+
 # ╔═╡ 58ddbd98-0731-4b84-a075-45beaf8e5bcb
 begin
 	i = 1
-	fspace = [0, 1, 2, 5]
-	sspace = 0:model.m[1]
+	fspace = [0, 1, 2, 10, 19]
 
 	π = model.profits[i + 1]
 	
 	pfig = plot(
 		xticks = sspace,
 		xlabel = L"s",
-		ylabel = L"\pi \ p_i(s) - \kappa s"
+		ylabel = L"\pi \ p_i(s) - \kappa s",
+		legendtitle = L"f"
 	)
 
 	for f ∈ fspace
@@ -83,44 +93,102 @@ end
 # ╔═╡ c78bdbb2-2fb2-47de-b368-dc95260b381d
 md"## Derivative"
 
-# ╔═╡ 6823ba07-6c29-4db1-bb40-39bf604ff0b2
-function ∂p(m, s, f)
-	prob = binomial(m - s, f) / binomial(m, f)
-
-	return prob * (harmonic(m - s) - harmonic(m - s - f))
-end
-
 # ╔═╡ 98dbac96-c1c9-49ba-87cd-f75967907e52
 begin
 	derfig = hline(
 		[model.κ / ((1 - μ) * π)];
-		xticks = sspace,
+		linestyle = :dash, c = :black,
 		xlabel = L"s",
 		ylabel = L"\frac{\partial p}{\partial s}(s; f)",
 		label = L"\kappa / \pi (1 - \mu)",
 		ylims = (-0.05, 0.5)
 	)
 
+	S = range(0.01, 10; length = 101)
+
 	layersize = model.m[1]
 
-	for f ∈ fspace
+	for f ∈ [5, 10, 20]
 
-		function derivative(s)
-			if layersize - f - s ≥ 0
-				∂p(layersize, s, f)
-			else
-				0
-			end
-		end
+		derivative(s) = layersize-s-f > 0 ? ∂p(1, s, f; m = model) : 0
+
 		
 		plot!(derfig, 
-			sspace, derivative;
-			label = latexstring("\$ f = $(f)\$"),
-			marker = :o,
+			S, derivative;
+			label = latexstring("\$ f = $(f)\$")
 		)
 	end
 
 	derfig
+end
+
+# ╔═╡ 31c2bcaf-68a5-40b9-956a-68fbed776005
+∂p(1, 0.1, 9; m = model) 
+
+# ╔═╡ 6e1b9c4b-1896-41ee-aa84-e1320811343a
+md"
+## Recursive definition of probability
+"
+
+# ╔═╡ 8a229475-60cd-4c84-b9b4-de3c8d781edb
+mᵢ = 15
+
+# ╔═╡ 54d111cb-0382-45b8-bac1-06cc9e137e39
+function Δp(s, f)
+	if s ≥ mᵢ - f
+		return 0
+	end
+	
+	prob = (1 - μ) * binomial(mᵢ - (s + 1), f) / binomial(mᵢ, f)
+
+	return prob * (f - 2s) / (mᵢ - f - s)
+end
+
+# ╔═╡ a8cd3a0d-b2e7-4956-89ba-6a2315733a88
+function prec(s, f)
+
+	if s ≥ f
+		return 1.
+	end
+
+	if s == 0
+		return 0
+	end
+
+	sₚ = s - 1
+
+	den = mᵢ - 3sₚ
+	constant = (1 - μ) * (f - 2sₚ)
+
+	return ((mᵢ - f - sₚ) * prec(sₚ, f) + constant) / den
+	
+end
+
+# ╔═╡ d37e713e-b407-4fc9-8af0-e2d1bac74557
+begin	
+	recprobfig = hline(
+		[model.κ / model.profits[1]];
+		linestyle = :dash, label = nothing,
+		c = :black,
+		xticks = sspace,
+		legendtitle = L"f_i",
+		title = L"p(s; f_i)",
+		ylims = (0, Inf)
+	)
+
+
+	for (k, f) ∈ 0:1:mᵢ |> enumerate
+		plot!(recprobfig, 
+			sspace, s -> Δp(s, f);
+			label = latexstring("\$$(f)\$"),
+			marker = :o
+		)
+
+		
+	end
+
+	recprobfig
+
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -131,8 +199,10 @@ IterTools = "c8e1da08-722c-5040-9ed9-7db0dc04731e"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 NLsolve = "2774e3e8-f4cf-5e23-947b-6d7e65073b56"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Polylogarithms = "43cc4a2f-1a2b-4fbb-87e3-95c794af13de"
 Roots = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
+SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
@@ -141,14 +211,22 @@ IterTools = "~1.4.0"
 LaTeXStrings = "~1.3.0"
 NLsolve = "~4.5.1"
 Plots = "~1.27.4"
+PlutoUI = "~0.7.38"
 Polylogarithms = "~0.1.0"
 Roots = "~1.4.0"
+SpecialFunctions = "~0.10.3"
 StatsBase = "~0.33.16"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
+
+[[AbstractPlutoDingetjes]]
+deps = ["Pkg"]
+git-tree-sha1 = "8eaf9f1b4921132a4cff3f36a1d9ba923b14a481"
+uuid = "6e696c72-6542-2067-7265-42206c756150"
+version = "1.1.4"
 
 [[Adapt]]
 deps = ["LinearAlgebra"]
@@ -435,6 +513,23 @@ deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll",
 git-tree-sha1 = "129acf094d168394e80ee1dc4bc06ec835e510a3"
 uuid = "2e76f6c2-a576-52d4-95c1-20adfe4de566"
 version = "2.8.1+1"
+
+[[Hyperscript]]
+deps = ["Test"]
+git-tree-sha1 = "8d511d5b81240fc8e6802386302675bdf47737b9"
+uuid = "47d2ed2b-36de-50cf-bf87-49c2cf4b8b91"
+version = "0.0.4"
+
+[[HypertextLiteral]]
+git-tree-sha1 = "2b078b5a615c6c0396c77810d92ee8c6f470d238"
+uuid = "ac1192a8-f4b3-4bfe-ba22-af5b92cd3ab2"
+version = "0.9.3"
+
+[[IOCapture]]
+deps = ["Logging", "Random"]
+git-tree-sha1 = "f7be53659ab06ddc986428d3a9dcc95f6fa6705a"
+uuid = "b5f81e59-6552-4d32-b1f0-c071b021bf89"
+version = "0.2.2"
 
 [[IfElse]]
 git-tree-sha1 = "debdd00ffef04665ccbb3e150747a77560e8fad1"
@@ -735,6 +830,12 @@ deps = ["Base64", "Contour", "Dates", "Downloads", "FFMPEG", "FixedPointNumbers"
 git-tree-sha1 = "edec0846433f1c1941032385588fd57380b62b59"
 uuid = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 version = "1.27.4"
+
+[[PlutoUI]]
+deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "Markdown", "Random", "Reexport", "UUIDs"]
+git-tree-sha1 = "670e559e5c8e191ded66fa9ea89c97f10376bb4c"
+uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+version = "0.7.38"
 
 [[Polylogarithms]]
 deps = ["SpecialFunctions"]
@@ -1146,14 +1247,21 @@ version = "0.9.1+5"
 
 # ╔═╡ Cell order:
 # ╠═3ade46b4-b0d9-11ec-2edd-1b9d432b06f9
+# ╠═e039135a-a937-4387-a301-e210db38c9da
 # ╠═a76156b4-7bbc-4988-b8e6-9d2f073a7026
 # ╠═2ec91672-c832-4976-9af0-86832757a91e
 # ╠═fe98d196-4ea4-4465-a764-a4166cd8b58f
 # ╠═d25929e8-e875-489a-adfb-ffab58c3cc14
+# ╠═07c6e709-4366-4d5d-ad6a-9e07cbfc3dde
 # ╠═58ddbd98-0731-4b84-a075-45beaf8e5bcb
 # ╟─c78bdbb2-2fb2-47de-b368-dc95260b381d
 # ╠═4f0b423d-53a1-476a-9a84-2358107bed15
-# ╠═6823ba07-6c29-4db1-bb40-39bf604ff0b2
 # ╠═98dbac96-c1c9-49ba-87cd-f75967907e52
+# ╠═31c2bcaf-68a5-40b9-956a-68fbed776005
+# ╟─6e1b9c4b-1896-41ee-aa84-e1320811343a
+# ╠═8a229475-60cd-4c84-b9b4-de3c8d781edb
+# ╠═54d111cb-0382-45b8-bac1-06cc9e137e39
+# ╠═a8cd3a0d-b2e7-4956-89ba-6a2315733a88
+# ╠═d37e713e-b407-4fc9-8af0-e2d1bac74557
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

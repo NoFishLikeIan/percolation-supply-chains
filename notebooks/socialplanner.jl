@@ -50,14 +50,14 @@ md"
 
 # ╔═╡ 791a0287-5104-4e8f-917b-5c44e931b5d7
 begin
-	n = 15
+	n = 10
 
 	ι = ones(Int64, n)
 	
 	model = VerticalModel(
 	    20 .* ι, # m
-	    0.01 .* ι, # μ
-	    30. .* ι, # π
+	    0.05 .* ι, # μ
+	    100. .* ι, # π
 	    1 # κ
 	)
 
@@ -102,19 +102,13 @@ begin
 	
 end
 
-# ╔═╡ 98c94507-793a-40dd-8a78-187a4d71f25a
-md"## Correlated problem"
-
-# ╔═╡ 0cdc75e5-2a34-4d3e-82d9-577d6df66695
-G, Zᵣ = solvecorrelated(model)
-
 # ╔═╡ 47a721ac-0e91-4573-a994-b20d1ac656b4
 md"## Comparison"
 
 # ╔═╡ cbd2a3ad-c745-4940-a7c0-0aa71a8dfd46
 begin
 	compfig = plot(
-	    xlabel = "Layer", ylabel = L"S_i",
+	    xlabel = "Layer", ylabel = L"s_i",
 	    xticks = 2:n
 	)
 	
@@ -142,7 +136,7 @@ begin
 	
 	pfig = plot(
 		xlabel = latexstring("Layer \$i\$"),
-		ylabel = L"p_i(S)"
+		ylabel = L"p_i(s_i)"
 	)
 
 	plot!(
@@ -212,7 +206,7 @@ begin
 
 	focfig = plot(
 		xlims = extrema(sspace),
-		xlabel = L"S_j"
+		xlabel = L"s_i"
 	)
 
 	for base_node in nodes
@@ -328,7 +322,7 @@ end
 
 # ╔═╡ 3ca721b7-d426-4a3c-8de7-f3b8d467d087
 begin
-	μs = range(0.01, 0.1; length = 20)
+	μs = range(0.01, 0.05; length = 20)
 	
 	makem(μ) = VerticalModel(
 	    30 .* ι, # m
@@ -359,6 +353,24 @@ begin
 		marker = :o, label = ["Social" "Agent" "One" "Two"]
 	)
 
+end
+
+# ╔═╡ 98c94507-793a-40dd-8a78-187a4d71f25a
+md"## Correlated problem"
+
+# ╔═╡ 0f318abb-345e-48d3-89aa-48d97433dd8c
+G, Zᵣ = solvecorrelated(model)
+
+# ╔═╡ abf05a0b-3ba6-4b51-bf5f-4926c389ded5
+begin
+	Zₛ, _ = integersolution(Sₛ, model)
+end
+
+# ╔═╡ 84dfe028-5805-4939-a40b-15579a4bde3d
+begin
+	plot(Zᵣ)
+	plot!(Zₛ; marker = :o)
+	plot!(Zₐ)
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1629,22 +1641,24 @@ version = "0.9.1+5"
 # ╟─033bbaa5-a446-40dd-a3ec-609fbf6b5e99
 # ╠═63e0b221-491e-4834-b83d-992e16c011f4
 # ╠═245d925c-eff5-46ff-92cb-6582afd70a0d
-# ╟─98c94507-793a-40dd-8a78-187a4d71f25a
-# ╠═0cdc75e5-2a34-4d3e-82d9-577d6df66695
 # ╟─47a721ac-0e91-4573-a994-b20d1ac656b4
 # ╠═cbd2a3ad-c745-4940-a7c0-0aa71a8dfd46
 # ╠═8a4ab79e-49f7-45cc-aa92-9ed98cb80743
 # ╟─3ea80157-c5fb-4b5b-a145-f255ba53e7ff
 # ╠═5b731844-98ba-49f2-b056-2bf3b34d3436
 # ╟─38566a14-63e1-4c88-8b63-491e54a2d6a8
-# ╟─dacd256b-d32b-4f12-9537-07e6c76bf20e
+# ╠═dacd256b-d32b-4f12-9537-07e6c76bf20e
 # ╟─79ddeee7-f1ae-4750-b465-ef75c4a83da5
 # ╠═a5d1a99c-34b5-441a-9468-a11cc16574d1
 # ╟─6ad55e50-305e-452c-adfe-b48463368955
 # ╠═6903ed1c-5f6d-4f79-962b-2105afcb9f58
 # ╟─0e523257-052d-4529-91aa-a8701d87c32c
-# ╠═04299b03-3873-4681-bf60-49afff96376f
-# ╠═3ca721b7-d426-4a3c-8de7-f3b8d467d087
+# ╟─04299b03-3873-4681-bf60-49afff96376f
+# ╟─3ca721b7-d426-4a3c-8de7-f3b8d467d087
 # ╟─f6f91916-fea1-4538-a8f8-1323fde5d119
+# ╟─98c94507-793a-40dd-8a78-187a4d71f25a
+# ╠═0f318abb-345e-48d3-89aa-48d97433dd8c
+# ╠═abf05a0b-3ba6-4b51-bf5f-4926c389ded5
+# ╠═84dfe028-5805-4939-a40b-15579a4bde3d
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
