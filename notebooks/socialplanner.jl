@@ -31,6 +31,7 @@ begin
 	include("../theory/optimum/agent.jl")
 	include("../theory/optimum/planner.jl")
 	include("../theory/simulate.jl")
+	include("../theory/optimum/correlation.jl")
 end
 
 # ╔═╡ d6007018-1870-41f5-8e93-51d79ad0bbe8
@@ -49,14 +50,14 @@ md"
 
 # ╔═╡ 791a0287-5104-4e8f-917b-5c44e931b5d7
 begin
-	n = 13
+	n = 15
 
 	ι = ones(Int64, n)
 	
 	model = VerticalModel(
-	    100 .* ι, # m
+	    20 .* ι, # m
 	    0.01 .* ι, # μ
-	    100. .* ι, # π
+	    30. .* ι, # π
 	    1 # κ
 	)
 
@@ -101,6 +102,12 @@ begin
 	
 end
 
+# ╔═╡ 98c94507-793a-40dd-8a78-187a4d71f25a
+md"## Correlated problem"
+
+# ╔═╡ 0cdc75e5-2a34-4d3e-82d9-577d6df66695
+G, Zᵣ = solvecorrelated(model)
+
 # ╔═╡ 47a721ac-0e91-4573-a994-b20d1ac656b4
 md"## Comparison"
 
@@ -118,6 +125,8 @@ begin
 	plot!(compfig, 2:n, Sₐ[2:n]; 
 		c = :darkgreen,
 	    marker = :o, label = "Firm problem")
+
+	
 end
 
 # ╔═╡ 8a4ab79e-49f7-45cc-aa92-9ed98cb80743
@@ -1620,11 +1629,13 @@ version = "0.9.1+5"
 # ╟─033bbaa5-a446-40dd-a3ec-609fbf6b5e99
 # ╠═63e0b221-491e-4834-b83d-992e16c011f4
 # ╠═245d925c-eff5-46ff-92cb-6582afd70a0d
+# ╟─98c94507-793a-40dd-8a78-187a4d71f25a
+# ╠═0cdc75e5-2a34-4d3e-82d9-577d6df66695
 # ╟─47a721ac-0e91-4573-a994-b20d1ac656b4
 # ╠═cbd2a3ad-c745-4940-a7c0-0aa71a8dfd46
 # ╠═8a4ab79e-49f7-45cc-aa92-9ed98cb80743
 # ╟─3ea80157-c5fb-4b5b-a145-f255ba53e7ff
-# ╟─5b731844-98ba-49f2-b056-2bf3b34d3436
+# ╠═5b731844-98ba-49f2-b056-2bf3b34d3436
 # ╟─38566a14-63e1-4c88-8b63-491e54a2d6a8
 # ╟─dacd256b-d32b-4f12-9537-07e6c76bf20e
 # ╟─79ddeee7-f1ae-4750-b465-ef75c4a83da5
