@@ -76,10 +76,10 @@ begin
 	S(p, r) = (log(r) - log(p)) / log(1 - p)
 
 	Kfig = plot(
-		ylabel = L"s_i", 
-		xlabel = L"p_{i - 1}", xlims = (0, 1),
+		ylabel = L"s_k", 
+		xlabel = L"p_{k - 1}", xlims = (0, 1),
 		ylims = (0, 8), yticks = 1:8,
-		legendtitle = latexstring("\$  \\kappa / \\left(1 - \\mu_i\\right)\\pi_i \$"),
+		legendtitle = latexstring("\$  \\kappa / \\left(1 - \\mu_k\\right)\\pi_k \$"),
 		legendtitlefontsize = 7,
 		dpi = 250
 	)
@@ -108,7 +108,7 @@ begin
 	prof = 100.
 
 	compfig = plot(
-		xlabel = L"p_{i - 1}", ylabel = "Number of suppliers"
+		xlabel = L"p_{k - 1}", ylabel = L"s_k"
 	)
 
 	plot!(compfig, M, p -> S(p, 1., prof, 0.), label = L"S")
@@ -131,10 +131,10 @@ end
 begin
 
 	pfig = plot(
-		ylabel = L"p_i", 
-		xlabel = L"p_{i - 1}", xlims = (0, 1),
+		ylabel = L"p_k", 
+		xlabel = L"p_{k - 1}", xlims = (0, 1),
 		ylims = (0, 1),
-		legendtitle = latexstring("\$ \\mu_i \$"),
+		legendtitle = latexstring("\$ \\mu_k \$"),
 		legendtitlefontsize = 7,
 		dpi = 250
 	)

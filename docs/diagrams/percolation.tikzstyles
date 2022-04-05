@@ -12,6 +12,6 @@
 \tikzstyle{Green firm}=[fill={rgb,255: red,0; green,128; blue,32}, draw=black, shape=circle]
 
 % Edge styles
-\tikzstyle{Supplies}=[->, line width=0.5mm]
+\tikzstyle{Supplies}=[-latex, shorten > = 2pt, line width=0.5mm]
 \tikzstyle{Unseen edge}=[dashed, ->, opacity=0.5]
 \tikzstyle{Potential supplies}=[dashed, -, line width=0.5mm]

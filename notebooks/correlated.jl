@@ -16,11 +16,8 @@ begin
 	
 	using IterTools, Combinatorics
 	using StatsBase: sample
-	using SpecialFunctions
+	using SpecialFunctions, Polylogarithms
 end
-
-# ╔═╡ 4f0b423d-53a1-476a-9a84-2358107bed15
-using  Polylogarithms
 
 # ╔═╡ fe98d196-4ea4-4465-a764-a4166cd8b58f
 begin
@@ -49,7 +46,7 @@ begin
 	
 	model = VerticalModel(
         repeat([layer_size], layers), # size
-        repeat([μ], layers),
+        [μ, zeros(layers-1)...],
         repeat([profit], layers),
         1.
     )
@@ -95,101 +92,53 @@ md"## Derivative"
 
 # ╔═╡ 98dbac96-c1c9-49ba-87cd-f75967907e52
 begin
+	S = range(0.01, 10; length = 101)
+	r = model.κ / π
+	
 	derfig = hline(
-		[model.κ / ((1 - μ) * π)];
+		[r];
+		xlims = extrema(S),
 		linestyle = :dash, c = :black,
+		xticks = sspace,
 		xlabel = L"s",
-		ylabel = L"\frac{\partial p}{\partial s}(s; f)",
-		label = L"\kappa / \pi (1 - \mu)",
-		ylims = (-0.05, 0.5)
+		ylabel = L"\frac{\partial p}{\partial s}",
+		label = nothing,
+		ylims = (-0.05, 0.5),
+		margins = 4Plots.mm,
+		legend_title = L"m - | \mathcal{F}_k \ |"
 	)
 
-	S = range(0.01, 10; length = 101)
+	annotate!(derfig,
+		9, r + 0.03,
+		L"\kappa / \pi"
+	)
 
-	layersize = model.m[1]
+	colors = [:darkblue, :darkred, :darkgreen]
 
-	for f ∈ [5, 10, 20]
+	for (i, f) ∈ [5, 20, 29] |> enumerate
 
-		derivative(s) = layersize-s-f > 0 ? ∂p(1, s, f; m = model) : 0
+		derivative(s) = layer_size-s-f > 0 ? ∂p(1, s, f; m = model) : 0
 
+		try
+			s̃ = find_zero(s -> derivative(s) - r, (0, 10))
+			scatter!(derfig, 
+				[s̃], [r], c = colors[i], label = nothing
+			)
+		catch e end
 		
 		plot!(derfig, 
 			S, derivative;
-			label = latexstring("\$ f = $(f)\$")
+			label = latexstring("\$$(layer_size - f)\$"),
+			c = colors[i]
 		)
+
 	end
 
 	derfig
 end
 
-# ╔═╡ 31c2bcaf-68a5-40b9-956a-68fbed776005
-∂p(1, 0.1, 9; m = model) 
-
-# ╔═╡ 6e1b9c4b-1896-41ee-aa84-e1320811343a
-md"
-## Recursive definition of probability
-"
-
-# ╔═╡ 8a229475-60cd-4c84-b9b4-de3c8d781edb
-mᵢ = 15
-
-# ╔═╡ 54d111cb-0382-45b8-bac1-06cc9e137e39
-function Δp(s, f)
-	if s ≥ mᵢ - f
-		return 0
-	end
-	
-	prob = (1 - μ) * binomial(mᵢ - (s + 1), f) / binomial(mᵢ, f)
-
-	return prob * (f - 2s) / (mᵢ - f - s)
-end
-
-# ╔═╡ a8cd3a0d-b2e7-4956-89ba-6a2315733a88
-function prec(s, f)
-
-	if s ≥ f
-		return 1.
-	end
-
-	if s == 0
-		return 0
-	end
-
-	sₚ = s - 1
-
-	den = mᵢ - 3sₚ
-	constant = (1 - μ) * (f - 2sₚ)
-
-	return ((mᵢ - f - sₚ) * prec(sₚ, f) + constant) / den
-	
-end
-
-# ╔═╡ d37e713e-b407-4fc9-8af0-e2d1bac74557
-begin	
-	recprobfig = hline(
-		[model.κ / model.profits[1]];
-		linestyle = :dash, label = nothing,
-		c = :black,
-		xticks = sspace,
-		legendtitle = L"f_i",
-		title = L"p(s; f_i)",
-		ylims = (0, Inf)
-	)
-
-
-	for (k, f) ∈ 0:1:mᵢ |> enumerate
-		plot!(recprobfig, 
-			sspace, s -> Δp(s, f);
-			label = latexstring("\$$(f)\$"),
-			marker = :o
-		)
-
-		
-	end
-
-	recprobfig
-
-end
+# ╔═╡ 8656ba81-c72f-4457-a3cc-f6bc4dcaf690
+savefig(derfig, joinpath(plotpath, "foc_corr.pdf"))
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1253,15 +1202,9 @@ version = "0.9.1+5"
 # ╠═fe98d196-4ea4-4465-a764-a4166cd8b58f
 # ╠═d25929e8-e875-489a-adfb-ffab58c3cc14
 # ╠═07c6e709-4366-4d5d-ad6a-9e07cbfc3dde
-# ╠═58ddbd98-0731-4b84-a075-45beaf8e5bcb
+# ╟─58ddbd98-0731-4b84-a075-45beaf8e5bcb
 # ╟─c78bdbb2-2fb2-47de-b368-dc95260b381d
-# ╠═4f0b423d-53a1-476a-9a84-2358107bed15
 # ╠═98dbac96-c1c9-49ba-87cd-f75967907e52
-# ╠═31c2bcaf-68a5-40b9-956a-68fbed776005
-# ╟─6e1b9c4b-1896-41ee-aa84-e1320811343a
-# ╠═8a229475-60cd-4c84-b9b4-de3c8d781edb
-# ╠═54d111cb-0382-45b8-bac1-06cc9e137e39
-# ╠═a8cd3a0d-b2e7-4956-89ba-6a2315733a88
-# ╠═d37e713e-b407-4fc9-8af0-e2d1bac74557
+# ╠═8656ba81-c72f-4457-a3cc-f6bc4dcaf690
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

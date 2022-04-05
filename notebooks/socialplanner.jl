@@ -206,7 +206,7 @@ begin
 
 	focfig = plot(
 		xlims = extrema(sspace),
-		xlabel = L"s_i"
+		xlabel = L"s_q"
 	)
 
 	for base_node in nodes
@@ -264,7 +264,7 @@ begin
 		hline!(
 			focfig, [noext]; 
 			c = cs[3], linestyle = :dash,
-			label = L"\kappa / \pi_j"
+			label = L"\kappa / \pi_q"
 		)
 
 	end
@@ -1648,7 +1648,7 @@ version = "0.9.1+5"
 # ╠═5b731844-98ba-49f2-b056-2bf3b34d3436
 # ╟─38566a14-63e1-4c88-8b63-491e54a2d6a8
 # ╠═dacd256b-d32b-4f12-9537-07e6c76bf20e
-# ╟─79ddeee7-f1ae-4750-b465-ef75c4a83da5
+# ╠═79ddeee7-f1ae-4750-b465-ef75c4a83da5
 # ╠═a5d1a99c-34b5-441a-9468-a11cc16574d1
 # ╟─6ad55e50-305e-452c-adfe-b48463368955
 # ╠═6903ed1c-5f6d-4f79-962b-2105afcb9f58

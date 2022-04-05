@@ -183,14 +183,15 @@ let
 	
 	sfig = plot(
 		c = :black, linestyle = :dash,
-		xlabel = L"m_{i - 2}", 
-		title = L"\mathbb{P} \left( \bigcap \ x_j > 0 \right)",
+		xlabel = L"m_{k - 2}", 
+		ylabel = L"\mathbb{P} \left( \bigcap \ \mathcal{X}_{j}(\mathcal{G}_{k - 1}) > 0 \right)",
+		legendtitle = L"$s_{k}$"
 	)
 
 	for Sᵢ₋₁ ∈ Ss
 		plot!(
 			sfig, ms, m -> overlap(m, Sᵢ₋₁, Sᵢ);
-			label = latexstring("\$ S_{i - 1} = $(Sᵢ₋₁) \$")
+			label = latexstring("\$$(Sᵢ₋₁) \$")
 		)
 	end
 
