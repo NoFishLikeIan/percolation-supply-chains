@@ -108,17 +108,17 @@ md"## Comparison"
 # ╔═╡ cbd2a3ad-c745-4940-a7c0-0aa71a8dfd46
 begin
 	compfig = plot(
-	    xlabel = "Layer", ylabel = L"s_i",
+	    xlabel = "Layer", ylabel = L"s_k",
 	    xticks = 2:n
 	)
 	
 	plot!(compfig, 2:n, Sₛ[2:n]; 
 		c = :darkred,
-	    marker = :o, label = "Social planner")
+	    marker = :o, label = "Social\nplanner")
 	
 	plot!(compfig, 2:n, Sₐ[2:n]; 
-		c = :darkgreen,
-	    marker = :o, label = "Firm problem")
+		c = :darkblue,
+	    marker = :o, label = "Firm")
 
 	
 end
@@ -206,14 +206,13 @@ begin
 
 	focfig = plot(
 		xlims = extrema(sspace),
-		xlabel = L"s_q"
+		xlabel = L"s_q",
+		legend_title = "Marginal benefit"
 	)
 
 	for base_node in nodes
 		noext = model.κ / model.profits[base_node]
-	
-		cs = [:black, :darkred, :darkblue]
-		
+			
 		sol_p = find_zero(
 			s -> ∂pplanner(s, base_node) - noext, 
 			br
@@ -229,8 +228,8 @@ begin
 	
 		plot!(focfig,
 			sspace, s -> ∂pplanner(s, base_node); 
-			c = cs[2],
-			label = "Planner's marginal\nbenefit"
+			c = :darkred,
+			label = "Social\nplanner"
 		)
 	
 		plot!(focfig,
@@ -247,8 +246,8 @@ begin
 		plot!(
 			focfig, sspace, 
 			s -> ∂pbase(s, base_node); 
-			c = cs[1],
-			label = "Firm's marginal\nbenefit"
+			c = :darkblue,
+			label = "Firm"
 		)
 	
 		
@@ -263,7 +262,7 @@ begin
 		
 		hline!(
 			focfig, [noext]; 
-			c = cs[3], linestyle = :dash,
+			c = :black, linestyle = :dash,
 			label = L"\kappa / \pi_q"
 		)
 
@@ -322,18 +321,18 @@ end
 
 # ╔═╡ 3ca721b7-d426-4a3c-8de7-f3b8d467d087
 begin
-	μs = range(0.01, 0.05; length = 20)
+	πs = range(35, 120; length = 20) |> reverse
 	
-	makem(μ) = VerticalModel(
+	makem(π) = VerticalModel(
 	    30 .* ι, # m
-	    μ .* ι, # μ
-	    30. .* ι, # π
+	    0.01.* ι, # μ
+	    π .* ι, # π
 	    1 # κ
 	)
 
-	resiliences = Matrix{Float64}(undef, length(μs), 4)
+	resiliences = Matrix{Float64}(undef, length(πs), 4)
 	
-	for (i, model) ∈ map(makem, μs) |> enumerate
+	for (i, model) ∈ map(makem, πs) |> enumerate
 		resiliences[i, :] .= averageresilience(model; T = 1_000)
 	end
 end
@@ -341,37 +340,25 @@ end
 # ╔═╡ f6f91916-fea1-4538-a8f8-1323fde5d119
 begin
 
-	plot(
-		μs, 1 .- μs;
-		alpha = 0.5, linestyle = :dash, label = nothing,
-		c = :red,
-		xlabel = L"\mu", ylabel = L"\mathbb{E}[p_i]"
+	criticalityfig = plot(
+		1 ./ πs, x -> (1 - makem(1).μ[1]);
+		alpha = 0.5, linestyle = :dash, 
+		c = :black,
+		label = L"s = m",
+		xlabel = L"\kappa / \pi", ylabel = "Probability of production network failure"
 	)
 	
-	plot!(
-		μs, resiliences[:, 1:2]; 
-		marker = :o, label = ["Social" "Agent" "One" "Two"]
+	plot!(criticalityfig,
+		1 ./ πs, resiliences[:, [1, 2]]; 
+		marker = :o, label = [
+			"Social\nplanner" "Firm"
+		], c = [:darkred :darkblue]
 	)
 
 end
 
-# ╔═╡ 98c94507-793a-40dd-8a78-187a4d71f25a
-md"## Correlated problem"
-
-# ╔═╡ 0f318abb-345e-48d3-89aa-48d97433dd8c
-G, Zᵣ = solvecorrelated(model)
-
-# ╔═╡ abf05a0b-3ba6-4b51-bf5f-4926c389ded5
-begin
-	Zₛ, _ = integersolution(Sₛ, model)
-end
-
-# ╔═╡ 84dfe028-5805-4939-a40b-15579a4bde3d
-begin
-	plot(Zᵣ)
-	plot!(Zₛ; marker = :o)
-	plot!(Zₐ)
-end
+# ╔═╡ 77855ef1-868f-44d7-8c55-be9878bac3ba
+savefig(criticalityfig, joinpath(plotpath, "criticality.pdf"))
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1640,14 +1627,14 @@ version = "0.9.1+5"
 # ╠═5c3d0a80-9cf8-443a-b703-2aba53d8b5b2
 # ╟─033bbaa5-a446-40dd-a3ec-609fbf6b5e99
 # ╠═63e0b221-491e-4834-b83d-992e16c011f4
-# ╠═245d925c-eff5-46ff-92cb-6582afd70a0d
+# ╟─245d925c-eff5-46ff-92cb-6582afd70a0d
 # ╟─47a721ac-0e91-4573-a994-b20d1ac656b4
 # ╠═cbd2a3ad-c745-4940-a7c0-0aa71a8dfd46
 # ╠═8a4ab79e-49f7-45cc-aa92-9ed98cb80743
 # ╟─3ea80157-c5fb-4b5b-a145-f255ba53e7ff
 # ╠═5b731844-98ba-49f2-b056-2bf3b34d3436
 # ╟─38566a14-63e1-4c88-8b63-491e54a2d6a8
-# ╠═dacd256b-d32b-4f12-9537-07e6c76bf20e
+# ╟─dacd256b-d32b-4f12-9537-07e6c76bf20e
 # ╠═79ddeee7-f1ae-4750-b465-ef75c4a83da5
 # ╠═a5d1a99c-34b5-441a-9468-a11cc16574d1
 # ╟─6ad55e50-305e-452c-adfe-b48463368955
@@ -1655,10 +1642,7 @@ version = "0.9.1+5"
 # ╟─0e523257-052d-4529-91aa-a8701d87c32c
 # ╟─04299b03-3873-4681-bf60-49afff96376f
 # ╟─3ca721b7-d426-4a3c-8de7-f3b8d467d087
-# ╟─f6f91916-fea1-4538-a8f8-1323fde5d119
-# ╟─98c94507-793a-40dd-8a78-187a4d71f25a
-# ╠═0f318abb-345e-48d3-89aa-48d97433dd8c
-# ╠═abf05a0b-3ba6-4b51-bf5f-4926c389ded5
-# ╠═84dfe028-5805-4939-a40b-15579a4bde3d
+# ╠═f6f91916-fea1-4538-a8f8-1323fde5d119
+# ╠═77855ef1-868f-44d7-8c55-be9878bac3ba
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

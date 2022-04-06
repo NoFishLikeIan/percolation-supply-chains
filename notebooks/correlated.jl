@@ -58,6 +58,12 @@ begin
 	scontspace = range(0, model.m[1]; length = 101)
 end
 
+# ╔═╡ 0f1707bb-5b76-49cc-b30e-762a734c43bf
+md"## Probability"
+
+# ╔═╡ 50395808-9936-470d-999f-bc3ced381c2e
+md"## Payoffs"
+
 # ╔═╡ 58ddbd98-0731-4b84-a075-45beaf8e5bcb
 begin
 	i = 1
@@ -68,8 +74,8 @@ begin
 	pfig = plot(
 		xticks = sspace,
 		xlabel = L"s",
-		ylabel = L"\pi \ p_i(s) - \kappa s",
-		legendtitle = L"f"
+		ylabel = L"\pi_k \ p_k(s, v) - \kappa s",
+		legendtitle = L"v"
 	)
 
 	for f ∈ fspace
@@ -115,7 +121,7 @@ begin
 
 	colors = [:darkblue, :darkred, :darkgreen]
 
-	for (i, f) ∈ [5, 20, 29] |> enumerate
+	for (i, f) ∈ [2, 15, 29] |> enumerate
 
 		derivative(s) = layer_size-s-f > 0 ? ∂p(1, s, f; m = model) : 0
 
@@ -1202,7 +1208,9 @@ version = "0.9.1+5"
 # ╠═fe98d196-4ea4-4465-a764-a4166cd8b58f
 # ╠═d25929e8-e875-489a-adfb-ffab58c3cc14
 # ╠═07c6e709-4366-4d5d-ad6a-9e07cbfc3dde
-# ╟─58ddbd98-0731-4b84-a075-45beaf8e5bcb
+# ╠═0f1707bb-5b76-49cc-b30e-762a734c43bf
+# ╠═50395808-9936-470d-999f-bc3ced381c2e
+# ╠═58ddbd98-0731-4b84-a075-45beaf8e5bcb
 # ╟─c78bdbb2-2fb2-47de-b368-dc95260b381d
 # ╠═98dbac96-c1c9-49ba-87cd-f75967907e52
 # ╠═8656ba81-c72f-4457-a3cc-f6bc4dcaf690
