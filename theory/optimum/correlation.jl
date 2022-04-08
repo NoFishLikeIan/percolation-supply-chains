@@ -80,6 +80,7 @@ function solvecorrelated(m::VerticalModel)
 end
 
 function ∂p(i::Int64, s::Float64, f::Int64; m::VerticalModel)
+    # FIXME: If m - f - s ≤ 0 return 0. end
     idx = i + 1
     mₚ = m.m[idx - 1]
     μᵢ = m.μ[idx]

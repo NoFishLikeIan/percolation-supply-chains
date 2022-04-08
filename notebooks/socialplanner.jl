@@ -20,7 +20,10 @@ using PlutoUI
 using IterTools
 
 # ╔═╡ fdf1a246-4b5e-4566-9dbf-e159fd3d24aa
-using StatsBase
+using StatsBase, Distributions
+
+# ╔═╡ 4ccdc9aa-1a73-4605-bae3-0a3382d4a58f
+using Combinatorics, SpecialFunctions
 
 # ╔═╡ 6903ed1c-5f6d-4f79-962b-2105afcb9f58
 using StatsPlots
@@ -57,7 +60,7 @@ begin
 	model = VerticalModel(
 	    20 .* ι, # m
 	    0.05 .* ι, # μ
-	    100. .* ι, # π
+	    30. .* ι, # π
 	    1 # κ
 	)
 
@@ -147,7 +150,7 @@ begin
 	
 	plot!(
 		1:n, pₐ;
-		marker = :o, c = :darkgreen,
+		marker = :o, c = :darkblue,
 		label = "Competitive\nequilibrium"
 	)
 end
@@ -196,13 +199,31 @@ begin
 	end
 end
 
+# ╔═╡ f09418e3-fcaa-4689-890c-ae3afca3543c
+function ∂pcorrelation(s, base_node)
+	m = model.m[base_node]
+	μ = model.μ[base_node]
+
+	g(v) = binomial(m, v) * (1 - μ)^v * μ^(m - v)
+
+	derivative = 0.
+
+	for v ∈ 0:m
+		if m - s - v > 0
+			derivative += g(v) * ∂p(base_node, s, v; m = model)
+		end
+	end
+
+	return derivative
+end
+
 # ╔═╡ 79ddeee7-f1ae-4750-b465-ef75c4a83da5
 begin
 
-	nodes = [2]
+	nase_node = 1
 
-	sspace = range(1.5, 2.5, length = 101)
-	br = [1., 100.]
+	sspace = range(1.2, 2., length = 101)
+	br = [0., 100.]
 
 	focfig = plot(
 		xlims = extrema(sspace),
@@ -210,63 +231,90 @@ begin
 		legend_title = "Marginal benefit"
 	)
 
-	for base_node in nodes
-		noext = model.κ / model.profits[base_node]
-			
-		sol_p = find_zero(
-			s -> ∂pplanner(s, base_node) - noext, 
-			br
-		)
-		
-		sol_f = find_zero(
-			s -> ∂pbase(s, base_node) - noext, 
-			br
-		)
-		
-	
-		# Planner plot
-	
-		plot!(focfig,
-			sspace, s -> ∂pplanner(s, base_node); 
-			c = :darkred,
-			label = "Social\nplanner"
-		)
-	
-		plot!(focfig,
-			[sol_p, sol_p], [0, ∂pplanner(sol_p, base_node)]; 
-			c = :black, linestyle = :dash, 
-			label = nothing)
-		scatter!(focfig, [sol_p], [∂pplanner(sol_p, base_node)];
-			c = :black, 
-			label = nothing)
-	
-	
-		# Firm plot
-			
-		plot!(
-			focfig, sspace, 
-			s -> ∂pbase(s, base_node); 
-			c = :darkblue,
-			label = "Firm"
-		)
-	
-		
-		plot!(focfig, [sol_f, sol_f], [0, ∂pbase(sol_f, base_node)], 
-			c = :black, linestyle = :dash, 
-			label = nothing)
-		
-		scatter!(focfig, [sol_f], [∂pbase(sol_f, base_node)]; 
-			c = :black, 
-			label = nothing)
-		
-		
-		hline!(
-			focfig, [noext]; 
-			c = :black, linestyle = :dash,
-			label = L"\kappa / \pi_q"
-		)
+	noext = model.κ / model.profits[base_node]
 
-	end
+	hline!(
+		focfig, [noext]; 
+		c = :black, linestyle = :dash,
+		label = nothing
+	)
+
+	annotate!(
+		focfig, maximum(sspace) - 0.1, noext + 0.01,
+		L"\kappa / \pi"
+	)
+		
+	sol_p = find_zero(
+		s -> ∂pplanner(s, base_node) - noext, 
+		br
+	)
+	
+	sol_f = find_zero(
+		s -> ∂pbase(s, base_node) - noext, 
+		br
+	)
+
+	sol_c = find_zero(
+		s -> ∂pcorrelation(s, base_node) - noext,
+		br
+	)
+	
+
+	# Planner plot
+
+	plot!(focfig,
+		sspace, s -> ∂pplanner(s, base_node); 
+		c = :darkred,
+		label = "Social\nplanner"
+	)
+
+	plot!(focfig,
+		[sol_p, sol_p], [0, ∂pplanner(sol_p, base_node)]; 
+		c = :black, linestyle = :dash, 
+		label = nothing)
+	scatter!(focfig, [sol_p], [∂pplanner(sol_p, base_node)];
+		c = :black, 
+		label = nothing)
+
+
+	# Firm plot
+		
+	plot!(
+		focfig, sspace, 
+		s -> ∂pbase(s, base_node); 
+		c = :darkblue,
+		label = "Firm\nw/out correlation"
+	)
+
+	
+	plot!(focfig, [sol_f, sol_f], [0, ∂pbase(sol_f, base_node)], 
+		c = :black, linestyle = :dash, 
+		label = nothing)
+	
+	scatter!(focfig, [sol_f], [∂pbase(sol_f, base_node)]; 
+		c = :black, 
+		label = nothing)
+
+	
+	# Correlation plot plot
+		
+	plot!(
+		focfig, sspace, 
+		s -> ∂pcorrelation(s, base_node); 
+		c = :darkgreen,
+		label = "Firm\nw/ correlation"
+	)
+
+	
+	plot!(focfig, [sol_c, sol_c], 
+		[0, ∂pcorrelation(sol_c, base_node)], 
+		c = :black, linestyle = :dash, 
+		label = nothing)
+	
+	scatter!(focfig, [sol_c], [∂pcorrelation(sol_c, base_node)]; 
+		c = :black, 
+		label = nothing)
+
 
 	focfig
 end
@@ -295,6 +343,8 @@ function averageresilience(model::VerticalModel; kw...)
 	
 	foc! = focfactory(model)
 
+	# Social planner
+
 	res = nlsolve(foc!, ones(n - 1))
 
 	if res.f_converged
@@ -306,31 +356,38 @@ function averageresilience(model::VerticalModel; kw...)
 		Fₛ = [NaN for _ ∈ 1:n]
 	end
 
+	# Competitive w/out correlation
 
 	probabilities, Zₐ = sequence(n; m = model, integer = true)
 	Zₐ = collect(Int64, Zₐ)
 
 	Fₐ = resilience(Zₐ; m = model, kw...)
 
-	F₁ = resilience(ι; m = model, kw...)
-	F₂ = resilience(model.m[1] .* ι; m = model, kw...)
+	# Competitive w/ correlation
+	_, Zᵨ = solvecorrelated(model)
+	Fᵨ = resilience(Zᵨ; m = model, kw...)
 
-	return mean(Fₛ[:, 2:end, :]), mean(Fₐ[:, 2:end, :]), mean(F₁[:, 2:end, :]), mean(F₂[:, 2:end, :])
+	return mean(Fₛ[:, 2:end, :]), mean(Fₐ[:, 2:end, :]), mean(Fᵨ[:, 2:end, :])
 	
 end
 
-# ╔═╡ 3ca721b7-d426-4a3c-8de7-f3b8d467d087
+# ╔═╡ 525cc81c-9d0a-4e51-9dba-9db7ab1d2c7c
 begin
-	πs = range(35, 120; length = 20) |> reverse
+	rs = range(0.001, 0.03, length = 21)
 	
+	πs = inv.(rs) |> collect
+end
+
+# ╔═╡ 3ca721b7-d426-4a3c-8de7-f3b8d467d087
+begin	
 	makem(π) = VerticalModel(
-	    30 .* ι, # m
+	    20 .* ι, # m
 	    0.01.* ι, # μ
 	    π .* ι, # π
 	    1 # κ
 	)
 
-	resiliences = Matrix{Float64}(undef, length(πs), 4)
+	resiliences = Matrix{Float64}(undef, length(πs), 3)
 	
 	for (i, model) ∈ map(makem, πs) |> enumerate
 		resiliences[i, :] .= averageresilience(model; T = 1_000)
@@ -341,18 +398,24 @@ end
 begin
 
 	criticalityfig = plot(
-		1 ./ πs, x -> (1 - makem(1).μ[1]);
+		rs, x -> (1 - makem(1).μ[1]);
 		alpha = 0.5, linestyle = :dash, 
 		c = :black,
-		label = L"s = m",
-		xlabel = L"\kappa / \pi", ylabel = "Probability of production network failure"
+		label = nothing,
+		xlabel = L"\kappa / \pi", 
+		ylabel = "Fraction of firm producing in equilibrium"
+	)
+
+	annotate!(criticalityfig,
+		last(rs) - 0.005, 0.989,
+		L"s = m"
 	)
 	
 	plot!(criticalityfig,
-		1 ./ πs, resiliences[:, [1, 2]]; 
+		rs, resiliences; 
 		marker = :o, label = [
-			"Social\nplanner" "Firm"
-		], c = [:darkred :darkblue]
+			"Social\nplanner" "Firm\nw/out\ncorrelation" "Firm\nw/\ncorrelation"
+		], c = [:darkred :darkblue :darkgreen]
 	)
 
 end
@@ -363,22 +426,28 @@ savefig(criticalityfig, joinpath(plotpath, "criticality.pdf"))
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 IterTools = "c8e1da08-722c-5040-9ed9-7db0dc04731e"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 NLsolve = "2774e3e8-f4cf-5e23-947b-6d7e65073b56"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Roots = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
+SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 StatsPlots = "f3b207a7-027a-5e70-b257-86293d7955fd"
 
 [compat]
+Combinatorics = "~1.0.2"
+Distributions = "~0.25.53"
 IterTools = "~1.4.0"
 LaTeXStrings = "~1.3.0"
 NLsolve = "~4.5.1"
 Plots = "~1.27.0"
 PlutoUI = "~0.7.37"
 Roots = "~1.3.15"
+SpecialFunctions = "~2.1.4"
 StatsBase = "~0.33.16"
 StatsPlots = "~0.14.33"
 """
@@ -492,6 +561,11 @@ git-tree-sha1 = "417b0ed7b8b838aa6ca0a87aadf1bb9eb111ce40"
 uuid = "5ae59095-9a9b-59fe-a467-6f913c188581"
 version = "0.12.8"
 
+[[Combinatorics]]
+git-tree-sha1 = "08c8b6831dc00bfea825826be0bc8336fc369860"
+uuid = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
+version = "1.0.2"
+
 [[CommonSolve]]
 git-tree-sha1 = "68a0743f578349ada8bc911a5cbd5a2ef6ed6d1f"
 uuid = "38540f10-b2f7-11e9-35d8-d573e4eb0ff2"
@@ -585,9 +659,9 @@ uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[Distributions]]
 deps = ["ChainRulesCore", "DensityInterface", "FillArrays", "LinearAlgebra", "PDMats", "Printf", "QuadGK", "Random", "SparseArrays", "SpecialFunctions", "Statistics", "StatsBase", "StatsFuns", "Test"]
-git-tree-sha1 = "c43e992f186abaf9965cc45e372f4693b7754b22"
+git-tree-sha1 = "5a4168170ede913a2cd679e53c2123cb4b889795"
 uuid = "31c24e10-a181-5473-b8eb-7969acd0382f"
-version = "0.25.52"
+version = "0.25.53"
 
 [[DocStringExtensions]]
 deps = ["LibGit2"]
@@ -1619,6 +1693,7 @@ version = "0.9.1+5"
 # ╠═f38760df-3d3d-45c1-ba05-c1627978ed09
 # ╠═a42583d6-174d-4b3a-bed6-6e9974e97321
 # ╠═fdf1a246-4b5e-4566-9dbf-e159fd3d24aa
+# ╠═4ccdc9aa-1a73-4605-bae3-0a3382d4a58f
 # ╠═d6007018-1870-41f5-8e93-51d79ad0bbe8
 # ╠═4431ec1d-1a58-4dda-a9d3-00252b70bdca
 # ╠═02595afe-9234-4517-b45b-6dccd8ebb776
@@ -1635,13 +1710,15 @@ version = "0.9.1+5"
 # ╠═5b731844-98ba-49f2-b056-2bf3b34d3436
 # ╟─38566a14-63e1-4c88-8b63-491e54a2d6a8
 # ╟─dacd256b-d32b-4f12-9537-07e6c76bf20e
-# ╠═79ddeee7-f1ae-4750-b465-ef75c4a83da5
+# ╠═f09418e3-fcaa-4689-890c-ae3afca3543c
+# ╟─79ddeee7-f1ae-4750-b465-ef75c4a83da5
 # ╠═a5d1a99c-34b5-441a-9468-a11cc16574d1
 # ╟─6ad55e50-305e-452c-adfe-b48463368955
 # ╠═6903ed1c-5f6d-4f79-962b-2105afcb9f58
 # ╟─0e523257-052d-4529-91aa-a8701d87c32c
-# ╟─04299b03-3873-4681-bf60-49afff96376f
-# ╟─3ca721b7-d426-4a3c-8de7-f3b8d467d087
+# ╠═04299b03-3873-4681-bf60-49afff96376f
+# ╠═525cc81c-9d0a-4e51-9dba-9db7ab1d2c7c
+# ╠═3ca721b7-d426-4a3c-8de7-f3b8d467d087
 # ╠═f6f91916-fea1-4538-a8f8-1323fde5d119
 # ╠═77855ef1-868f-44d7-8c55-be9878bac3ba
 # ╟─00000000-0000-0000-0000-000000000001

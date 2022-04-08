@@ -119,6 +119,33 @@ end
 # ╔═╡ 58171ae6-a41c-4f79-9d47-d5fa61914448
 savefig(Kfig, joinpath(plotpath, "splot.pdf"))
 
+# ╔═╡ 7a0b25af-3173-4a60-943c-1c147330f4ed
+begin
+	rfixed = 0.05
+	
+	Ksinglefig = plot(
+		ylabel = "Optimal number of suppliers", 
+		xlabel = "Stability of my suppliers", xlims = (0, 1),
+		ylims = (0, 8), yticks = 1:8,
+		legend = false,
+		dpi = 250
+	)
+
+	
+	plot!(Ksinglefig,
+		M, p -> S(p, rfixed); label = nothing,
+		c = :darkblue, linestyle = :dash, alpha = 0.5
+	)
+	plot!(Ksinglefig,
+		M, p -> ceil(Int64, S(p, rfixed)),
+		label = nothing, c = :darkblue
+	)
+
+end
+
+# ╔═╡ f880623d-1858-4f45-a0be-3ffe1c7c9668
+savefig(Ksinglefig, joinpath(plotpath, "spresentationplot.pdf"))
+
 # ╔═╡ 98f995ce-a4f4-46f8-907c-58f2d3452b04
 function p′(p, μ, π, κ; theo = false)
 	Ŝ = max(S(p, κ / ((1 - μ) * π)), 0)
@@ -1481,6 +1508,8 @@ version = "0.9.1+5"
 # ╟─e6b2c1b9-6fe6-451a-ad33-32cae84ff8cd
 # ╠═afc59701-b84f-4a99-9c8a-40854c03ecec
 # ╠═58171ae6-a41c-4f79-9d47-d5fa61914448
+# ╠═7a0b25af-3173-4a60-943c-1c147330f4ed
+# ╠═f880623d-1858-4f45-a0be-3ffe1c7c9668
 # ╠═98f995ce-a4f4-46f8-907c-58f2d3452b04
 # ╠═442cb752-abfa-424a-bfd5-6916869227af
 # ╠═1cebf3fb-93ec-4c3f-b678-35f3a4edc2db
