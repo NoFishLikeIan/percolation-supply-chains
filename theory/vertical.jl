@@ -32,37 +32,23 @@ function withbasalrisk(n, m, μ, profit)::VerticalModel
     )
 end
 
-μ = 0.01
-profit = 100
 layer_size = 50
-layers = 10
+layers = 15
 
-model = withbasalrisk(layers, layer_size, μ, profit)
+parameters = 100
 
-G, S = solvecorrelated(model)
+μs = range(1e-3, 0.05; length = parameters) |> collect
+rs = range(0.001, 0.1; length = parameters) |> collect
 
-labels = reshape([
-    latexstring("\$i = $i\$") for i ∈ 0:(layers - 1)
-], (1, layers))
+R = paramphase(μs, rs)
+ΔR = R[:, :, 1] .- R[:, :, 2]
 
-plot(
-    0:layer_size, G';
-    label = labels,
-    xlabel = L"f_i", 
-    ylabel = L"g_i(f_i)",
-    marker = :o
-)
+cmax = maximum(abs, extrema(ΔR))
 
-
-m₀ = model.m[1]
-μ₀ = model.μ[1]
-
-F̃₀ = Normal(m₀ * (1 - μ₀), √(m₀ * (1 - μ₀) * μ₀))
-
-plot(
-    0:layer_size, G[1, :]
-)
-
-plot!(
-    0:0.01:layer_size, x -> pdf(F̃₀, x)
+contourf(
+    μs, rs, ΔR';
+    xlims = extrema(μs), ylims = extrema(rs),
+    clims = (-cmax, cmax),
+    xlabel = L"\mu", ylabel = L"\kappa / \pi",
+    title = "Social planner",
 )
