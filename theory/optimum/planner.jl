@@ -65,13 +65,11 @@ function integersolution(S::Vector{Float64}, m::VerticalModel)
     end
 
     space = product(((floor(Int64, s), ceil(Int64, s)) for s ∈ S)...)
-    spacesize = 2^n
 
     maxvec = Vector{Int64}(undef, n)
     maxprof = -Inf
 
-    for (i, Ztup) ∈ enumerate(space)
-        print("$i / $(spacesize)\r")
+    for Ztup ∈ space
 
         Z = collect(Ztup)
         πₛ = profit(Z) |> sum
