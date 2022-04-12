@@ -1,19 +1,26 @@
+using DotEnv; DotEnv.config()
+
+using SpecialFunctions
+using IterTools, Combinatorics
+
 using NLsolve, Roots
 
-using IterTools, Combinatorics
-using SpecialFunctions
-using StatsBase: sample
-using Distributions
+using Random
+seed = parse(Int64, get(ENV, "SEED", "123"))
+Random.seed!(seed)
+
+using StatsBase, Distributions
 
 using Plots, LaTeXStrings
-theme(:dao)
-default(size = 500 .* (√2, 1))
-plotpath = "../docs/plots/"
+theme(:dao); default(size = 500 .* (√2, 1))
+plotpath = get(ENV, "PLOT_PATH", "")
 
 include("definitions.jl")
+
 include("optimum/planner.jl")
 include("optimum/agent.jl")
 include("optimum/correlation.jl")
+
 include("simulate.jl")
 
 function withbasalrisk(n, m, μ, profit)::VerticalModel
