@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.17.7
+# v0.18.0
 
 using Markdown
 using InteractiveUtils
@@ -54,39 +54,36 @@ function p(v; s = s)
 end
 
 # ╔═╡ 058124ba-8ebb-46c7-9e5e-1d62a6cbba94
-function papprox(v; s = s)
-	1 - (m - v)^s / m^s
-end
+Ep = 1 - μ^s
 
 # ╔═╡ 2b08e0de-03df-4acc-a509-45b5d9dc17bb
 begin	
-	n = 1000
+	n = 10_000
 	unit = range(0, 1; length = 101)	
 	F̂ = round.(Int64, rand(F, n))
-
-	p̂approx = papprox.(F̂)
 	p̂ = p.(F̂)
 end
-
-# ╔═╡ 0459ed19-964c-40ae-be4d-13042cb164a2
-norm(p̂approx - p̂)
 
 # ╔═╡ 84a62373-2fa0-4ee8-af6b-20b34aad037d
 begin
 	width = 0.01
 	
-	histogram(
-		hcat(p̂, p̂approx);
-		xticks = 0:0.05:1,
+	distfig = histogram(
+		p̂;
+		xlims = (0.9, 1 + width),
 		normalize = :pdf,
 		bar_width = width, 
+		alpha = 0.5, 
 		nbins = 30, label = nothing,
-		xlims = (-width, 1 + width)
 	)
 
-	
-	# plot!(Beta(m * (1 - μ), m * μ); label = nothing)
+	vline!(distfig, [Ep], c = :black, label = L"\mathbb{E}[p]")
+	vline!(distfig, [mean(p̂)], c = :red, label = L"\frac{1}{n} \sum p")
+
 end
+
+# ╔═╡ 60c5a731-b45e-47b2-b468-2865b31ed68b
+Ep, mean(p̂)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1251,7 +1248,7 @@ version = "0.9.1+5"
 # ╠═ce2fc281-caaf-46df-bdfa-0470f8c4f043
 # ╠═058124ba-8ebb-46c7-9e5e-1d62a6cbba94
 # ╠═2b08e0de-03df-4acc-a509-45b5d9dc17bb
-# ╠═0459ed19-964c-40ae-be4d-13042cb164a2
 # ╠═84a62373-2fa0-4ee8-af6b-20b34aad037d
+# ╠═60c5a731-b45e-47b2-b468-2865b31ed68b
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
