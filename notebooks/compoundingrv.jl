@@ -58,7 +58,7 @@ Ep = 1 - μ^s
 
 # ╔═╡ 2b08e0de-03df-4acc-a509-45b5d9dc17bb
 begin	
-	n = 10_000
+	n = 30_000
 	unit = range(0, 1; length = 101)	
 	F̂ = round.(Int64, rand(F, n))
 	p̂ = p.(F̂)
@@ -83,7 +83,7 @@ begin
 end
 
 # ╔═╡ 60c5a731-b45e-47b2-b468-2865b31ed68b
-Ep, mean(p̂)
+mean(p̂), var(p̂)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """

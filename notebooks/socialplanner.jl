@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.17.7
+# v0.18.0
 
 using Markdown
 using InteractiveUtils
@@ -200,21 +200,31 @@ begin
 end
 
 # ╔═╡ f09418e3-fcaa-4689-890c-ae3afca3543c
-function ∂pcorrelation(s, base_node)
-	m = model.m[base_node]
-	μ = model.μ[base_node]
+function ∂pcorrelation(s, base)
+	m = model.m[base]
+	μ = model.μ[base]
 
-	g(v) = binomial(m, v) * (1 - μ)^v * μ^(m - v)
+	pprev = p(base - 1, Sbase(s, base); m = model)
+
+	g(v) = binomial(m, v) * pprev^v * (1 - pprev)^(m - v)
 
 	derivative = 0.
 
 	for v ∈ 0:m
-		if m - s - v > 0
-			derivative += g(v) * ∂p(base_node, s, v; m = model)
-		end
+		derivative += g(v) * ∂pbase(s, base)
+		
 	end
 
 	return derivative
+end
+
+# ╔═╡ 076cc7b5-b531-415b-8224-f076e190fef4
+function ∂pcorranalytic(s, base)
+	ownrisk = 1 - model.μ[base]
+
+	pprev = 1 - p(base - 1, Sbase(s, base_node); m = model)
+	
+	return -ownrisk * (pprev)^s * log(pprev)
 end
 
 # ╔═╡ 79ddeee7-f1ae-4750-b465-ef75c4a83da5
@@ -265,7 +275,7 @@ begin
 	plot!(focfig,
 		sspace, s -> ∂pplanner(s, base_node); 
 		c = :darkred,
-		label = "Social\nplanner"
+		label = "Social planner"
 	)
 
 	plot!(focfig,
@@ -283,7 +293,7 @@ begin
 		focfig, sspace, 
 		s -> ∂pbase(s, base_node); 
 		c = :darkblue,
-		label = "Firm\nw/out correlation"
+		label = "Firm"
 	)
 
 	
@@ -295,27 +305,27 @@ begin
 		c = :black, 
 		label = nothing)
 
+	if false
+		# Correlation plot
+			
+		plot!(
+			focfig, sspace, 
+			s -> ∂pcorrelation(s, base_node); 
+			c = :darkgreen,
+			label = "Firm\nw/ correlation"
+		)
 	
-	# Correlation plot plot
 		
-	plot!(
-		focfig, sspace, 
-		s -> ∂pcorrelation(s, base_node); 
-		c = :darkgreen,
-		label = "Firm\nw/ correlation"
-	)
-
+		plot!(focfig, [sol_c, sol_c], 
+			[0, ∂pcorrelation(sol_c, base_node)], 
+			c = :black, linestyle = :dash, 
+			label = nothing)
+		
+		scatter!(focfig, [sol_c], [∂pcorrelation(sol_c, base_node)]; 
+			c = :black, 
+			label = nothing)
+	end
 	
-	plot!(focfig, [sol_c, sol_c], 
-		[0, ∂pcorrelation(sol_c, base_node)], 
-		c = :black, linestyle = :dash, 
-		label = nothing)
-	
-	scatter!(focfig, [sol_c], [∂pcorrelation(sol_c, base_node)]; 
-		c = :black, 
-		label = nothing)
-
-
 	focfig
 end
 
@@ -1709,9 +1719,10 @@ version = "0.9.1+5"
 # ╟─3ea80157-c5fb-4b5b-a145-f255ba53e7ff
 # ╠═5b731844-98ba-49f2-b056-2bf3b34d3436
 # ╟─38566a14-63e1-4c88-8b63-491e54a2d6a8
-# ╟─dacd256b-d32b-4f12-9537-07e6c76bf20e
+# ╠═dacd256b-d32b-4f12-9537-07e6c76bf20e
 # ╠═f09418e3-fcaa-4689-890c-ae3afca3543c
-# ╟─79ddeee7-f1ae-4750-b465-ef75c4a83da5
+# ╠═076cc7b5-b531-415b-8224-f076e190fef4
+# ╠═79ddeee7-f1ae-4750-b465-ef75c4a83da5
 # ╠═a5d1a99c-34b5-441a-9468-a11cc16574d1
 # ╟─6ad55e50-305e-452c-adfe-b48463368955
 # ╠═6903ed1c-5f6d-4f79-962b-2105afcb9f58
