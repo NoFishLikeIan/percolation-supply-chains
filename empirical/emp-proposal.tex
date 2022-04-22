@@ -7,11 +7,9 @@
 
     \usepackage{csquotes}
 
-    \usepackage{amsmath, amssymb, mathtools, bbm}
+    \usepackage{amsmath, amssymb, mathtools, bbm, bm}
     \usepackage{xcolor}
     \usepackage{xcolor-solarized}
-    \usepackage{bm}
-
     \usepackage{graphicx}
     \usepackage{wrapfig}
     \usepackage{relsize}
@@ -68,7 +66,7 @@
     % Bibliography
 
     \usepackage[bibencoding=utf8, style=apa, backend=biber]{biblatex}
-    \addbibresource{../docs/supply-chain-reallocation.bib}
+    \addbibresource{empirical-production-networks.bib}
 
     \newcommand{\citein}[1]{\citeauthor{#1} (\citeyear{#1})}
 
@@ -78,17 +76,27 @@
     % Make title page
 
     \author{Andrea Titton}
-    \title{Limited Information and Fragility of Endogenous Production Networks: Evidence from the Netherlands}
+    \title{Proposal: Limited Information and Fragility of Endogenous Production Networks}
     
 \begin{document}
 
 \maketitle
 
-\section{Data}
+\section{Methodological Literature Review}
 
-\begin{itemize}
-    \item Firm
-\end{itemize}
+In recent years, there has been a surge in interest on the effect of firm level idiosyncrasies on aggregate fluctuations of production networks. The standard approach in the literature is to construct a model consisting of firm that are heterogenous in production technology and make supplier decisions endogenously. These models are then calibrated by matching industry aggregates, such as degree distributions. Finally, the calibrated model is employed to simulate counterfactuals.
+
+An early example of an empirical analysis of the link between microeconomic and macroeconomic shocks is \citein{carvalho_supply_2016}. The authors use the commodity-by-commodity US Requirements Tables to infer production functions between goods. Then, they construct the adjacency matrix of the production network as
+
+\begin{equation*}
+    \mathbf{A}_{i, j} = \mathbbm{1}\left\{ Y_{i, j} > 0.05 \ \sum_{k} Y_{i, k}  \right\}.
+\end{equation*}
+
+Finally, they calibrate the model parameters to match the distribution of the weighted out-degree observed in the dataset. Using this model, the authors simulate productivity shocks and their aggregate consequences. Industries with larger eigenvector centralities contribute more to aggregate fluctuations.
+
+A more granular approach has been employed by \citein{mathieu_taschereau-dumouchel_cascades_2020}. The authors use the FactSet Revere US firm-level production network data. They then use a similar strategy as above.
+
+An example of a model agnostic approach is that of \citein{barrot_input_2016}. The authors use natural disasters to identify the rol of industries in aggregate fluctuations.
 
 % --- Bibliography
 \newpage
