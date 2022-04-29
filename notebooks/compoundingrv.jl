@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.18.0
+# v0.17.7
 
 using Markdown
 using InteractiveUtils
@@ -24,66 +24,111 @@ using Plots, LaTeXStrings, StatsPlots
 using Distributions
 
 # ╔═╡ ed5e551d-0dc0-4d8f-add2-f8f616b7fd42
-using Combinatorics, LinearAlgebra
+using Combinatorics, LinearAlgebra, SpecialFunctions
 
 # ╔═╡ e6bd87a6-ed3b-4eb4-a730-24281989ba57
 theme(:dao); default(size = 500 .* (√2, 1))
 
-# ╔═╡ 4749210a-a85b-4317-870c-2fed32d8ab1f
+# ╔═╡ c0707a96-031d-48fa-9cc6-317705546982
+begin
+	ψ₀(x) = polygamma(0, x)
+	ψ₁(x) = polygamma(1, x)
+end
+
+# ╔═╡ dc23c4f0-8c3d-4305-b6fd-f438288fbdfa
 md"
+``\mu_0``: $(@bind μ₀ Slider(range(0.01, 0.5, length = 101), default = 0.05, show_value = true))
 
-``m``: $(@bind m Slider(10:100, show_value = true))
-
-``\mu``: $(@bind μ Slider(0:0.01:0.05, show_value = true, default = 0.01))
-
+``s``: $(@bind s Slider(1:1:10, default = 1, show_value = true))
 "
 
-# ╔═╡ 2da18e04-48a1-4270-a564-10d8302ea06d
-md"
+# ╔═╡ 08176834-608a-4995-8572-cb85a33929a3
+begin
+	g = 7
+	ms = repeat([30], g)
+	
+	m₀ = 30
 
-``s``: $(@bind s Slider(1:10, show_value = true, default = 2))
-
-"
-
-# ╔═╡ 7d0b50be-6c57-4fab-90d4-267d6ec1c888
-F = Binomial(m, 1 - μ)
+	suppl = repeat([1], g)
+	suppl[1] = s
+end
 
 # ╔═╡ ce2fc281-caaf-46df-bdfa-0470f8c4f043
-function p(v; s = s)
-	1 - binomial(m - s, v) / binomial(m, v)
-end
-
-# ╔═╡ 058124ba-8ebb-46c7-9e5e-1d62a6cbba94
-Ep = 1 - μ^s
-
-# ╔═╡ 2b08e0de-03df-4acc-a509-45b5d9dc17bb
-begin	
-	n = 30_000
-	unit = range(0, 1; length = 101)	
-	F̂ = round.(Int64, rand(F, n))
-	p̂ = p.(F̂)
-end
-
-# ╔═╡ 84a62373-2fa0-4ee8-af6b-20b34aad037d
 begin
-	width = 0.01
+	function p(i, v)
+		s, m = suppl[i], ms[i]
 	
-	distfig = histogram(
-		p̂;
-		xlims = (0.9, 1 + width),
-		normalize = :pdf,
-		bar_width = width, 
-		alpha = 0.5, 
-		nbins = 30, label = nothing,
-	)
+		p(m, s, v)
+	end
 
-	vline!(distfig, [Ep], c = :black, label = L"\mathbb{E}[p]")
-	vline!(distfig, [mean(p̂)], c = :red, label = L"\frac{1}{n} \sum p")
+	function p(m, s, v)
+		b = 1 + m
+		if s > b - v return 1 end
+		
+		constant = gamma(b - s) / gamma(b)
+		random = gamma(b - v) / gamma(b - v - s)
 
+		return 1 - constant * random
+	end
+
+	function p′(m, s, v)
+		b = 1 + m - v
+		(1 - p(v)) * (ψ₀(b) - ψ₀(b - s))
+	end
+
+	function p′′(m, s, v)
+		b = 1 + m - v
+		-(1 - p(v)) * ((ψ₀(b) - ψ₀(b - s))^2 + ψ₁(b) - ψ₁(b - s))
+	end
 end
 
-# ╔═╡ 60c5a731-b45e-47b2-b468-2865b31ed68b
-mean(p̂), var(p̂)
+# ╔═╡ 37d8381b-c407-4362-a226-61100bdcf6ab
+polygamma(1, 2)
+
+# ╔═╡ 82c4d844-8e32-4bbe-a092-52b2459e22fe
+function step(Fₖ₋₁, k)
+	pₖ = fit(Beta, p.(k, rand(Fₖ₋₁, 10_000)))
+
+	αₖ, βₖ = params(pₖ)
+		
+	BetaBinomial(ms[k], αₖ, βₖ) 
+end
+
+# ╔═╡ 96140551-210d-4831-b8e8-42c68050dab2
+F₀ = Binomial(ms[1], 1 - μ₀)
+
+# ╔═╡ 6070b0b8-0e5f-4097-b937-2151c57c3d0d
+begin
+	Fs = [step(F₀, 1)]
+	
+	for k ∈ 1:g 
+		idx = k + 1
+		push!(Fs, step(Fs[idx - 1], k))
+	end
+end
+
+# ╔═╡ 6b001541-8f59-44b5-83a5-5c6b2293fb4f
+let
+	fig = plot()
+
+	for (k, F) ∈ enumerate(Fs)
+		plot!(F; marker = :o, label = k - 1, legendtitle = "Layer")
+	end
+
+	fig
+end
+
+# ╔═╡ b5f71ae1-316a-4efe-8b4f-e23a3611fa63
+md"## Variance and mean propagation"
+
+# ╔═╡ 53e69f39-4cc8-412a-92d1-338cec286d69
+mₖ = 20
+
+# ╔═╡ 445772d2-28ac-4f45-975f-e631c7423f47
+function F(μ, σ, sₖ)
+	pₖ = p(sₖ, μ)
+	
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -94,6 +139,7 @@ LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 StatsPlots = "f3b207a7-027a-5e70-b257-86293d7955fd"
 
 [compat]
@@ -102,6 +148,7 @@ Distributions = "~0.25.53"
 LaTeXStrings = "~1.3.0"
 Plots = "~1.27.5"
 PlutoUI = "~0.7.38"
+SpecialFunctions = "~2.1.4"
 StatsPlots = "~0.14.33"
 """
 
@@ -805,9 +852,9 @@ uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
 [[Qt5Base_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Fontconfig_jll", "Glib_jll", "JLLWrappers", "Libdl", "Libglvnd_jll", "OpenSSL_jll", "Pkg", "Xorg_libXext_jll", "Xorg_libxcb_jll", "Xorg_xcb_util_image_jll", "Xorg_xcb_util_keysyms_jll", "Xorg_xcb_util_renderutil_jll", "Xorg_xcb_util_wm_jll", "Zlib_jll", "xkbcommon_jll"]
-git-tree-sha1 = "ad368663a5e20dbb8d6dc2fddeefe4dae0781ae8"
+git-tree-sha1 = "c6c0f690d0cc7caddb74cef7aa847b824a16b256"
 uuid = "ea2cea3b-5b76-57ae-a6ef-0a8af62496e1"
-version = "5.15.3+0"
+version = "5.15.3+1"
 
 [[QuadGK]]
 deps = ["DataStructures", "LinearAlgebra"]
@@ -1242,13 +1289,17 @@ version = "0.9.1+5"
 # ╠═e6bd87a6-ed3b-4eb4-a730-24281989ba57
 # ╠═5b00deba-756d-4e4a-9db2-f71b81564b22
 # ╠═ed5e551d-0dc0-4d8f-add2-f8f616b7fd42
-# ╟─4749210a-a85b-4317-870c-2fed32d8ab1f
-# ╟─2da18e04-48a1-4270-a564-10d8302ea06d
-# ╠═7d0b50be-6c57-4fab-90d4-267d6ec1c888
+# ╠═c0707a96-031d-48fa-9cc6-317705546982
+# ╠═dc23c4f0-8c3d-4305-b6fd-f438288fbdfa
+# ╠═08176834-608a-4995-8572-cb85a33929a3
 # ╠═ce2fc281-caaf-46df-bdfa-0470f8c4f043
-# ╠═058124ba-8ebb-46c7-9e5e-1d62a6cbba94
-# ╠═2b08e0de-03df-4acc-a509-45b5d9dc17bb
-# ╠═84a62373-2fa0-4ee8-af6b-20b34aad037d
-# ╠═60c5a731-b45e-47b2-b468-2865b31ed68b
+# ╠═37d8381b-c407-4362-a226-61100bdcf6ab
+# ╟─82c4d844-8e32-4bbe-a092-52b2459e22fe
+# ╟─96140551-210d-4831-b8e8-42c68050dab2
+# ╟─6070b0b8-0e5f-4097-b937-2151c57c3d0d
+# ╠═6b001541-8f59-44b5-83a5-5c6b2293fb4f
+# ╟─b5f71ae1-316a-4efe-8b4f-e23a3611fa63
+# ╠═53e69f39-4cc8-412a-92d1-338cec286d69
+# ╠═445772d2-28ac-4f45-975f-e631c7423f47
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
