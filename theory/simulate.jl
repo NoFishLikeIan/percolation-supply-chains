@@ -51,15 +51,15 @@ function allsolutions!(Z::Matrix{Int64}, model::VerticalModel)
 end
 
 
-function paramphase(μs::Vector{Float64}, rs::Vector{Float64}; verbose = true)
+function paramphase(model::VerticalModel, μs::Vector{Float64}, rs::Vector{Float64}; verbose = true)
+
+    layers = length(model.m)
 
     Z = ones(Int64, layers, 3)
     M, N = length(μs), length(rs)
 
     cached = Dict{Vector{Int64}, Float64}()
     R = Array{Float64}(undef, M, N, 3)
-
-    model = withbasalrisk(layers, layer_size, μ, profit)
 
     for i ∈ 1:M
         model.μ[1] = μs[i]

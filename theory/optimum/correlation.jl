@@ -79,17 +79,24 @@ function solvecorrelated(m::VerticalModel)
     return G, S
 end
 
-function ∂p(i::Int64, s::Float64, f::Int64; m::VerticalModel)
-    # FIXME: If m - f - s ≤ 0 return 0. end
+function ∂p(s::Float64, g::Function; m::Int64, μ::Float64) 
+    sum(∂p(s, v; m, μ) * g(v) for v ∈ 0:m)
+end
+function ∂p(s::Float64, v::Int64; m::Int64, μ::Float64)
+    if s ≥ m - v return 0. end
+
+    probnum = gamma(1 + m - s) * gamma(1 + m - v)
+    probden = gamma(1 + m - s - v) * gamma(1 + m)
+
+    H = log(m - s) - log(m - v - s)
+
+    return (1 - μ) * H * probnum / probden
+end
+
+function ∂p(i::Int64, s::Float64, v::Int64; model::VerticalModel)
     idx = i + 1
-    mₚ = m.m[idx - 1]
-    μᵢ = m.μ[idx]
+    mₚ = model.m[idx - 1]
+    μᵢ = model.μ[idx]
 
-    num = gamma(1 + mₚ - s) * gamma(1 + mₚ - f) 
-    den = gamma(1 + mₚ - s - f) * gamma(1 + mₚ)
-
-    H = log(mₚ - s) - log(mₚ - f - s)
-
-    return (1 - μᵢ) * H * num / den
-
+   return ∂p(s, v; m = mₚ, μ = μᵢ)
 end
