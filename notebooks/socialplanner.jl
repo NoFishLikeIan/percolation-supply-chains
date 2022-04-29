@@ -80,17 +80,18 @@ md"# Firm problem"
 pagent, Sₐ = sequence(n; m = model)
 
 # ╔═╡ 245d925c-eff5-46ff-92cb-6582afd70a0d
-begin		
+let		
 	i = 2
 	function profit(pprev, s)
 		model.profits[i] * p(i, pprev, s; m = model) - s * model.κ
 	end
 	
 	supplierspace = range(1., 10., length = 100)
-	probspace = range(0.13, 0.5, length = 101)
+	probspace = range(0.1, 0.99, length = 101)
 
 	shapefig = plot(
-		xlabel = L"p_{i - 1}", ylabel = L"s", legend = nothing
+		xlabel = L"p_{i - 1}", ylabel = L"s", legend = nothing,
+		yticks = range(extrema(supplierspace)..., step = 1)
 	)
 	
 	contour!(shapefig, probspace, supplierspace, profit)
@@ -199,34 +200,6 @@ begin
 	end
 end
 
-# ╔═╡ f09418e3-fcaa-4689-890c-ae3afca3543c
-function ∂pcorrelation(s, base)
-	m = model.m[base]
-	μ = model.μ[base]
-
-	pprev = p(base - 1, Sbase(s, base); m = model)
-
-	g(v) = binomial(m, v) * pprev^v * (1 - pprev)^(m - v)
-
-	derivative = 0.
-
-	for v ∈ 0:m
-		derivative += g(v) * ∂pbase(s, base)
-		
-	end
-
-	return derivative
-end
-
-# ╔═╡ 076cc7b5-b531-415b-8224-f076e190fef4
-function ∂pcorranalytic(s, base)
-	ownrisk = 1 - model.μ[base]
-
-	pprev = 1 - p(base - 1, Sbase(s, base_node); m = model)
-	
-	return -ownrisk * (pprev)^s * log(pprev)
-end
-
 # ╔═╡ 79ddeee7-f1ae-4750-b465-ef75c4a83da5
 begin
 
@@ -261,11 +234,6 @@ begin
 	
 	sol_f = find_zero(
 		s -> ∂pbase(s, base_node) - noext, 
-		br
-	)
-
-	sol_c = find_zero(
-		s -> ∂pcorrelation(s, base_node) - noext,
 		br
 	)
 	
@@ -304,33 +272,57 @@ begin
 	scatter!(focfig, [sol_f], [∂pbase(sol_f, base_node)]; 
 		c = :black, 
 		label = nothing)
-
-	if false
-		# Correlation plot
-			
-		plot!(
-			focfig, sspace, 
-			s -> ∂pcorrelation(s, base_node); 
-			c = :darkgreen,
-			label = "Firm\nw/ correlation"
-		)
-	
-		
-		plot!(focfig, [sol_c, sol_c], 
-			[0, ∂pcorrelation(sol_c, base_node)], 
-			c = :black, linestyle = :dash, 
-			label = nothing)
-		
-		scatter!(focfig, [sol_c], [∂pcorrelation(sol_c, base_node)]; 
-			c = :black, 
-			label = nothing)
-	end
 	
 	focfig
 end
 
 # ╔═╡ a5d1a99c-34b5-441a-9468-a11cc16574d1
 savefig(focfig, joinpath(plotpath, "vert_foc.pdf"))
+
+# ╔═╡ 7170d737-3e6d-46da-9933-5069db059213
+md"## Best response"
+
+# ╔═╡ c63347ad-3309-4e0d-b520-d3050f972d3a
+let
+	base = 3
+	ι = ones(3)
+	
+	function makeS(sp, s)
+		[1, sp, s]
+	end
+	
+	slims = (1, 3)
+	Sspace = range(slims...; length = 101)
+
+	function br(sp; m)
+
+		foc(s) = ∂p(base, base, makeS(sp, s); m) - (m.κ / m.profits[base])
+		
+		s̃ = find_zero(foc, slims)
+	end
+
+
+	brfig = plot()
+
+	plot!(brfig, Sspace, x -> x, label = nothing, linestyle = :dash, c = :black)
+
+	for profit ∈ [40, 20., 10.]
+		
+		model = VerticalModel(
+			20 .* ι, # m
+			0.05 .* ι, # μ
+			profit .* ι, # π
+			1 # κ
+		)
+		
+		plot!(brfig, Sspace, s -> br(s; m = model); label = profit)
+	end
+
+	brfig
+end
+
+# ╔═╡ 11b29dd5-d4c5-4459-89b9-b624e4f702e8
+
 
 # ╔═╡ 6ad55e50-305e-452c-adfe-b48463368955
 md"## Resilience"
@@ -432,6 +424,12 @@ end
 
 # ╔═╡ 77855ef1-868f-44d7-8c55-be9878bac3ba
 savefig(criticalityfig, joinpath(plotpath, "criticality.pdf"))
+
+# ╔═╡ 1211b132-407e-468c-ba64-5abc2c6a7c21
+md"## Paths to the end"
+
+# ╔═╡ 0d3d6626-6bba-46c9-a28e-c63d3dcdebf1
+Fₛ[1, :, :]
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1242,9 +1240,9 @@ uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
 [[Qt5Base_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Fontconfig_jll", "Glib_jll", "JLLWrappers", "Libdl", "Libglvnd_jll", "OpenSSL_jll", "Pkg", "Xorg_libXext_jll", "Xorg_libxcb_jll", "Xorg_xcb_util_image_jll", "Xorg_xcb_util_keysyms_jll", "Xorg_xcb_util_renderutil_jll", "Xorg_xcb_util_wm_jll", "Zlib_jll", "xkbcommon_jll"]
-git-tree-sha1 = "ad368663a5e20dbb8d6dc2fddeefe4dae0781ae8"
+git-tree-sha1 = "c6c0f690d0cc7caddb74cef7aa847b824a16b256"
 uuid = "ea2cea3b-5b76-57ae-a6ef-0a8af62496e1"
-version = "5.15.3+0"
+version = "5.15.3+1"
 
 [[QuadGK]]
 deps = ["DataStructures", "LinearAlgebra"]
@@ -1712,25 +1710,28 @@ version = "0.9.1+5"
 # ╠═5c3d0a80-9cf8-443a-b703-2aba53d8b5b2
 # ╟─033bbaa5-a446-40dd-a3ec-609fbf6b5e99
 # ╠═63e0b221-491e-4834-b83d-992e16c011f4
-# ╟─245d925c-eff5-46ff-92cb-6582afd70a0d
+# ╠═245d925c-eff5-46ff-92cb-6582afd70a0d
 # ╟─47a721ac-0e91-4573-a994-b20d1ac656b4
-# ╠═cbd2a3ad-c745-4940-a7c0-0aa71a8dfd46
+# ╟─cbd2a3ad-c745-4940-a7c0-0aa71a8dfd46
 # ╠═8a4ab79e-49f7-45cc-aa92-9ed98cb80743
 # ╟─3ea80157-c5fb-4b5b-a145-f255ba53e7ff
 # ╠═5b731844-98ba-49f2-b056-2bf3b34d3436
 # ╟─38566a14-63e1-4c88-8b63-491e54a2d6a8
-# ╠═dacd256b-d32b-4f12-9537-07e6c76bf20e
-# ╠═f09418e3-fcaa-4689-890c-ae3afca3543c
-# ╠═076cc7b5-b531-415b-8224-f076e190fef4
+# ╟─dacd256b-d32b-4f12-9537-07e6c76bf20e
 # ╠═79ddeee7-f1ae-4750-b465-ef75c4a83da5
 # ╠═a5d1a99c-34b5-441a-9468-a11cc16574d1
+# ╟─7170d737-3e6d-46da-9933-5069db059213
+# ╠═c63347ad-3309-4e0d-b520-d3050f972d3a
+# ╠═11b29dd5-d4c5-4459-89b9-b624e4f702e8
 # ╟─6ad55e50-305e-452c-adfe-b48463368955
 # ╠═6903ed1c-5f6d-4f79-962b-2105afcb9f58
-# ╟─0e523257-052d-4529-91aa-a8701d87c32c
+# ╠═0e523257-052d-4529-91aa-a8701d87c32c
 # ╠═04299b03-3873-4681-bf60-49afff96376f
-# ╠═525cc81c-9d0a-4e51-9dba-9db7ab1d2c7c
-# ╠═3ca721b7-d426-4a3c-8de7-f3b8d467d087
-# ╠═f6f91916-fea1-4538-a8f8-1323fde5d119
+# ╟─525cc81c-9d0a-4e51-9dba-9db7ab1d2c7c
+# ╟─3ca721b7-d426-4a3c-8de7-f3b8d467d087
+# ╟─f6f91916-fea1-4538-a8f8-1323fde5d119
 # ╠═77855ef1-868f-44d7-8c55-be9878bac3ba
+# ╟─1211b132-407e-468c-ba64-5abc2c6a7c21
+# ╠═0d3d6626-6bba-46c9-a28e-c63d3dcdebf1
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
