@@ -68,6 +68,7 @@
 
     \renewcommand{\P}{\mathbb{P}}
     \newcommand{\E}{\mathbb{E}}
+    \newcommand{\V}{\mathbb{V}}
 
     \newcommand{\uI}[2][s]{\int^1_0 #2 \ \text{d} #1}
     \newcommand{\uH}[2][s]{\int^\frac{1}{2}_0 #2 \ \text{d} #1}
@@ -379,34 +380,34 @@ An increase in the number of suppliers of a firm has a strictly positive externa
 
 \subsection{Considering correlation in suppliers' risk} \label{sec:vertical:considering}
 
-Now I will turn my attention to the case where the node size $m_k$ is not large and the correlation of suppliers risk is non-negligible. A firm producing good $\G_{k + 1}$ picks $s_{k + 1}$ suppliers among the firms producing good $\G_k$. In this case $p_k(s)$ cannot be written recursively as in equation (\ref{eq:recursive_idyo}), because the supplier risk is not idiosyncratic. Nevertheless, all potential suppliers are still ex-ante the same from the point of view of a firm producing $\G_k$, hence its problem can be written in terms of distribution over the number of functioning firms producing $\G_{k-1}$. Using $\F_{k-1} = \G_{k-1} \cap \F$, let
+Now I will turn my attention to the case where the node size $m_k$ is not large and the correlation of suppliers risk is non-negligible. A firm producing good $\G_{k + 1}$ picks $s_{k + 1}$ suppliers among the firms producing good $\G_k$. In this case $p_k(s)$ cannot be written recursively as in equation (\ref{eq:recursive_idyo}), because the supplier risk is not idiosyncratic. Nevertheless, all potential suppliers are still ex-ante the same from the point of view of a firm producing $\G_k$, hence its problem can be written in terms of distribution over the number of functioning firms producing $\G_{k-1}$. Let $F_k$ be the number of functioning firms in layer $k$. Letting
 
 \begin{equation}
-  g_{k-1}(v) \coloneqq \P\Big( \abs{\F_{k-1}} = v \Big).
+  g_{k-1}(v) \coloneqq \P\Big( F_{k - 1} = v \Big),
 \end{equation}
 
-Then we can write $p_k$ as a function of $s_k$ and $\abs{\F_{k-1}}$, namely
+we can write $p_k$ as a function of $s_k$ and $F_{k-1}$, namely
 
 \begin{equation}
-  p_k\left(s_k, \abs{\F_{k-1}} \right) = (1 - \mu_k) \ \left(1 - \binom{m_{k-1} - s_k}{\abs{\F_{k-1}}} \binom{m_{k-1}}{\abs{\F_{k-1}}}^{-1} \right).
+  p_k\left(s_k, F_{k-1} \right) = (1 - \mu_k) \ \left(1 - \binom{m_{k-1} - s_k}{F_{k-1}} \binom{m_{k-1}}{F_{k-1}}^{-1} \right).
 \end{equation}
 And the expected probability of being functional is
 
 \begin{equation}
-  \E_{\F_{k-1}} \  p_k(s_k) = \sum^{m_{k-1}}_{v = 0} g_{k-1}(v) \  p_k(s_k, v).
+  \E_{F_{k-1}} \  p_k(s_k) = \sum^{m_{k-1}}_{v = 0} g_{k-1}(v) \  p_k(s_k, v).
 \end{equation}
 
-Furthermore, a choice of suppliers $s_k$ induces a probability distribution $g_k$ over the size of $\F_k$. In particular, given an $\abs{\F_{k-1}}$, the probability of $\{ \abs{\F_{k}} = v \}$ is 
+Furthermore, a choice of suppliers $s_k$ induces a probability distribution $g_k$ over the size of $\F_k$. In particular, given an $F_{k-1}$, the probability of $\{ \abs{\F_{k}} = v \}$ is 
 
 \begin{equation}
-  g_k\Big(v; \abs{\F_{k-1}}\Big) = \binom{m_k}{v} \ p_k(s_k, \abs{\F_{k-1}})^{v} \ \Big(1 - p_k(s_k, \abs{\F_{k-1}})\Big)^{m_k - v}.
+  g_k\Big(v; F_{k-1}\Big) = \binom{m_k}{v} \ p_k(s_k, F_{k-1})^{v} \ \Big(1 - p_k(s_k, F_{k-1})\Big)^{m_k - v}.
 \end{equation}
 
 or in expectation
 
 \begin{equation}
   \begin{split}
-    g_k(v) &\coloneqq \E_{\F_{k-1}} \left[ g_k\Big(v; \abs{\F_{k-1}}\Big)\right] \\
+    g_k(v) &\coloneqq \E_{F_{k-1}} \left[ g_k\Big(v; F_{k-1}\Big)\right] \\
     &= \binom{m_k}{v} \sum^{m_{k-1}}_{n = 0} g_{k-1}(n) \ p_{k}(s_k, n)^{v} \ \Big(1 - p_{k}(s_k, n)\Big)^{m_k - v}
   \end{split}
 \end{equation}
@@ -414,12 +415,69 @@ or in expectation
 with
 
 \begin{equation}
-  g_0(f_0) = \binom{m_0}{f_0} (1 - \mu_0)^{f_{0}} \ \mu_0^{m_0 - f_{0}}
+  g_0(v) = \binom{m_0}{v} (1 - \mu_0)^{v} \ \mu_0^{(m_0 - v)}
 \end{equation}
 
 This equation establishes a relationship between the ``fragility'' of different production layers.
 
+\subsection{Propagation of risk in the production network}
 
+\newcommand{\Bin}{\text{Bin}}
+\newcommand{\Beta}{\text{Beta}}
+
+As before, to study risk propagation, it is convenient to look at $p_k$ extended over all possible real values of $s_k$. To do so, we can define
+
+\begin{equation}
+  p_k(s_k, F_{k-1}) = 1 - 
+    \frac{\Gamma(1 + m_{k - 1} - s_k)}{\Gamma(1 + m_{k - 1})} \frac{\Gamma(1 + m_{k - 1} - F_{k-1})}{\Gamma(1 + m_{k - 1} - F_{k-1} - s_k)}.
+\end{equation}
+
+Clearly, $F_0 \sim \text{\Bin}(m_0, 1 - \mu_0)$. We will approximate 
+
+\begin{equation}
+  p_k(s_k, F_{k-1}) \  \dot\sim \  \Beta(a_k, b_k).
+\end{equation}
+
+which implies $F_k \sim \Beta\Bin(m_k, a_k, b_k)$. This allows us to write a mapping from the moments of $p_k$ to those of $F_k$. Letting 
+
+\begin{equation}
+  f_k \coloneqq \E[F_k] \text{ and } \sigma^2_k \coloneqq \V[F_k]
+\end{equation}
+
+we can write
+
+\begin{equation} \label{eq:exact_varprop}
+  \begin{split}
+    f_k &= m_k \ \E[p_k] \\ 
+    \sigma^2_k &= m_k \ \Big( \E[p_k] \ (1 - \E[p_k]) + m_k \V[p_k] \Big)
+  \end{split}
+\end{equation}
+
+Finally, using a first order Taylor approximation of $\E[p_k]$ and $\V[p_k]$ around $\E[F_{k-1}] = f_{k-1}$ and $\V[F_{k-1}] = \sigma^2_{k-1}$ we obtain
+
+\begin{equation}
+  \V[p_k] \approx \sigma^2_{k-1} \ \Big( 1 - p_k(s_k, f_{k-1}) \Big)^2 \ \Big( \psi_0(1 + m_k - f_{k-1}) - \psi_0(1 + m_k - f_{k-1} - s_k) \Big)^2
+\end{equation}
+
+
+and
+
+\begin{equation}
+  \begin{split}
+    \E[p_k] \ \approx \  &p_k(s_k, f_{k-1}) - \frac{\sigma^2_{k-1}}{2} (1 - p_k(s_k, f_{k-1})) \\
+    \Big[ \Big( &\psi_0(1 + m_k - f_{k-1}) - \psi_0(1 + m_k - f_{k-1} - s_k) \Big)^2 \\
+    + &\psi_1(1 + m_k - f_{k-1}) - \psi_1(1 + m_k - f_{k-1} - s_k) \Big].
+  \end{split}
+\end{equation}
+
+Plugging these into equation (\ref{eq:exact_varprop}) gives us a dynamical system of the form
+
+\begin{equation}
+  (f_k, \sigma^2_k) = F(f_{k-1}, \sigma^2_{k-1}; s_k).
+\end{equation}
+
+
+\iffalse
 \subsubsection{Problem of the firm}
 
 To simplify notation, assume that $\pi$ and $m$ are constant in all layers. Furthermore, assume that $\mu_0 = \mu > 0$ and $\mu_k = 0$ for all $k > 0$. Note that these two assumption imply that we can write $p_{k+1}$ as $p$. The problem of a firm, can then be written as
@@ -440,6 +498,8 @@ As before, we can compute an optimum of the continuous problem, $\tilde{s}_a$. T
   \caption{First order conditions, for various values of $\abs{\F_k}$}
   \label{fig:vert_foc_cor}
 \end{figure}
+
+\fi
 
 \iffalse
 
