@@ -1,14 +1,23 @@
-function p(i::Int64, S::Vector; m::VerticalModel)
-    if i == 0 return 1. end
+function p(k::Int64, s::Vector{Real}; model::VerticalModel)
+    if k == 0
+        return 1 - model.μ₀ 
+    end
 
-    supres = 1 - p(i - 1, S; m)
-    ownrisk = 1 - m.μ[i]
+    supris = 1 - p(k - 1, s; m)
 
-    return ownrisk * (1 - supres^S[i])
+    return 1 - supris^s[k]
 end
 
-function ∂p(i, j, S; m::VerticalModel)
-    if i < j || j == 1 return 0. end
+function ∂p(k::Int64, q::Int64, s::Vector{Real}; m::VerticalModel)
+    if k < q
+        return 0.
+    elseif k == q
+
+    end
+    
+
+
+    if k < q || j == 1 return 0. end
 
     ownrisk = 1 - m.μ[i]
     supres = 1 - p(i - 1, S; m)

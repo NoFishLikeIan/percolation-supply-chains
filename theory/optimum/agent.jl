@@ -1,59 +1,142 @@
-"""
-Agents optimal's S over the integers given the probability of the previous' node and the ratio of cost and expected profits.
-"""
-function Sz(i, pₛ; m::VerticalModel)
-    ratio = m.κ / ((1 - m.μ[i]) * m.profits[i])
-    return (log(ratio) - log(pₛ)) / log(1 - pₛ) 
+ψ₀(x) = polygamma(0, x)
+ψ₁(x) = polygamma(1, x)
+
+FuncDistribution = Union{Binomial, BetaBinomial}
+
+function compoundbeta(d::Beta, m::Int64)
+    α, β = params(d)
+    BetaBinomial(m, α, β)
 end
 
 """
-Agents optimal's S over the reals given the probability of the previous' node and the ratio of cost and expected profits.
+Expected value of E[f[F]] for F ∼ BetaBinomial
 """
-function Sr(i, pₛ; m::VerticalModel, integer = false, brackets = [1., 100.])
-    ratio = m.κ / ((1 - m.μ[i]) * m.profits[i])
-    risk = 1 - pₛ
+function E(F::FuncDistribution, f::Function)
+    n = first(params(F))
 
-    f = S -> log(risk) * (risk)^S + ratio
+    return sum( pdf(F, v) * f(v) for v ∈ 0:n )
+end
 
-    lb, ub = brackets
-    isbracketing = f(lb) * f(ub) < 0
+"""
+Variance, V[f[F]] for F ∼ BetaBinomial
+"""
+function V(F::FuncDistribution, f::Function)
+    Ef = E(F, f)
+    Eg = E(F, v -> f(v)^2)
 
-    S̄ = isbracketing ? find_zero(f, brackets) : find_zero(f, 2.)
+    return Eg - Ef^2
+end 
 
-    if !integer return S̄ end
+"""
+Compute the distribution of Fₖ
+"""
+function inducedF(s::Real, Fₛ::FuncDistribution; model::VerticalModel)
+    m = model.m
+    Epₖ = Ep(s, Fₛ; model)
 
-    prof(s) = m.profits[i] * p(i, pₛ, s; m) - m.κ * s 
+    μ = m * Epₖ
+    σ = m * (Epₖ * (1 - Epₖ) + m * Vp(s, Fₛ; model))
 
-    if prof(ceil(S̄)) > prof(floor(S̄))
-        return ceil(S̄)
+    function momentsmatch!(F, p)
+        α, β = p
+
+        F[1] = μ - m * α / (α + β) 
+        F[2] = σ - m * α * β * (α + β + m) / ((α + β)^2 * (α + β + 1))
+    end
+
+    res = nlsolve(momentsmatch!, [0.5, 0.5])
+    α, β = res.zero
+
+    return BetaBinomial(m, α, β)
+
+end
+
+
+"""
+Agent's optimal s given the choice of s in the previous node and the ratio of cost and expected profits.
+"""
+function sₒ(sₛ::Real, Fₛ::FuncDistribution; model::VerticalModel, integer = false, br = [0.01, 100.])
+
+    function foc(s)
+        function g(v) # FIXME: Is this the correct expectation?
+            pₛ = p(sₛ, v; model)
+            (1 - pₛ)^s * log(1 - pₛ)            
+        end
+
+        return s * E(Fₛ, g) - model.r
+    end
+
+    lb, ub = br
+    isbracketing = foc(lb) * foc(ub) < 0
+
+    s̄ = isbracketing ? find_zero(foc, br) : find_zero(foc, 2.)
+
+    if !integer 
+        return s̄
+    end
+
+    # Assumes unit costs
+    p̄(v) = p(s̄, v; model)
+    prof(s) = inv(model.r) * E(p, Fₛ) - s
+
+    if prof(ceil(s̄)) > prof(floor(s̄))
+        return ceil(Int64, s̄)
     else
-        return floor(S̄)
+        return floor(Int64, s̄)
     end
 
 end
 
-function p(i::Int64, pₛ::Float64, s; m::VerticalModel)
-    if i == 1 return (1 - m.μ[i]) end
-
-    supres = 1 - pₛ
-    return (1 - m.μ[i]) * (1 - supres^s)
+function Ep(s::Real, Fₛ::FuncDistribution; model::VerticalModel)
+    f(v) = p(s, v; model)
+    return E(Fₛ, f)
 end
-
-function p(i::Int64, pₛ::Float64; m::VerticalModel, integer = false)
-    if i == 1 return (1 - m.μ[i]) end
-    s = Sr(i, pₛ; m, integer)
-    return p(i, pₛ, s; m)
+function Vp(s::Real, Fₛ::FuncDistribution; model::VerticalModel)
+    f(v) = p(s, v; model)
+    return V(Fₛ, f)
 end
 
 
-function sequence(L::Int64; m::VerticalModel, integer = false)
-    S = ones(L)
-    ps = Vector{Float64}(undef, L); ps[1] = p(1, 1.; m, integer)
+function p(s::Real, v::Integer; model::VerticalModel)
+    m = model.m
 
-    for l ∈ 2:L 
-        ps[l] = p(l, ps[l - 1]; m, integer)
-        S[l] = Sr(l, ps[l - 1]; m, integer)
+    if s > 1 + m - v
+        return 1.
+    else
+        constant = gamma(1 + m - s) / gamma(1 + m)
+        random = gamma(1 + m - s - v)  / gamma(1 + m - v)
+
+        return 1. - constant / random
+    end    
+end
+
+function ∂p(s::Real, v::Integer; model::VerticalModel)
+    m = model.m
+    if s > 1 + m - v
+        return 0.
+    else
+        (1 - p(s, v; model)) * (ψ₀(1 + m - v) - ψ₀(1 + m - v - s))
+    end 
+end
+
+
+function equilibrium(K::Int64; model::VerticalModel, integer = false)
+    F₀ = Binomial(model.m, 1 - model.μ)
+
+    s₁ = (log(model.r) - log(-log(model.μ₀))) / log(model.μ₀)
+    F₁ = inducedF(s₁, F₀; model)
+
+    Fs = Vector{FuncDistribution}(undef, K); Fs[1] = F₁
+    suppliers = ones(K); suppliers[1] = s₁
+
+    for k ∈ 2:(K + 1)
+        Fₛ = Fs[k - 1]
+        sₛ = suppliers[k - 1]
+
+        suppliers[k] = sₒ(sₛ, Fₛ; model, integer)
+        Fs[k] = inducedF(sₛ, Fₛ; model)
+
     end
 
-    return ps, S
+    return probs, suppliers
 end

@@ -2,66 +2,76 @@ using DotEnv; DotEnv.config()
 
 using SpecialFunctions
 using IterTools, Combinatorics
+using DynamicalSystems
 
 using NLsolve, Roots
 
-using Random
-seed = parse(Int64, get(ENV, "SEED", "123"))
-Random.seed!(seed)
+begin
+    using Random
+    seed = parse(Int64, get(ENV, "SEED", "123"))
+    Random.seed!(seed)
 
-using StatsBase, Distributions
+    using StatsBase, Distributions
+end
 
-using Plots, LaTeXStrings
-theme(:dao); default(size = 500 .* (√2, 1))
-plotpath = get(ENV, "PLOT_PATH", "")
+begin
+    using Plots, LaTeXStrings
+    theme(:dao); default(size = 500 .* (√2, 1))
+    plotpath = get(ENV, "PLOT_PATH", "")
+end
 
 include("definitions.jl")
 
 include("optimum/planner.jl")
 include("optimum/agent.jl")
 include("optimum/correlation.jl")
+include("optimum/varprop.jl")
 
 include("simulate.jl")
 
-m = 20
-ratio = 0.01
+# Assume that m is constant and μᵢ > 0 only for i = 0.
 
-F(p̃) = Binomial(m, p̃)
+K = m = 20
+μs = zeros(K); μs[1] = 0.01
+profit = 100.
 
-probspace = range(0.8, 0.99; length = 101)
+model = VerticalModel(m, 0.01, 0.01)
 
-function optimalsuppliers(F)
-    s̃ = Vector{Float64}(undef, length(probspace))
-    m̃ = convert(Float64, m)
 
-    for (i, p̃) ∈ enumerate(probspace) 
-        g(v) = pdf(F(p̃), v)
-        mb(s) = ∂p(s, g; m  = m, μ = 0.)
+function makeds(model, s)
 
-        if mb(m̃) > ratio
-            s̃[i] = m̃
-        else   
+    function varprop!(dx, x, params, k)
+        s = first(params)
 
-            f(s) = mb(s) - ratio
+        sₖ = s # Maybe -> k > 1 ? 1. : s
 
-            res = find_zero(f, (0., m̃))
-            s̃[i] = res
-        end
-
+        dx .= G(x; s = sₖ, model = model, k = k + 1)
     end
 
-    return s̃
+    return DiscreteDynamicalSystem(varprop!, x₀, [s])
 end
 
-sfig = plot(
-    xlabel = L"p_k", ylabel = L"\tilde{s}",
-    legendtitle = L"\kappa / \pi"
-)
+function getfinal(μ₀, s; K = 20)
 
+    model = VerticalModel(
+        repeat([m], K), # m
+        [μ₀, zeros(K - 1)...],
+        repeat([profit], K), 1.
+    )
 
-s̃ = optimalsuppliers(F)
-label = latexstring("\$ $ratio \$")
+    ds = makeds(model, s)
+	
+	tr = trajectory(ds, K)
 
-plot!(sfig, probspace, s̃; label = label)
+	notnan = findfirst(row -> any(isnan.(row)), eachrow(tr))
 
-sfig
+	idx = K + 1 #isnothing(notnan) ? K + 1 : notnan - 1
+
+	μ, σ = tr[idx, :]
+	
+	return μ, max(0, σ)
+end
+
+S = 401
+μspace = range(0.01, 0.7; length = S)
+sspace = range(0.1, 2.; length = S)
