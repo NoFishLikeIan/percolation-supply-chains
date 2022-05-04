@@ -97,7 +97,7 @@ begin
 	function evol!(dx, x, params, k)
 		s, m = params
 
-		sₖ = s# k > 1 ? 1. : s
+		sₖ = k > 1 ? 1. : s
 
 		dx .= G(x; s = sₖ, m)
 	end
@@ -171,7 +171,7 @@ begin
 		sspace, s -> getfinal(μ₀, s; K = k)[1];
 		label = nothing, 
 		yguidefontcolor = :darkred, c = :darkred,
-		xaxis = L"s_1", ylabel = labelE,
+		xaxis = L"s", ylabel = labelE,
 		ylims = (-1, mdef + 1)
 	)
 	
@@ -209,7 +209,6 @@ begin
 	
 	Vfig = contourf(
 		μspace, sspace, Σₖ'; 
-		clims = (0, 2mdef),
 		title = labelV,
 		xlabel = L"\mu_0", ylabel = L"s", c = :imola
 	)
@@ -1812,6 +1811,6 @@ version = "0.9.1+5"
 # ╟─84659d5f-85f3-400b-99e5-bb4cf9001cb9
 # ╠═1aab207b-df70-4483-ba6c-c0c385f32206
 # ╟─7b1dd951-b195-48a3-abbd-3761c0df318a
-# ╟─6f5c6c4a-d960-41a5-8a73-e70ee3c9d9fe
+# ╠═6f5c6c4a-d960-41a5-8a73-e70ee3c9d9fe
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
