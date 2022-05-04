@@ -1,6 +1,5 @@
 struct VerticalModel
-    m::Vector{Int64}
-    μ::Vector{Float64}
-    profits::Vector{Float64}
-    κ::Float64
+    m::Int64
+    μ₀::Float64
+    r::Float64
 end
