@@ -1,20 +1,4 @@
 """
-Compute the distribution of Fₖ
-"""
-function inducedF(s::Real, Fₛ::FuncDistribution; model::VerticalModel)
-    Epₖ = Ep(s, Fₛ; model)
-
-    μ = model.m * Epₖ
-    σ = model.m * (Epₖ * (1 - Epₖ) + model.m * Vp(s, Fₛ; model))
-
-    α, β = analyticalmatchmoments(μ, σ, model.m)
-
-    return BetaBinomial(model.m, α, β)
-
-end
-
-
-"""
 Agent's optimal s given the choice of s in the previous node and the ratio of cost and expected profits.
 """
 function sₒ(sₛ::Real, Fₛ::FuncDistribution; model::VerticalModel, integer = false, br = [0.01, 100.])
@@ -102,7 +86,6 @@ function compequilibrium(K::Int64; model::VerticalModel, integer = false)
     suppliers[1] = s₁
 
     for k ∈ 2:K
-        println(k)
         Fₛ = Fs[k - 1]
         sₛ = suppliers[k - 1]
 

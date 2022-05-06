@@ -38,3 +38,18 @@ function analyticalmatchmoments(μ, σ, n)
 
     α, β
 end
+
+"""
+Compute the distribution of Fₖ
+"""
+function inducedF(s::Real, Fₛ::FuncDistribution; model::VerticalModel)
+    Epₖ = Ep(s, Fₛ; model)
+
+    μ = model.m * Epₖ
+    σ = model.m * (Epₖ * (1 - Epₖ) + model.m * Vp(s, Fₛ; model))
+
+    α, β = analyticalmatchmoments(μ, σ, model.m)
+
+    return BetaBinomial(model.m, α, β)
+
+end

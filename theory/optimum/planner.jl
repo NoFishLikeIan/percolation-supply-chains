@@ -1,11 +1,25 @@
+"""
+Recursive definition of the distribution F
+"""
+function F(k::Int64, s::Vector{Real}; model::VerticalModel)::FuncDistribution
+    if k == 0
+        return Binomial(model.m, p(k, s; model))
+    end
+
+    Epₖ = E(
+        F(k - 1, s; model),
+        v -> p(k - 1, s)
+    )
+
+end
+
 function p(k::Int64, s::Vector{Real}; model::VerticalModel)
     if k == 0
         return 1 - model.μ₀ 
     end
 
-    supris = 1 - p(k - 1, s; m)
-
-    return 1 - supris^s[k]
+    1 - (1 - p(k - 1, s; model))^s[k]
+    
 end
 
 function ∂p(k::Int64, q::Int64, s::Vector{Real}; m::VerticalModel)

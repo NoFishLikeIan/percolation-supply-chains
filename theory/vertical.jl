@@ -2,7 +2,6 @@ using DotEnv; DotEnv.config()
 
 using SpecialFunctions
 using IterTools, Combinatorics
-using DynamicalSystems
 
 using Roots
 
