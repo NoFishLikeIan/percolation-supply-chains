@@ -45,7 +45,7 @@ function Vp(s::Real, Fₛ::FuncDistribution; model::VerticalModel)
 end
 
 
-function p(s::Real, v::Integer; model::VerticalModel)
+function p(s::Real, v::Real; model::VerticalModel)
     if s == 0
         return 0.
     end
@@ -62,7 +62,7 @@ function p(s::Real, v::Integer; model::VerticalModel)
     end    
 end
 
-function ∂p(s::Real, v::Integer; model::VerticalModel)
+function ∂p(s::Real, v::Real; model::VerticalModel)
     m = model.m
     if s > 1 + m - v
         return 0.

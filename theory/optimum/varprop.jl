@@ -1,16 +1,16 @@
 ψ₀(x) = polygamma(0, x)
 ψ₁(x) = polygamma(1, x)
 
-G(μ, σ; sₖ, model) = G([μ, σ]; sₖ, model)
-function G(x; sₖ, model::VerticalModel)
+G(μ, σ; s, model) = G([μ, σ]; s, model)
+function G(x; s, model::VerticalModel)
     m = model.m
     μ, σ = x
     
-    pₖ = p(sₖ, μ; model = model)
+    pₖ = p(s, μ; model = model)
     bₖ = 1 + m - μ
 
-    ∂p = ψ₀(bₖ) - ψ₀(bₖ - sₖ)
-    ∂²p = ψ₁(bₖ) - ψ₁(bₖ - sₖ)
+    ∂p = ψ₀(bₖ) - ψ₀(bₖ - s)
+    ∂²p = ψ₁(bₖ) - ψ₁(bₖ - s)
     
     E = pₖ - (σ/2) * (1 - pₖ) * (∂p^2 + ∂²p)
     V = σ * (1 - pₖ)^2 * ∂p^2
