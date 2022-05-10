@@ -72,7 +72,7 @@ function ∂p(s::Real, v::Real; model::VerticalModel)
 end
 
 
-function compequilibrium(K::Int64; model::VerticalModel, integer = false)
+function compequilibrium(model::VerticalModel; integer = false)
     F₀ = Binomial(model.m, 1 - model.μ₀)
 
     # No correlation in the 0th, hence 1st admits an analytical solution
@@ -81,11 +81,11 @@ function compequilibrium(K::Int64; model::VerticalModel, integer = false)
     s₁ = integer ? round(Int64, firstsup) : firstsup
     F₁ = inducedF(s₁, F₀; model)
 
-    Fs = Vector{FuncDistribution}(undef, K); Fs[1] = F₁
-    suppliers = Vector{integer ? Int64 : Float64}(undef, K)
+    Fs = Vector{FuncDistribution}(undef, model.K); Fs[1] = F₁
+    suppliers = Vector{integer ? Int64 : Float64}(undef, model.K)
     suppliers[1] = s₁
 
-    for k ∈ 2:K
+    for k ∈ 2:model.K
         Fₛ = Fs[k - 1]
         sₛ = suppliers[k - 1]
 

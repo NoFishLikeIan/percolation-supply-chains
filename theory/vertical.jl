@@ -21,11 +21,11 @@ end
 
 include("definitions.jl")
 include("utils/distcompound.jl")
+include("utils/lawofmotion.jl")
 
 include("optimum/planner.jl")
 include("optimum/agent.jl")
 include("optimum/correlation.jl")
-include("optimum/varprop.jl")
 
 include("simulate.jl")
 
@@ -36,5 +36,7 @@ m = 30
 μ₀ = 0.01
 profit = 100.
 
-model = VerticalModel(m, μ₀, 1 / profit)
-Fs, sₖ = compequilibrium(K; model)
+model = VerticalModel(m, μ₀, 1 / profit, K)
+Fs, sₖ = compequilibrium(model)
+
+
