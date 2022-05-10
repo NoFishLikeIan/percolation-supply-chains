@@ -24,3 +24,17 @@ end
 G₀(μ, m) = [
     (1 - μ) * m, (1 - μ) * μ * m 
 ]
+
+function sequencemoments(s::Vector{<:Real}; model::VerticalModel)
+    f₀ = model.m * (1 - model.μ₀)
+    σ₀ = f₀ * model.μ₀
+
+    state = Matrix{Float64}(undef, model.K, 2)
+    state[1, :] = G(f₀, σ₀; s = s[1], model)
+
+    for k ∈ 2:model.K
+        state[k, :] = G(state[k - 1, :]; s = s[k], model)
+    end
+
+    return state
+end

@@ -1,107 +1,39 @@
-"""
-Recursive definition of the distribution F
-"""
-function F(k::Int64, s::Vector{Real}; model::VerticalModel)::FuncDistribution
-    if k == 0
-        return Binomial(model.m, p(k, s; model))
-    end
+g₁(f, σ, s; model) = G(f, σ; s, model) |> first
+g₂(f, σ, s; model) = G(f, σ; s, model) |> last
 
-    Epₖ = E(
-        F(k - 1, s; model),
-        v -> p(k - 1, s)
-    )
-
-end
-
-function p(k::Int64, s::Vector{Real}; model::VerticalModel)
-    if k == 0
-        return 1 - model.μ₀ 
-    end
-
-    1 - (1 - p(k - 1, s; model))^s[k]
+function valuefunction(x::Vector{Float64}, Vₖ₊₁::Real; model::VerticalModel)
+    f, σ = x
     
+    J(s) = -inv(model.r) * g₁(f, σ, s; model) + s - Vₖ₊₁
+
+    result = optimize(J, 0., 10_000.)
+
+    sₖ = first(result.minimizer)
+    Vₖ = -J(sₖ)
+
+    sₖ, Vₖ
 end
 
-function ∂p(k::Int64, q::Int64, s::Vector{Real}; m::VerticalModel)
-    if k < q
-        return 0.
-    elseif k == q
+function plannerequilibrium(model::VerticalModel)
 
-    end
-    
+    function totalvalue(s::Vector{<:Real})
+        moments = sequencemoments(s; model)
 
+        results = Matrix{Float64}(undef, model.K, 2)
+        
+        for k ∈ reverse(1:model.K)
+            Vₖ₊₁ = k < model.K ? results[k + 1, 2] : 0.
 
-    if k < q || j == 1 return 0. end
-
-    ownrisk = 1 - m.μ[i]
-    supres = 1 - p(i - 1, S; m)
-
-    if i == j
-        return -ownrisk * supres^S[i] * log(supres)
-    elseif i > j
-        return ownrisk * S[i] * supres^S[i - 1] * ∂p(i - 1, j, S; m)
-    end
-end
-
-function E(i, j, S; m::VerticalModel)
-    if i ≤ j return 0. end
-    if i == j + 1 return 1. end
-
-    uprisk = 1 - p(i-1, S; m)
-
-    return S[i] * (1 - m.μ[i]) * uprisk^(S[i] - 1) * E(i-1, j, S; m)
-end
-
-function focfactory(m::VerticalModel)
-    function foc!(F, Sᵣ)
-        S = [1., Sᵣ...] # Dummy for S₀
-
-        n = length(S)
-
-        for j ∈ 2:n
-
-            ext = sum(
-                E(i, j, S; m) * (m.m[i] * m.profits[i]) / (m.m[j] * m.profits[j])
-                for i ∈ 1:n
-            )
-
-            F[j - 1] = ∂p(j, j, S; m) * (ext + 1) - (m.κ / m.profits[j])
+            results[k, :] .= valuefunction(moments[k, :], Vₖ₊₁; model)
         end
 
-        return F
-    end
-end
-
-"""
-Given a solution over R, computes the solution over Z
-"""
-function integersolution(S::Vector{Float64}, m::VerticalModel)
-    n = length(S)
-
-    if n > 20
-        throw("n=$n too big")
+        return sum(results[:, 2])
     end
 
-    function profit(Z)
-        probs = (i -> p(i, Z; m)).(1:n)
-        return @. m.profits * probs - m.κ * Z
-    end
+    result = optimize(s -> -totalvalue(s), ones(model.K))
+    
+    sₖ = result.minimizer
+    moments = sequencemoments(sₖ; model)
 
-    space = product(((floor(Int64, s), ceil(Int64, s)) for s ∈ S)...)
-
-    maxvec = Vector{Int64}(undef, n)
-    maxprof = -Inf
-
-    for Ztup ∈ space
-
-        Z = collect(Ztup)
-        πₛ = profit(Z) |> sum
-        if πₛ > maxprof
-            maxprof = πₛ
-            maxvec .= Z
-        end
-    end
-
-    return maxvec, maxprof
-
+    return moments, sₖ
 end
