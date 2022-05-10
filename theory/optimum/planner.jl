@@ -35,5 +35,12 @@ function plannerequilibrium(model::VerticalModel)
     sₖ = result.minimizer
     moments = sequencemoments(sₖ; model)
 
-    return moments, sₖ
+    Fs = []
+
+    for (μ, σ) ∈ eachrow(moments)
+        α, β = analyticalmatchmoments(μ, σ, model.m)
+        push!(Fs, BetaBinomial(model.m, α, β))
+    end
+
+    return Fs, sₖ
 end

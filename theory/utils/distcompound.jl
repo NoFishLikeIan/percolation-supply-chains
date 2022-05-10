@@ -31,12 +31,17 @@ end
 Analytically matches the moment of a BetaBinomial with the μ, σ of the underlying Beta
 """
 function analyticalmatchmoments(μ, σ, n)
+    
     cf = -n * μ + μ^2 + σ
 
     α =  -cf * μ / (n*σ - n*μ + μ^2)
     β = cf * (n - μ) / (μ * (n - μ) - n*σ)
 
-    α, β
+    if α < 0 || β < 0 || μ ≈ n || σ ≈ 0
+        return 1., 1e-10
+    else
+        return α, β
+    end
 end
 
 """
