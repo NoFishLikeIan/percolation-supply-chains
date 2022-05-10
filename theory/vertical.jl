@@ -3,7 +3,7 @@ using DotEnv; DotEnv.config()
 using SpecialFunctions
 using IterTools, Combinatorics
 
-using Roots
+using Roots, Optim
 
 begin
     using Random
@@ -31,12 +31,11 @@ include("simulate.jl")
 
 # Assume that m is constant and μᵢ > 0 only for i = 0.
 
-K = 30
+K = 20
 m = 30
 μ₀ = 0.01
 profit = 100.
 
 model = VerticalModel(m, μ₀, 1 / profit, K)
 Fs, sₖ = compequilibrium(model)
-
-
+Fp, sₚ = plannerequilibrium(model)
