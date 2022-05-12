@@ -26,6 +26,9 @@ using SpecialFunctions, IterTools, Combinatorics
 # ╔═╡ 9440cca5-2ca0-44a9-bf91-8f036a17d717
 using Roots, Optim
 
+# ╔═╡ 637d37be-a55b-437c-b15a-8ef6835c4686
+using ForwardDiff
+
 # ╔═╡ 0335dc24-d7f9-4eb2-a2ad-8692249d8584
 using Random; Random.seed!(123)
 
@@ -60,8 +63,45 @@ begin
 	function ρₖ(Fₖ)
 		_, α, β = params(Fₖ)
 	
-		return α + β + 1
+		return inv(α + β + 1)
 	end
+
+	function inverseparam(f, ρ)
+		rr = (1 - ρ) / ρ
+
+		α = rr * f
+		β = rr * (1 - f)
+
+		return α, β
+	end
+end
+
+# ╔═╡ ef280894-6b32-4cc8-803f-f6c0fdd51741
+let
+	f = 0.8
+	ρ₁ = 0.01
+	ρ₂ = 0.04
+	M = 1000
+	
+	notdisp = BetaBinomial(M, inverseparam(f, ρ₁)...)
+	disp = BetaBinomial(M, inverseparam(f, ρ₂)...)
+
+	plot(
+		0:M, x -> pdf(notdisp, x), c = :darkred,
+		label = latexstring("\$\\rho_k = $(ρ₁)\$"),
+		title = latexstring("P.d.f. of \$F_k\$"),
+		dpi = 120
+	)
+	plot!(
+		0:M, x -> pdf(disp, x), c = :darkblue, 
+		label = latexstring("\$\\rho_k = $(ρ₂)\$")
+	)
+
+	vline!(
+		[f * M], c = :black, linestyle = :dash, label = L"\mathbb{E}[f_k]"
+	)
+
+	# savefig("../docs/presentation/figures/distribution.pdf")
 end
 
 # ╔═╡ 5e61c3e5-3d60-4504-9d3b-6928098a78bf
@@ -78,6 +118,9 @@ md"
 # ╔═╡ 5c9cc780-04a0-4e68-b05d-5d1174ddfd78
 model = VerticalModel(m, μ₀, r, K)
 
+# ╔═╡ 5f0dd2a2-cdad-47ab-a468-f45c5d24d517
+modelₛ = VerticalModel(m, μ₀ + 0.1, r, K)
+
 # ╔═╡ 37383f01-7f0f-4a64-b43b-db88705bec36
 md"
 ## Firm optimization
@@ -86,23 +129,14 @@ md"
 # ╔═╡ 6eb615ec-7c0a-480d-89d2-babcb82d66cb
 Fs, sₖ = compequilibrium(model)
 
-# ╔═╡ 48729265-f746-49b8-b04d-44d187c70f5b
-begin
-	layerlabel = latexstring("Layers, \$k\$")
-	plot(
-		1:K, sₖ; 
-		title = "Competitive equilibrium number of suppliers",
-		xlabel = layerlabel, ylabel = L"s_k",
-		marker = :o, xticks = 1:K
-	)
-	2
-end
+# ╔═╡ e5672709-6282-4840-ab79-6a36926ad216
+Fh, sₕ = compequilibrium(modelₛ)
 
 # ╔═╡ fae81967-272f-46db-8ab2-ceb82e7ce1ea
 begin
-
+	layerlabel = latexstring("Layers, \$k\$")
 	title = latexstring("Moments of equilibrium distribution \$F_k\$")
-	flabel = latexstring("Prob. of a firm functioning, \$ p_k \$")
+	flabel = latexstring("Prob. of a firm functioning, \$ f_k \$")
 	ρlabel = latexstring("Overdispersion, \$ \\rho_k \$")
 
 
@@ -114,19 +148,59 @@ begin
 		leftmargin = 2Plots.mm, xticks = 1:K
 	)
 
-	lb = min(1 - μ₀, minimum(fs)) - 0.05
+	lb = 0.95
 	plot!(
 		fig, 1:K, fs; 
 		ylabel = flabel, c = :darkred, yguidefontcolor = :darkred,
 		ylims = (lb, 1.), marker = :o
 	)
+
+	plot!(
+		fig, 1:K, fₖ.(Fh); 
+		ylabel = flabel, c = :darkred, alpha = 0.5, marker = :o
+	)
+
+	tw = twinx(fig)
 	
 	plot!(
-		twinx(fig), 1:K, ρs; 
+		tw, 1:K, ρs; 
 		ylabel = ρlabel, c = :darkgreen, yguidefontcolor = :darkgreen,
 		ylims =  (0, Inf), marker = :o
 	)
-	2
+
+	plot!(
+		tw, 1:K, ρₖ.(Fh); 
+		ylabel = ρlabel, c = :darkgreen, alpha = 0.5, marker = :o
+	)
+
+	# savefig("../docs/presentation/figures/momproducitivtyshock.pdf")
+end
+
+# ╔═╡ 48729265-f746-49b8-b04d-44d187c70f5b
+let
+
+	plot(
+		1:K, sₖ; 
+		title = "Competitive equilibrium number of suppliers",
+		xlabel = layerlabel, ylabel = L"s_k",
+		marker = :o, xticks = 1:K, legendtitle = L"\mu_0",
+		label = "Low"
+	)
+
+	plot!(1:K, sₕ, label = "High",
+		marker = :o)
+
+	# savefig("../docs/presentation/figures/producitivtyshock.pdf")
+end
+
+# ╔═╡ 07f15bc7-24a4-4d1c-ad45-b432d09cccc5
+let
+	f = 20
+	plot(0.5:0.01:5, s -> JG([f, 0, s]; model)[1, 1]; label = "Low", legendtitle = L"\rho_k", dpi = 180, title = "Marginal benefit curve with high and low overdispersion", xlabel = L"s_k")
+	plot!(0.5:0.01:5, s -> JG([f, 75, s]; model)[1, 1]; label = "High")
+	hline!([model.r * 10], label = L"\kappa / \pi")
+
+	savefig("../docs/presentation/figures/foc.pdf")
 end
 
 # ╔═╡ ae038ea3-b6ba-4acb-9d77-7f90ab60bdfd
@@ -140,6 +214,20 @@ md"## Numerical solution"
 
 # ╔═╡ 843cfdc9-d562-4d1b-96ba-c7282f3244bb
 Fp, sₚ = plannerequilibrium(model)
+
+# ╔═╡ 34ce83b4-9135-4f97-906f-4b2fa6b51059
+let
+	fp = fₖ.(Fp)
+
+	ffig = plot(
+		title = "Mean", xlabel = layerlabel, 
+		leftmargin = 2Plots.mm, xticks = 1:K,
+		ylabel = flabel
+	)
+
+	plot!(ffig, 1:K, fs; c = :darkred, marker = :o, label = "Firm")
+	plot!(ffig, 1:K, fp; c = :darkblue, marker = :o, label = "Planner")
+end
 
 # ╔═╡ 1dc2ce46-e2ae-43a0-910c-d0154be625a3
 let
@@ -176,8 +264,10 @@ md"
 # ╔═╡ 68080c3e-c34f-4eac-9f4b-0b16ed25825e
 md"
 - ``f_{k-1}`` $(@bind fₛ Slider(0:0.01:m, show_value = true, default = 9m ÷ 10))
-- ``\sigma^2_{k-1} `` $(@bind σₛ Slider(0:0.01:(m÷2), show_value = true, default = m ÷ 5))
 "
+
+# ╔═╡ 6047ebd4-28f4-4e38-a7ed-fbb6f203c8c2
+σₛ = fₛ * sqrt(model.μ₀)
 
 # ╔═╡ 0dfc5395-7b79-42d7-87e6-bd2ecb9c18db
 begin
@@ -208,11 +298,15 @@ begin
 	plot(ffig, σfig; size = (1200, 550), margins = 5Plots.mm)
 end
 
+# ╔═╡ ab79e1c4-c561-4293-a822-6d9bfbdb4daf
+
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 IterTools = "c8e1da08-722c-5040-9ed9-7db0dc04731e"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 Optim = "429524aa-4258-5aef-a3af-852621145aeb"
@@ -226,6 +320,7 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 [compat]
 Combinatorics = "~1.0.2"
 Distributions = "~0.25.58"
+ForwardDiff = "~0.10.28"
 IterTools = "~1.4.0"
 LaTeXStrings = "~1.3.0"
 Optim = "~1.7.0"
@@ -1347,27 +1442,35 @@ version = "0.9.1+5"
 # ╠═db3ff81f-82f0-4b37-b108-84f46bd13727
 # ╠═b933d540-cd32-11ec-1db4-959ed997232c
 # ╠═9440cca5-2ca0-44a9-bf91-8f036a17d717
+# ╠═637d37be-a55b-437c-b15a-8ef6835c4686
 # ╠═0335dc24-d7f9-4eb2-a2ad-8692249d8584
 # ╠═3b200a3f-b236-4c40-aae6-90c0ec613086
 # ╠═f994cc88-15d2-4825-86d4-ed584ba2a6a1
 # ╠═0b3d227e-0f09-40af-b9bd-ac34b7baf06d
 # ╟─9a9b363d-edb8-47ce-bf71-b9ac7cef3dab
-# ╟─2ad44248-8212-412d-aa6d-37035856ade7
+# ╠═2ad44248-8212-412d-aa6d-37035856ade7
+# ╠═ef280894-6b32-4cc8-803f-f6c0fdd51741
 # ╟─5e61c3e5-3d60-4504-9d3b-6928098a78bf
 # ╠═5c9cc780-04a0-4e68-b05d-5d1174ddfd78
+# ╠═5f0dd2a2-cdad-47ab-a468-f45c5d24d517
 # ╟─37383f01-7f0f-4a64-b43b-db88705bec36
 # ╠═6eb615ec-7c0a-480d-89d2-babcb82d66cb
-# ╟─fae81967-272f-46db-8ab2-ceb82e7ce1ea
-# ╟─48729265-f746-49b8-b04d-44d187c70f5b
+# ╠═e5672709-6282-4840-ab79-6a36926ad216
+# ╠═fae81967-272f-46db-8ab2-ceb82e7ce1ea
+# ╠═48729265-f746-49b8-b04d-44d187c70f5b
+# ╠═07f15bc7-24a4-4d1c-ad45-b432d09cccc5
 # ╟─ae038ea3-b6ba-4acb-9d77-7f90ab60bdfd
 # ╠═550b3865-939a-4fd6-af7e-7439a09a4506
 # ╟─274e7f22-8d81-4fab-b012-99b734bfaa24
 # ╠═843cfdc9-d562-4d1b-96ba-c7282f3244bb
-# ╟─1dc2ce46-e2ae-43a0-910c-d0154be625a3
-# ╟─6b7a09e5-5aae-4d2b-8716-898c860fd7ee
+# ╠═34ce83b4-9135-4f97-906f-4b2fa6b51059
+# ╠═1dc2ce46-e2ae-43a0-910c-d0154be625a3
+# ╠═6b7a09e5-5aae-4d2b-8716-898c860fd7ee
 # ╟─ecd8c12a-0cf9-4b8d-8b22-2ba13e390891
-# ╟─68080c3e-c34f-4eac-9f4b-0b16ed25825e
+# ╠═68080c3e-c34f-4eac-9f4b-0b16ed25825e
+# ╠═6047ebd4-28f4-4e38-a7ed-fbb6f203c8c2
 # ╠═0dfc5395-7b79-42d7-87e6-bd2ecb9c18db
 # ╟─752b9212-6c35-4586-8513-6b29d94341aa
+# ╠═ab79e1c4-c561-4293-a822-6d9bfbdb4daf
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
