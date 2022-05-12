@@ -122,6 +122,13 @@ To understand these results, consider the two simple production networks illustr
   \label{fig:example}
 \end{figure}
 
+
+\begin{figure}[H]
+  \centering
+  \inputTikZ{0.5}{diagrams/model-presentation.tikz} 
+  \caption{Idiosyncratic upstream risk}
+\end{figure}
+
 Now assume that \textit{one} cannot observe the supplier decisions of the red good producers but assigns equal probability to every possible configuration. Given that there are more configurations in which diversification is optimal\footnote{
   Diversification is optimal if \inputTikZ{0.1}{diagrams/conf-idyof.tikz} or, with equal probability, \inputTikZ{0.1}{diagrams/conf-covpref.tikz}, and not optimal if \inputTikZ{0.1}{diagrams/conf-covind.tikz}
 }, diversification under incomplete information and with uniform priors will be closer to the social optimum. This simple example makes it immediately clear that firms beliefs play a crucial role in the endogenous formation of production networks. 
@@ -537,21 +544,90 @@ where, for a given $f$,
 
 \newpage
 \appendix
-\section[Concavity of social planner problem]{$W(S)$ is concave}
+\section{Taylor Expansion}
 
-Let $W: \Re^n \to \Re$ be
-
-\begin{equation}
-  W(S) = \sum^n_{i = 0} m_i \Big( \pi_i \ p_i(S) - \kappa s_i \Big).
-\end{equation}
-
-I will prove that $W$ is concave. Note that it is sufficient to prove that $p_i$ is concave. This can be proven by induction. The base case is 
+Assume 
 
 \begin{equation}
-  p_2(S) = (1 - \mu_2) \ (1 - \mu_1)^{S_2}
+  F \sim \text{BetaBin}(m, f, \rho).
 \end{equation}
 
+The moments of $F$ can be related to the parameters as follows
 
+\begin{equation}
+  \begin{split}
+    f &= \E\left[F\right] / m \\
+    \rho &= \frac{\V[F] - m f (1 - f)}{m (1 - m) f (1 - f)}
+  \end{split}
+\end{equation}
 
+To simplify notation let $p(F) := p(s, F)$, then
+
+\begin{equation}
+  p(F) = 1 - \frac{\Gamma(1 + m - s)}{\Gamma(1 + m)}\frac{\Gamma(1 + m - F)}{\Gamma(1 + m - F - s)}.
+\end{equation}
+
+A second order taylor expansion of $p$ around $\E[F] = m f$ yields
+
+\begin{equation}
+  p(F) = p(m f) + p'(m f) \big(F - m f\big) + \frac{p''(m f)}{2} \big(F - m f\big)^2 + \mathcal{O}\left(F^3\right).
+\end{equation}
+
+We can use this to write the moments of $p(F)$ as a function of $f$ and $\rho$, 
+
+\begin{equation}
+  \begin{split}
+    \E\big[p(F)\big]  &= p(m f) + \frac{p''(m f)}{2} \V[F] + \E\left[\mathcal{O}\left(F^3\right) \right] \\
+    &= p(m f) + \frac{p''(m f)}{2} m f (1 - f) \big(1 + (m-1) \rho \big) +\E\left[\mathcal{O}\left(F^3\right) \right]
+  \end{split}
+\end{equation}
+
+and
+
+\begin{equation}
+  \V\big[p(F)\big] = p'(m f)^2 \  \V\big[F\big].
+\end{equation}
+
+Using $p(F) \ \dot{\sim} \ \text{Beta}(f^*, \rho^*)$, let
+
+\begin{equation}
+  F^* \sim \text{Bin}(m^*, p(F)) \equiv \text{BetaBin}(m^*, f^*, \rho^*).
+\end{equation}
+
+We can hence link the parameters of $F$ with $F'$ as
+
+\begin{equation}
+  f^* = \E[p(F)] \approx p(m f) + \frac{1}{2} p''(m f) \ m (1 - f) f (1 + (m - 1) \rho) =: G_f(f, \rho; m, s)
+\end{equation}
+
+and
+
+\begin{equation}
+  \begin{split}
+    \rho^* = \frac{\V[p(F)]}{\E[p(F)] - \E[p(F)]^2} \approx p'(m f)^2 \frac{m f (1 - f) (1 + (m - 1) \rho)}{ G_f(f, \rho; m, s) -  G_f(f, \rho; m, s)^2} =:  G_\rho(f, \rho; m, s)
+  \end{split}
+\end{equation}
+
+Hence we have a mapping
+
+\begin{equation}
+  \begin{pmatrix}
+    f^* \\ \rho^*
+  \end{pmatrix} = G(f, \rho; m, s) := \begin{pmatrix}
+    G_f(f, \rho; m, s) \\ G_\rho(f, \rho; m, s)
+  \end{pmatrix}
+\end{equation}
+
+We can write the derivatives of $p$ recursively as follows
+
+\begin{equation}
+  p'(x) = \big(1 - p(x)\big) \Big( \psi_0(1 + m - x) - \psi_0(1 + m - s - x) \Big)
+\end{equation}
+
+and
+
+\begin{equation}
+  p''(x) = -\big(1 - p(x)\big)\Big( \big(\psi_0(1 + m - x) - \psi_0(1 + m - s - x)\big)^2 + \psi_1(1 + m - x) - \psi_1(1 + m - s - x) \Big)
+\end{equation}
 
 \end{document}
