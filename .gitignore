@@ -329,3 +329,4 @@ docs/**/*.pdf
 .DS_Store
 papers/
 empirical/**/*.pdf
+docs/presentation
