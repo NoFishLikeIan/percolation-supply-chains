@@ -4,6 +4,7 @@ using SpecialFunctions
 using IterTools, Combinatorics
 
 using Roots, Optim
+using ForwardDiff
 
 begin
     using Random
