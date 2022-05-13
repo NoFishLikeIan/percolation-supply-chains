@@ -64,24 +64,16 @@ end
 
 function ∂p(s::Real, v::Real; model::VerticalModel)
     m = model.m
-    if s > 1 + m - v
-        return 0.
-    else
-        Δψ₀ = ψ₀(1 + m - v) - ψ₀(1 + m - v - s)
-        return (1 - p(s, v; model)) * Δψ₀
-    end 
+    Δψ₀ = ψ₀(1 + m - v) - ψ₀(1 + m - v - s)
+    return (1 - p(s, v; model)) * Δψ₀
 end
 
 function ∂²p(s::Real, v::Real; model::VerticalModel)
     m = model.m
 
-    if s > 1 + m - v
-        return 0.
-    else
-        Δψ₀ = ψ₀(1 + m - v) - ψ₀(1 + m - v - s)
-        Δψ₁ = ψ₁(1 + m - v) - ψ₁(1 + m - v - s)
-        return -(1 - p(s, v; model)) * (Δψ₀^2 + Δψ₁)
-    end 
+    Δψ₀ = ψ₀(1 + m - v) - ψ₀(1 + m - v - s)
+    Δψ₁ = ψ₁(1 + m - v) - ψ₁(1 + m - v - s)
+    return -(1 - p(s, v; model)) * (Δψ₀^2 + Δψ₁)
 end
 
 
@@ -104,8 +96,9 @@ function compequilibrium(model::VerticalModel; integer = false)
 
         suppliers[k] = sₒ(sₛ, Fₛ; model, integer)
         Fs[k] = inducedF(suppliers[k], Fₛ; model)
-
     end
 
-    return Fs, suppliers
+    moments = [ αβtofρ(params(F)[2:3]...) for F ∈ Fs ]
+
+    return moments, suppliers
 end

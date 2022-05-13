@@ -1,7 +1,7 @@
 function valuefunction(x::Vector{Float64}, Vₖ₊₁::Real; model::VerticalModel)
     f, ρ = x
     
-    J(s) = -inv(model.r) * G₁([f, ρ]; s, model) * model.m + s - Vₖ₊₁
+    J(s) = -inv(model.r) * G₁([f, ρ]; sₖ = s, model) * model.m + s - Vₖ₊₁
 
     result = optimize(J, 0., 10_000.)
 
@@ -32,13 +32,5 @@ function plannerequilibrium(model::VerticalModel)
     sₖ = result.minimizer
     moments = sequencemoments(sₖ; model)
 
-    Fs = []
-
-    for (f, ρ) ∈ eachrow(moments)
-        # FIXME: ρ ∈ (0, 1)
-        α, β = paramchange(f, ρ)
-        push!(Fs, BetaBinomial(model.m, α, β))
-    end
-
-    return Fs, sₖ
+    return moments, sₖ
 end

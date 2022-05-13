@@ -32,11 +32,11 @@ include("simulate.jl")
 
 # Assume that m is constant and μᵢ > 0 only for i = 0.
 
-K = 20
+K = 3
 m = 30
 μ₀ = 0.01
 profit = 100.
 
 model = VerticalModel(m, μ₀, 1 / profit, K)
-Fs, sₖ = compequilibrium(model)
-Fp, sₚ = plannerequilibrium(model)
+Fₛ, sₛ = compequilibrium(model)
+Fₚ, sₚ = plannerequilibrium(model)

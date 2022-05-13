@@ -44,10 +44,12 @@ function analyticalmatchmoments(μ, σ, n)
     end
 end
 
-function paramchange(f, ρ)
-    fr = (1 - ρ) / ρ
+function fρtoαβ(f, ρ)
+    f * (1 - ρ) / ρ, (1 - f) * (1 - ρ) / ρ
+end
 
-    return fr * f, fr * (1 - f)
+function αβtofρ(α, β)
+    α / (α + β), 1 / (α + β + 1)
 end
 
 """
