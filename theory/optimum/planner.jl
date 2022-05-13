@@ -1,7 +1,7 @@
 function valuefunction(x::Vector{Float64}, Vₖ₊₁::Real; model::VerticalModel)
     f, ρ = x
     
-    J(s) = -inv(model.r) * G₁([f, ρ]; sₖ = s, model) * model.m + s - Vₖ₊₁
+    J(s) = -inv(model.r) * G₁([f, ρ]; sₖ = s) * model.m + s - Vₖ₊₁
 
     result = optimize(J, 0., 10_000.)
 
