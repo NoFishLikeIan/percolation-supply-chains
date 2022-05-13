@@ -67,7 +67,20 @@ function ∂p(s::Real, v::Real; model::VerticalModel)
     if s > 1 + m - v
         return 0.
     else
-        (1 - p(s, v; model)) * (ψ₀(1 + m - v) - ψ₀(1 + m - v - s))
+        Δψ₀ = ψ₀(1 + m - v) - ψ₀(1 + m - v - s)
+        return (1 - p(s, v; model)) * Δψ₀
+    end 
+end
+
+function ∂²p(s::Real, v::Real; model::VerticalModel)
+    m = model.m
+
+    if s > 1 + m - v
+        return 0.
+    else
+        Δψ₀ = ψ₀(1 + m - v) - ψ₀(1 + m - v - s)
+        Δψ₁ = ψ₁(1 + m - v) - ψ₁(1 + m - v - s)
+        return -(1 - p(s, v; model)) * (Δψ₀^2 + Δψ₁)
     end 
 end
 

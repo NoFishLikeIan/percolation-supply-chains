@@ -1,10 +1,7 @@
-g₁(f, σ, s; model) = G(f, σ; s, model) |> first
-g₂(f, σ, s; model) = G(f, σ; s, model) |> last
-
 function valuefunction(x::Vector{Float64}, Vₖ₊₁::Real; model::VerticalModel)
-    f, σ = x
+    f, ρ = x
     
-    J(s) = -inv(model.r) * g₁(f, σ, s; model) + s - Vₖ₊₁
+    J(s) = -inv(model.r) * G₁([f, ρ]; s, model) * model.m + s - Vₖ₊₁
 
     result = optimize(J, 0., 10_000.)
 
@@ -37,8 +34,9 @@ function plannerequilibrium(model::VerticalModel)
 
     Fs = []
 
-    for (μ, σ) ∈ eachrow(moments)
-        α, β = analyticalmatchmoments(μ, σ, model.m)
+    for (f, ρ) ∈ eachrow(moments)
+        # FIXME: ρ ∈ (0, 1)
+        α, β = paramchange(f, ρ)
         push!(Fs, BetaBinomial(model.m, α, β))
     end
 

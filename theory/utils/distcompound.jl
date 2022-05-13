@@ -44,6 +44,12 @@ function analyticalmatchmoments(μ, σ, n)
     end
 end
 
+function paramchange(f, ρ)
+    fr = (1 - ρ) / ρ
+
+    return fr * f, fr * (1 - f)
+end
+
 """
 Compute the distribution of Fₖ
 """
