@@ -32,5 +32,5 @@ function plannerequilibrium(model::VerticalModel)
     sₖ = result.minimizer
     moments = sequencemoments(sₖ; model)
 
-    return moments, sₖ
+    return Tuple.(eachrow(moments)), sₖ
 end

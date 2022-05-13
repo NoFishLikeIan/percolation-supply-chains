@@ -40,4 +40,4 @@ function sequencemoments(s::Vector{<:Real}; model::VerticalModel)
     return state
 end
 
-JG(x; model) = ForwardDiff.jacobian(x -> G(x[1], x[2]; sₖ = x[3], model), x)
+JG(x; model) = ForwardDiff.jacobian(x -> G(x[1:2]; sₖ = x[3], model), x)
