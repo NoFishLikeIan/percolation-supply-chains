@@ -19,18 +19,21 @@ function G(x; sₖ, model::VerticalModel)
     f, ρ = x
     m = model.m
 
-    VF = m * (1 - f) * f * (1 + (m - 1) * ρ)
-    SF = VF * (1 - 2f) * (1 + (2m - 1) * ρ) / (1 + ρ)
+    variance = m * (1 - f) * f * (1 + (m - 1) * ρ)
+    skewness = variance * (1 - 2f) * (1 + (2m - 1) * ρ) / (1 + ρ)
 
-	NKF = ρ^2 * (6*(m-1)*m + 2 - 3f*(7*(m-1)*m + 2)*(1-f)) + 3*(1-f)*f*(((m-8)*m + 4)*ρ + m - 2) + 6m*ρ - 3ρ + 1
-	DKF = (ρ + 1) * (2ρ + 1)
-	KF = VF * NKF / DKF
+	n = ρ^2 * (6*(m-1)*m + 2 - 3f*(7*(m-1)*m + 2)*(1-f)) + 3*(1-f)*f*(((m-8)*m + 4)*ρ + m - 2) + 6m*ρ - 3ρ + 1
+	d = (ρ + 1) * (2ρ + 1)
+	kurtosis = variance * n / d
     
     fⁿ = G₁(x; sₖ)
 
-    order2 = ∂p(sₖ, m * f; model)^2 * VF
-    order3 = ∂p(sₖ, m * f; model) * ∂²p(sₖ, m * f; model) * SF
-    order4 = (∂²p(sₖ, m * f; model)^2 / 4 + (2 / 9) * ∂p(sₖ, m * f; model) * ∂³p(sₖ, m * f; model)) * KF
+    order2 = ∂p(sₖ, m * f; model)^2 * variance
+    order3 = ∂p(sₖ, m * f; model) * ∂²p(sₖ, m * f; model) * skewness
+    order4 = (
+        (1 / 4) * ∂²p(sₖ, m * f; model)^2 + 
+        (1 / 3) * ∂p(sₖ, m * f; model) * ∂³p(sₖ, m * f; model)
+    ) * kurtosis
 
     ρⁿ = (order2 + order3 + order4) / (fⁿ * (1 - fⁿ))
 
@@ -52,4 +55,4 @@ function sequencemoments(s::Vector{<:Real}; model::VerticalModel)
     return state
 end
 
-JG(x; model) = ForwardDiff.jacobian(x -> G(x[1:2]; sₖ = x[3], model), x)
+JG(x; s, model) = ForwardDiff.jacobian(x -> G(x[1:2]; sₖ = s, model), x)[1:2, 1:2]

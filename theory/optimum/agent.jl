@@ -73,6 +73,7 @@ end
 
 function ∂p(s::Real, v::Real; model::VerticalModel)
     m = model.m
+
     Δψ₀ = ψ₀(1 + m - v) - ψ₀(1 + m - v - s)
     return (1 - p(s, v; model)) * Δψ₀
 end
@@ -82,6 +83,7 @@ function ∂²p(s::Real, v::Real; model::VerticalModel)
 
     Δψ₀ = ψ₀(1 + m - v) - ψ₀(1 + m - v - s)
     Δψ₁ = ψ₁(1 + m - v) - ψ₁(1 + m - v - s)
+    
     return -(1 - p(s, v; model)) * (Δψ₀^2 + Δψ₁)
 end
 
