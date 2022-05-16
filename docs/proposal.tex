@@ -552,7 +552,7 @@ Assume
   F \sim \text{BetaBin}(m, f, \rho).
 \end{equation}
 
-The moments of $F$ can be related to the parameters as follows
+The moments of $F$ can be related to its parameters as follows
 
 \begin{equation}
   \begin{split}
@@ -561,51 +561,68 @@ The moments of $F$ can be related to the parameters as follows
   \end{split}
 \end{equation}
 
-To simplify notation let $p(F) := p(s, F)$, then
+To simplify notation let $p(F) := p_k(s, F)$, such that
 
 \begin{equation}
   p(F) = 1 - \frac{\Gamma(1 + m - s)}{\Gamma(1 + m)}\frac{\Gamma(1 + m - F)}{\Gamma(1 + m - F - s)}.
 \end{equation}
 
-A second order taylor expansion of $p$ around $\E[F] = m f$ yields
+We want to relate the parameters of $F$ to those of $F^*$, defined as
+
+\begin{equation}
+  F^* \sim \text{Bin}(m^*, p(F)) \equiv \text{BetaBin}(m^*, f^*, \rho^*),
+\end{equation}
+
+where we are approximating $p(F) \ \dot{\sim} \ \text{Beta}(f^*, \rho^*)$.
+
+\subsection{First parameter}
+
+The relationship between the parameter $f^*$ and $(f, \rho)$ can be derived explicitly by noticing that 
+
+\begin{equation}
+  1 - p(F) = \frac{(m - F)_s}{(m)_s},
+\end{equation}
+
+where $(x)_s \coloneqq x (x - 1)(x-2)\ldots (x - s + 1)$, and that $m - F \sim \Beta\Bin(m, 1 - f, \rho)$. Then 
+
+\begin{equation}
+  1 - f^* = 1 - \E\big[p(F)\big] =  \frac{\E\big[(m - F)_s\big]}{(m)_s} = \frac{B\left((1 - f) \frac{1 - \rho}{\rho} + s, f \frac{1 - \rho}{\rho} \right)}{B\left((1 - f) \frac{1 - \rho}{\rho} , f \frac{1 - \rho}{\rho} \right)}
+\end{equation}
+
+where $B(\cdot, \cdot)$ is the beta function. Let
+
+\begin{equation}
+  f^* = G_f(f, \rho, s) \coloneqq 1 - \frac{B\left((1 - f) \frac{1 - \rho}{\rho} + s, f \frac{1 - \rho}{\rho} \right)}{B\left((1 - f) \frac{1 - \rho}{\rho} , f \frac{1 - \rho}{\rho} \right)}
+\end{equation}
+ 
+\subsection{Second parameter}
+
+The second parameter can be approximated using the delta method. A second order taylor expansion of $p$ around $\E[F] = m f$ yields
 
 \begin{equation}
   p(F) = p(m f) + p'(m f) \big(F - m f\big) + \frac{p''(m f)}{2} \big(F - m f\big)^2 + \mathcal{O}\left(F^3\right).
 \end{equation}
 
-We can use this to write the moments of $p(F)$ as a function of $f$ and $\rho$, 
+We can use this to write
+
+% From: https://stats.stackexchange.com/questions/90287/delta-method-with-higher-order-terms-to-improve-variance-estimation-accuracy
+
+\begin{equation}
+  \V\big[p(F)\big] \approx p'(m f)^2 \  \V\big[F\big] + p'(mf)
+\end{equation}
+
+such that
 
 \begin{equation}
   \begin{split}
-    \E\big[p(F)\big]  &= p(m f) + \frac{p''(m f)}{2} \V[F] + \E\left[\mathcal{O}\left(F^3\right) \right] \\
-    &= p(m f) + \frac{p''(m f)}{2} m f (1 - f) \big(1 + (m-1) \rho \big) +\E\left[\mathcal{O}\left(F^3\right) \right]
+    \rho^* = \frac{\V[p(F)]}{\E[p(F)] \big( 1 -  \E[p(F)]\big)} \approx p'(m f)^2 \frac{m f (1 - f) (1 + (m - 1) \rho)}{ G_f(f, \rho, s) \big( 1 -  G_f(f, \rho, s)\big)} =:  G_\rho(f, \rho, s, m)
   \end{split}
 \end{equation}
 
-and
+where we can write the derivative of $p$ recursively as follows
 
 \begin{equation}
-  \V\big[p(F)\big] = p'(m f)^2 \  \V\big[F\big].
-\end{equation}
-
-Using $p(F) \ \dot{\sim} \ \text{Beta}(f^*, \rho^*)$, let
-
-\begin{equation}
-  F^* \sim \text{Bin}(m^*, p(F)) \equiv \text{BetaBin}(m^*, f^*, \rho^*).
-\end{equation}
-
-We can hence link the parameters of $F$ with $F'$ as
-
-\begin{equation}
-  f^* = \E[p(F)] \approx p(m f) + \frac{1}{2} p''(m f) \ m (1 - f) f (1 + (m - 1) \rho) =: G_f(f, \rho; m, s)
-\end{equation}
-
-and
-
-\begin{equation}
-  \begin{split}
-    \rho^* = \frac{\V[p(F)]}{\E[p(F)] - \E[p(F)]^2} \approx p'(m f)^2 \frac{m f (1 - f) (1 + (m - 1) \rho)}{ G_f(f, \rho; m, s) -  G_f(f, \rho; m, s)^2} =:  G_\rho(f, \rho; m, s)
-  \end{split}
+  p'(x) = \big(1 - p(x)\big) \Big( \psi_0(1 + m - x) - \psi_0(1 + m - s - x) \Big).
 \end{equation}
 
 Hence we have a mapping
@@ -613,21 +630,10 @@ Hence we have a mapping
 \begin{equation}
   \begin{pmatrix}
     f^* \\ \rho^*
-  \end{pmatrix} = G(f, \rho; m, s) := \begin{pmatrix}
-    G_f(f, \rho; m, s) \\ G_\rho(f, \rho; m, s)
+  \end{pmatrix} \approx G(f, \rho, s, m) := \begin{pmatrix}
+    G_f(f, \rho, s) \\ G_\rho(f, \rho, s, m).
   \end{pmatrix}
 \end{equation}
 
-We can write the derivatives of $p$ recursively as follows
-
-\begin{equation}
-  p'(x) = \big(1 - p(x)\big) \Big( \psi_0(1 + m - x) - \psi_0(1 + m - s - x) \Big)
-\end{equation}
-
-and
-
-\begin{equation}
-  p''(x) = -\big(1 - p(x)\big)\Big( \big(\psi_0(1 + m - x) - \psi_0(1 + m - s - x)\big)^2 + \psi_1(1 + m - x) - \psi_1(1 + m - s - x) \Big)
-\end{equation}
 
 \end{document}
