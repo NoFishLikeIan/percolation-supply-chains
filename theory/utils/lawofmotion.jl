@@ -2,6 +2,15 @@
 ψ₁(x) = polygamma(1, x)
 ψ₂(x) = polygamma(2, x)
 
+function ∂ₛG₁(x; sₖ)
+    f, ρ = x
+
+    if ρ ≈ 0
+        -(1 - f)^sₖ * log(1 - f)
+    else
+        ForwardDiff.derivative(s -> G₁(x; sₖ = s), sₖ)
+    end
+end
 
 function G₁(x; sₖ)
     f, ρ = x
@@ -9,9 +18,9 @@ function G₁(x; sₖ)
     if ρ ≈ 0
         1 - (1 - f)^sₖ
     else 
-        δρ = (1 - ρ) / ρ
+        δp = (1 - ρ) / ρ
     
-        1 - beta((1 - f) * δρ + sₖ, f * δρ) / beta((1 - f) * δρ, f * δρ)
+        1 - beta((1 - f) * δp + sₖ, f * δp) / beta((1 - f) * δp, f * δp)
     end
 end
 
@@ -19,27 +28,31 @@ function G(x; sₖ, model::VerticalModel)
     f, ρ = x
     m = model.m
 
-    variance = m * (1 - f) * f * (1 + (m - 1) * ρ)
-    skewness = variance * (1 - 2f) * (1 + (2m - 1) * ρ) / (1 + ρ)
+    μ = m * f
+    σ = sqrt(m * f * (1 - f) * (1+ (m - 1) * ρ))
 
-	n = ρ^2 * (6*(m-1)*m + 2 - 3f*(7*(m-1)*m + 2)*(1-f)) + 3*(1-f)*f*(((m-8)*m + 4)*ρ + m - 2) + 6m*ρ - 3ρ + 1
-	d = (ρ + 1) * (2ρ + 1)
-	kurtosis = variance * n / d
+    F = BetaBinomial(m, fρtoαβ(f, ρ)...)
+    γ = Distributions.skewness(F)
+    κ = Distributions.kurtosis(F)
     
     fⁿ = G₁(x; sₖ)
 
-    order2 = ∂p(sₖ, m * f; model)^2 * variance
-    order3 = ∂p(sₖ, m * f; model) * ∂²p(sₖ, m * f; model) * skewness
-    order4 = (
-        (1 / 4) * ∂²p(sₖ, m * f; model)^2 + 
-        (1 / 3) * ∂p(sₖ, m * f; model) * ∂³p(sₖ, m * f; model)
-    ) * kurtosis
+    # https://stats.stackexchange.com/questions/452544/
+    p¹ = ∂p(sₖ, μ; model)
+    p² = ∂²p(sₖ, μ; model)
 
-    ρⁿ = (order2 + order3 + order4) / (fⁿ * (1 - fⁿ))
+    a₂ = (p²^2 * μ^2 - p¹ * p² * μ + p¹^2) * σ^2
+    a₃ = (-1/2) * (p¹ * p² + p²^2 * μ) * σ^3
+    a₄ = (1/4) * p²^2 * σ^4
+
+    varp = a₂ + a₃ * γ + a₄ * (κ - 1)
+
+    ρⁿ = varp / (fⁿ * (1 - fⁿ))
 
     return clamp.([fⁿ, ρⁿ], 0, 1)
 end
 
+G₂(x; sₖ, model) = G(x; sₖ, model) |> last 
 
 function sequencemoments(s::Vector{<:Real}; model::VerticalModel)
     f₀ = 1 - model.μ₀

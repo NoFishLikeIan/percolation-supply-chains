@@ -1,4 +1,3 @@
-
 """
 Using Sterling approximation of factorial
 """
