@@ -1,128 +1,27 @@
 """
-Agent's optimal s given the choice of s in the previous node and the ratio of cost and expected profits.
+Agent's optimal s given the f and ρ in previous layer.
 """
-function sₒ(sₛ::Real, Fₛ::FuncDistribution; model::VerticalModel, integer = false, br = [0.01, 100.])
+function agentoptimum(f, ρ; model::VerticalModel)
 
-    function foc(s)
-        function ∂pₛ(v) # FIXME: Is this the correct expectation?
-            pₛ = p(sₛ, v; model)
-            if pₛ < 1.
-                (1 - pₛ)^s * log(1 - pₛ)    
-            else
-                ∂pₛ(v - 1) # Not sure...
-            end       
-        end
+    foc(s) = ∂ₛG₁([f, ρ]; sₖ = s) - model.r
 
-        return E(Fₛ, ∂pₛ) + model.r
-    end
+    sₖ = foc(model.m) < 0 ? find_zero(foc, [0.01, model.m]) : model.m
 
-    lb, ub = br
-
-    s̄ = foc(ub) * foc(lb) < 0 ? find_zero(foc, br) : find_zero(foc, 0.05)
-
-    if !integer 
-        return s̄
-    end
-
-    # Assumes unit costs
-    prof(s) = inv(model.r) * E(Fₛ, v -> p(s, v; model)) - s
-
-    if prof(ceil(s̄)) > prof(floor(s̄))
-        return ceil(Int64, s̄)
-    else
-        return floor(Int64, s̄)
-    end
-
+    return sₖ
 end
 
-function Ep(s::Real, Fₛ::FuncDistribution; model::VerticalModel)
-    f(v) = p(s, v; model)
-    return E(Fₛ, f)
-end
-function Vp(s::Real, Fₛ::FuncDistribution; model::VerticalModel)
-    f(v) = p(s, v; model)
-    return V(Fₛ, f)
-end
-
-"""
-Using Sterling approximation of factorial
-"""
-function p̃(s::Real, v::Real; model::VerticalModel)
-    m = model.m
-    Δₛ(x) = x * log((x - s) / x) - s * log(x - s)
-
-    1 - exp(Δₛ(m) - Δₛ(m - v))
-end
-
-function p(s::Real, v::Real; model::VerticalModel)
-    m = model.m
+function compequilibrium(model::VerticalModel)
     
-    nodiv = s == 0
-    fulldiv = s > 1 + m - v
-    largem = m > 100
+    moments = Matrix{Float64}(undef, model.K, 2)
+    suppliers = Vector{Float64}(undef, model.K)
 
-    if nodiv return 0. end
-    if fulldiv return 1. end
-    if largem return p̃(s, v; model) end
+    for k ∈ 1:model.K
+        f, ρ = k > 1 ? moments[k - 1, :] : (1 - model.μ₀, 0.01)
 
-    constant = gamma(1 + m - s) / gamma(1 + m)
-    random = gamma(1 + m - s - v)  / gamma(1 + m - v)
-
-    return 1. - constant / random    
-end
-
-function ∂p(s::Real, v::Real; model::VerticalModel)
-    m = model.m
-
-    Δψ₀ = ψ₀(1 + m - v) - ψ₀(1 + m - v - s)
-    return (1 - p(s, v; model)) * Δψ₀
-end
-
-function ∂²p(s::Real, v::Real; model::VerticalModel)
-    m = model.m
-
-    Δψ₀ = ψ₀(1 + m - v) - ψ₀(1 + m - v - s)
-    Δψ₁ = ψ₁(1 + m - v) - ψ₁(1 + m - v - s)
-    
-    return -(1 - p(s, v; model)) * (Δψ₀^2 + Δψ₁)
-end
-
-function ∂³p(s::Real, v::Real; model::VerticalModel)
-    m = model.m
-
-    Δψ₀ = ψ₀(1 + m - v) - ψ₀(1 + m - v - s)
-    Δψ₁ = ψ₁(1 + m - v) - ψ₁(1 + m - v - s)
-    Δψ₂ = ψ₂(1 + m - v) - ψ₂(1 + m - v - s)
-
-    pₖ = p(s, v; model)
-    pₖ′ = ∂p(s, v; model)
-    
-
-    return pₖ′ * (Δψ₀^2 + Δψ₁) + (1 - pₖ) * (2Δψ₀ * Δψ₁ + Δψ₂)
-end
-
-function compequilibrium(model::VerticalModel; integer = false)
-    F₀ = Binomial(model.m, 1 - model.μ₀)
-
-    # No correlation in the 0th, hence 1st admits an analytical solution
-    firstsup = (log(model.r) - log(-log(model.μ₀))) / log(model.μ₀)
-
-    s₁ = integer ? round(Int64, firstsup) : firstsup
-    F₁ = inducedF(s₁, F₀; model)
-
-    Fs = Vector{FuncDistribution}(undef, model.K); Fs[1] = F₁
-    suppliers = Vector{integer ? Int64 : Float64}(undef, model.K)
-    suppliers[1] = s₁
-
-    for k ∈ 2:model.K
-        Fₛ = Fs[k - 1]
-        sₛ = suppliers[k - 1]
-
-        suppliers[k] = sₒ(sₛ, Fₛ; model, integer)
-        Fs[k] = inducedF(suppliers[k], Fₛ; model)
+        suppliers[k] = agentoptimum(f, ρ; model)
+        moments[k, :] = G([f, ρ]; sₖ = suppliers[k], model)
+        println("$k -> $(moments[k, :])")
     end
-
-    moments = [ αβtofρ(params(F)[2:3]...) for F ∈ Fs ]
 
     return moments, suppliers
 end
