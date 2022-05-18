@@ -141,6 +141,9 @@ end
 
 # ╔═╡ 202a49bb-0660-409e-88ef-7a1b33bdf3e0
 begin
+
+	unit = 0.01:0.01:0.99
+	
 	plot(unit, ρ -> numρ′(ρ; N = 500_000); label = "numerical", xlabel = L"\rho", ylabel = L"\rho'")
 	plot!(unit, ρ′; label = "Taylor")
 	# plot!(x -> x, linestyle = :dash)
