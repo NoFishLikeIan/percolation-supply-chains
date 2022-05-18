@@ -330,3 +330,4 @@ docs/**/*.pdf
 papers/
 empirical/**/*.pdf
 docs/presentation
+docs/plots

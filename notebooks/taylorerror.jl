@@ -47,13 +47,53 @@ begin
 	"Imported package"
 end
 
+# ╔═╡ aadca844-a294-4517-8c4d-6174c1b3562c
+unit = range(1e-2, 1 - 1e-2; length = 101)
+
+# ╔═╡ d243dcaa-3dba-4dae-8805-6f89d84f64d7
+md"
+## $p(s, F)$
+"
+
+# ╔═╡ f6aedf26-d21c-4258-a23e-bde59df7bb7a
+m, f, ρₛ = 100, 0.5, 0.1
+
+# ╔═╡ c0b1fe8b-1a1c-435a-a473-77b3eb9211e4
+F = BetaBinomial(m, αβtofρ(f, ρₛ)...)
+
+# ╔═╡ 27eb19ec-a675-4a2e-a17f-8a33fbf07555
+md"
+## $G_f$
+"
+
+# ╔═╡ 3d8b9eb2-a04e-4471-ab09-3e9be9eb178d
+let
+	smalls = contourf(
+		unit, unit, 
+		(f, ρ) -> G₁([f, ρ]; sₖ = 1.), 
+		xlabel = L"f", ylabel = L"\rho",
+		title = L"G_f(f, \rho, s = 1)",
+		levels = 0:0.05:1, dpi = 180, c = :YlGnBu
+	)
+
+	larges = contourf(
+		unit, unit, 
+		(f, ρ) -> G₁([f, ρ]; sₖ = 20.), 
+		xlabel = L"f", ylabel = L"\rho",
+		title = L"G_f(f, \rho, s = 20)",
+		levels = 0:0.05:1, dpi = 180, c = :YlGnBu
+	)
+
+	savefig(smalls, "../docs/plots/gf_small.png")
+	savefig(larges, "../docs/plots/gf_large.png")
+
+	plot(smalls, larges, size = (1000, 400))
+end
+
 # ╔═╡ 32d553ee-35d1-4ceb-a94c-69e6197b982d
 md"
 ## $\rho$ mapping
 "
-
-# ╔═╡ f6aedf26-d21c-4258-a23e-bde59df7bb7a
-m, f = 100, 0.9
 
 # ╔═╡ b2b823f6-8ba6-4cfa-9528-7003ef28f573
 md"
@@ -127,6 +167,51 @@ md"
 # ╔═╡ 8b27e136-26fb-4879-b046-00ab74b5f886
 model = VerticalModel(100, 0.01, r, 20)
 
+# ╔═╡ e1c8057d-44a6-42da-ade8-b39e06628187
+let
+
+	N = 100_000
+	cdfy = (1:N)./N
+	
+	colors = [:darkred, :darkblue]
+	
+	denfig = plot(
+		title = latexstring(
+			"\$p(s, F)\$ with \$F \\sim BetaBin($(m), $(f), $(ρₛ)) \$"
+		),
+		dpi = 180
+	)
+	
+	for (k, s) ∈ [0.5, 1.5] |> enumerate
+		p̂ = p.(s, rand(F, N); model)
+
+		psort = sort(p̂)
+		
+		plot!(
+			denfig, psort, cdfy; 
+			label = latexstring("Simulated \$s = $(s)\$"),
+			c = colors[k], normalize = :cdf
+		)
+
+		pbeta = fit(Beta, p̂)
+
+		scatter!(
+			denfig, psort, x -> cdf(pbeta, x);
+			c = colors[k], 
+			marker = :o,
+			label = latexstring("Fitted \$s = $(s)\$"),
+			alpha = 0.4, markersize = 2
+		)
+
+		
+	end
+
+	# savefig("../docs/plots/pfit.png")
+		
+	denfig
+
+end
+
 # ╔═╡ 8c2c8ee1-7090-492f-a804-b24a8fd8ec1f
 function numρ′(ρ; N = 150_000)
 	F = BetaBinomial(m, fρtoαβ(fᵣ, ρ)...)
@@ -141,9 +226,6 @@ end
 
 # ╔═╡ 202a49bb-0660-409e-88ef-7a1b33bdf3e0
 begin
-
-	unit = 0.01:0.01:0.99
-	
 	plot(unit, ρ -> numρ′(ρ; N = 500_000); label = "numerical", xlabel = L"\rho", ylabel = L"\rho'")
 	plot!(unit, ρ′; label = "Taylor")
 	# plot!(x -> x, linestyle = :dash)
@@ -201,6 +283,22 @@ contourf(
 	0.04:0.01:0.99, 0.01:0.01:0.9, s̄;
 	c = :Reds, ylabel = L"\rho", xlabel = L"f", title = L"s_k"
 )
+
+# ╔═╡ 27d91666-0c7a-4cc2-90a2-5c5af9fc675a
+md"
+## $r = F / m$
+"
+
+# ╔═╡ 8c086f3a-f2e2-41a5-a22f-57ba5ed96199
+let
+	N = 1_000_000
+	r̂ = rand(F, N) ./ m
+
+	r = fit(Beta, r̂)
+	
+	plot(sort(r̂), (1:N)/N)
+	plot!(range(0, 1, length = m+1), x -> cdf(r, x))
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1428,8 +1526,14 @@ version = "0.9.1+5"
 # ╠═1b4e538d-1c3d-4ea1-9949-48857eab9ae8
 # ╠═601ebf94-f15b-4893-89fa-c30cbda30a02
 # ╠═70f8dabc-e33d-4efd-b693-b1b5d7289248
-# ╠═32d553ee-35d1-4ceb-a94c-69e6197b982d
+# ╠═aadca844-a294-4517-8c4d-6174c1b3562c
+# ╟─d243dcaa-3dba-4dae-8805-6f89d84f64d7
 # ╠═f6aedf26-d21c-4258-a23e-bde59df7bb7a
+# ╠═c0b1fe8b-1a1c-435a-a473-77b3eb9211e4
+# ╟─e1c8057d-44a6-42da-ade8-b39e06628187
+# ╟─27eb19ec-a675-4a2e-a17f-8a33fbf07555
+# ╠═3d8b9eb2-a04e-4471-ab09-3e9be9eb178d
+# ╠═32d553ee-35d1-4ceb-a94c-69e6197b982d
 # ╟─b2b823f6-8ba6-4cfa-9528-7003ef28f573
 # ╟─514503ce-b763-4bc8-897a-0a1a32f6b6a6
 # ╟─f8d069b7-e99c-456e-879d-426c3026296e
@@ -1444,5 +1548,7 @@ version = "0.9.1+5"
 # ╟─6225d7db-e8e1-454a-b2c6-497953cd2ef4
 # ╟─4dfdfa22-c7c3-4bf3-9408-501078e6c5bc
 # ╟─cd3ab113-08bb-497d-a4fb-25bdb6ad1724
+# ╟─27d91666-0c7a-4cc2-90a2-5c5af9fc675a
+# ╠═8c086f3a-f2e2-41a5-a22f-57ba5ed96199
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
