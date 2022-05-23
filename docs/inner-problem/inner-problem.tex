@@ -229,6 +229,55 @@ Using the definition of $p$ we can write
 
 \subsubsection{Taylor series approach}
 
+Let 
+
+\begin{equation}
+    \varphi_s(v) \coloneqq (m - v)^2_s.
+\end{equation}
+
+such that
+
+\begin{equation}
+    \E\big[ p(s, F)^2 \big] = 1 - 2(1 - f') + \E\left[ \frac{\varphi_s(F)}{\varphi_s(0)} \right].
+\end{equation}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{../plots/phiplot.pdf} 
+    \caption{A plot of $\varphi_s(v) / \varphi_s(0) = (m-v)^2_s / (m)^2_s$}
+    \label{fig:phi}    
+\end{figure}
+
+Letting
+
+\begin{equation}
+    \Delta \psi^{(n)}_s(v) = \psi^{(n)}(1 + m - v) - \psi^{(n)}(1 + m - v - s)
+\end{equation}
+
+and noting that
+
+\begin{equation}
+    \frac{\text{d}}{\text{d}v} \Delta \psi^{(n)}_s(v) = -\Delta \psi^{(n + 1)}_s(v)
+\end{equation}
+
+we can write a recursive relationship for the derivatives of $\varphi_s(v)$
+
+\begin{equation}
+    \varphi_s^{(n)}(v) = a_{n}(v) \ \varphi_s(v)
+\end{equation}
+
+where
+
+\begin{equation}
+    a_{n+1}(v) = \frac{\text{d}}{\text{d}v} a_n(v) + 2 \Delta \psi^{(n)}_s(v) a_n(v) \text{ with } a_{0}(v) = 1.
+\end{equation}  
+
+A Taylor expansion of $\varphi_s$ around $0$ allows us to write
+
+\begin{equation}
+    \E\left[\frac{\varphi_s(F)}{\varphi_s(0)}\right] = 1 + \sum^{\infty}_{k = 0} \left.\frac{\text{d} a_k}{\text{d}v}\right\rvert_{v = 0} \frac{\E[F^{k + 1}]}{(k + 1)!} + 2\Delta \psi^{(0)}_s(0) \sum^{\infty}_{k = 0} a_k(0) \frac{\E[F^{k + 1}]}{(k + 1)!}
+\end{equation}
+
 \subsubsection{Ratio approach}
 
 Let $r = F / m$. Then we can write compactly $p$ as
