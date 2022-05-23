@@ -66,3 +66,12 @@ function inducedF(s::Real, Fₛ::FuncDistribution; model::VerticalModel)
     return BetaBinomial(model.m, α, β)
 
 end
+
+"""
+Compute moments of the beta-binomial distribution with (f, ρ) parameters
+"""
+function moments(m, f, ρ)
+    F = BetaBinomial(m, fρtoαβ(f, ρ)...)
+
+    return mean(F), var(F), skewness(F), kurtosis(F)
+end
