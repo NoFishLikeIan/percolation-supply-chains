@@ -1,11 +1,11 @@
 """
 Agent's optimal s given the f and ρ in previous layer.
 """
-function agentoptimum(f, ρ; model::VerticalModel, u = 5.)
+function agentoptimum(f, ρ; model::VerticalModel)
 
     foc(s) = ∂ₛG₁([f, ρ]; sₖ = s, model) - model.r
 
-    sₖ = foc(u) < 0 ? find_zero(foc, [0.01, u]) : u
+    sₖ = foc(model.m) < 0 ? find_zero(foc, [0.01, model.m]) : model.m
 
     return sₖ
 end

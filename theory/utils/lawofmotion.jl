@@ -8,22 +8,17 @@ function ∂ₛG₁(x; sₖ, model)
     end
 end
 
+φratio(m, s, v) = v > 0 ? φ(m, s, v) / φ(m, s, 0) : 1
+
 function simulateφ(m, s, f, ρ; N = 15_000)
     F = BetaBinomial(m, fρtoαβ(f, ρ)...)
     F̂ = rand(F, N)
-    return mean(@. φ(m, s, F̂) / φ(m, s, 0)) 
+    return mean(@. φratio(m, s, F̂)) 
 end
 
-function Gfactory(m::Int64; L = 15, N = 40_000)
-    
-    unit = range(0.01, 0.99; length = L)
-    sspace = range(0.01, 5; length = L)
+function Gfactory(m::Int64; N = 40_000)
 
-    paramspace = product(sspace, unit, unit)
-    g(x) = simulateφ(m, x[1], x[2], x[3]; N)
-    ĝ = g.(paramspace)
-
-    φ̃ = LinearInterpolation((sspace, unit, unit), ĝ)
+    g(s, f, ρ) = simulateφ(m, s, f, ρ; N)
 
     function G₁(x; sₖ)
         f, ρ = x
@@ -39,8 +34,8 @@ function Gfactory(m::Int64; L = 15, N = 40_000)
 
     function G₂(x; sₖ)
         fⁿ = G₁(x; sₖ)
-        Ep² = 1 - 2*(1 - fⁿ) + φ̃(sₖ, x[1], x[2])
-        return (Ep² - fⁿ^2) / (fⁿ * (1 - fⁿ))
+        Ep² = 1 - 2*(1 - fⁿ) + g(sₖ, x[1], x[2])
+        return min((Ep² - fⁿ^2) / (fⁿ * (1 - fⁿ)), 1)
     end
 
     G(x; sₖ) = [G₁(x; sₖ), G₂(x; sₖ)]

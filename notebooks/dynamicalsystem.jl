@@ -93,7 +93,7 @@ begin
 	K = 20 # Length economy
 	m = 100 # Size nodes
 	μ₀ = 0.05 # Basal risk
-	r = 0.01 # cost / profit ratio
+	r = 0.02 # cost / profit ratio
 end
 
 # ╔═╡ edd31412-ad76-4527-ac46-06a877d1ed99
@@ -133,7 +133,7 @@ md"## Competitive, $\tilde{G}$"
 begin	
 	Φ̃(f, ρ) = G̃([f, ρ]; model) .- [f, ρ]
 
-	plotvectorfield(Φ̃, fspace, ρspace)
+	plotvectorfield(Φ̃, fspace, ρspace; xlabel = L"f", ylabel = L"\rho")
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001

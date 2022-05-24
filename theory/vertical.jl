@@ -42,4 +42,4 @@ m = 100 # Size nodes
 r = 0.01 # cost / profit ratio
 
 model = VerticalModel(m, μ₀, r, K)
-model.G([0.9, 0.01]; sₖ = 4.5)
+model.G([0.9, 0.01]; sₖ = 2.2)
