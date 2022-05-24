@@ -36,7 +36,7 @@ include("simulate.jl")
 
 # Assume that m is constant and μᵢ > 0 only for i = 0.
 
-K = 2 # Length economy
+K = 20 # Length economy
 m = 100 # Size nodes
 μ₀ = 0.01 # Basal risk
 r = 0.01 # cost / profit ratio

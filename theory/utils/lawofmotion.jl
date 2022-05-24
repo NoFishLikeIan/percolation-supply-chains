@@ -8,7 +8,7 @@ function ∂ₛG₁(x; sₖ)
     end
 end
 
-function simulateφ(m, s, f, ρ; N = 1_000)
+function simulateφ(m, s, f, ρ; N = 15_000)
     F = BetaBinomial(m, fρtoαβ(f, ρ)...)
     F̂ = rand(F, N)
     return mean(@. φ(m, s, F̂) / φ(m, s, 0)) 
@@ -16,12 +16,13 @@ end
 
 function Gfactory(
     model::VerticalModel; 
-    order = 40, 
+    order = 10, 
     lb = [0.01, 0.01, 0.01],
-    ub = [5., 0.99, 0.99])
+    ub = [5., 0.99, 0.99], N = 40_000)
+
     paramspace = chebpoints((order, order, order), lb, ub)
 
-    g(x) = simulateφ(model.m, x[1], x[2], x[3])
+    g(x) = simulateφ(model.m, x[1], x[2], x[3]; N)
     φ̃ = chebinterp(g.(paramspace), lb, ub)
 
     function G₁(x; sₖ)
@@ -37,7 +38,9 @@ function Gfactory(
     end
 
     function G₂(x; sₖ)
-        1 - 2*(1 - G₁(x; sₖ)) + φ̃([sₖ, x[1], x[2]])
+        fⁿ = G₁(x; sₖ)
+        Ep² = 1 - 2*(1 - fⁿ) + φ̃([sₖ, x[1], x[2]])
+        return (Ep² - fⁿ^2) / (fⁿ * (1 - fⁿ))
     end
 
     G(x; sₖ) = [G₁(x; sₖ), G₂(x; sₖ)]
