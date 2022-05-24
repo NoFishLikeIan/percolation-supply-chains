@@ -1,7 +1,13 @@
 ψ(k, x) = polygamma(k, x)
 Δψ(k, m, s, v) = ψ(k, 1 + m - v) - ψ(k, 1 + m - v - s)
 
-φ(m, s, v) = (gamma(1 + m - v) / gamma(1 + m - v - s))^2
+function φ(m, s, v)
+    if 1 + m - v - s ≤ 0
+        return 0.
+    end
+
+    return (gamma(1 + m - v) / gamma(1 + m - v - s))^2
+end
 
 function a(i, m, s, v)
     if i == 1

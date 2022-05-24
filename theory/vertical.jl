@@ -5,6 +5,7 @@ using IterTools, Combinatorics
 
 using Roots, Optim
 using ForwardDiff
+using FastChebInterp
 
 begin
     using Random
@@ -41,14 +42,4 @@ m = 100 # Size nodes
 r = 0.01 # cost / profit ratio
 
 model = VerticalModel(m, μ₀, r, K)
-
-fᵣ = 0.9
-sᵣ = 1.2
-
-ρspace = 0:0.01:0.2
-sspace = range(0.05, 2.5; length = 101)
-vspace = range(0, m - 1; length = 101)
-
-Eφ(ρ) = φ̃(m, sᵣ, fᵣ, ρ) / φ(m, sᵣ, 0)
-
-plot(ρspace, Eφ)
+@time G = Gfactory(model)
