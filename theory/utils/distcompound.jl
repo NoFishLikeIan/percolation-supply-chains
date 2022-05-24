@@ -68,10 +68,28 @@ function inducedF(s::Real, Fₛ::FuncDistribution; model::VerticalModel)
 end
 
 """
-Compute moments of the beta-binomial distribution with (f, ρ) parameters
+Computes the raw moment E[F^k] of the beta-binomial distribution with (f, ρ) parameters
 """
-function moments(m, f, ρ)
-    F = BetaBinomial(m, fρtoαβ(f, ρ)...)
+function rawmoments(m, f, ρ)
+    α, β = fρtoαβ(f, ρ)
 
-    return mean(F), var(F), skewness(F), kurtosis(F)
+    μ₁ = m * α / (α + β)
+
+    μ₂ = μ₁ * (m * (1 + α) + β) / (1 + α + β)
+
+    μ₃ = μ₁ * 
+        ( m^2 * (1 + α) * (2 + α) + 3m *(1 + α) * β + β * (β - α) ) /
+        (( 1 + α + β ) * ( 2 + α + β ))
+
+    k₁ = α * m / ((α + β) * (α + β + 1) * (α + β + 2) * (α + β + 3))
+    k₂ = 
+        β * (α^2 - α * (4β + 1) + (β - 1) * β) +
+        6 * (α + 1) * (α + 2) * β * m^2 +
+        (α + 1) * β * m * (-4α + 7β - 1) +
+        (α + 1) * (α + 2) * (α + 3) * m^3  
+
+    μ₄ = k₁ * k₂
+
+    return [μ₁, μ₂, μ₃, μ₄]
+    
 end
