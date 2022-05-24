@@ -5,7 +5,7 @@ using IterTools, Combinatorics
 
 using Roots, Optim
 using ForwardDiff
-using FastChebInterp
+using Interpolations 
 
 begin
     using Random
@@ -42,4 +42,4 @@ m = 100 # Size nodes
 r = 0.01 # cost / profit ratio
 
 model = VerticalModel(m, μ₀, r, K)
-@time G = Gfactory(model)
+model.G([0.9, 0.01]; sₖ = 4.5)

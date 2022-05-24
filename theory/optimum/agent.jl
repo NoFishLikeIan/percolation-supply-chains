@@ -1,13 +1,21 @@
 """
 Agent's optimal s given the f and ρ in previous layer.
 """
-function agentoptimum(f, ρ; model::VerticalModel)
+function agentoptimum(f, ρ; model::VerticalModel, u = 5.)
 
-    foc(s) = ∂ₛG₁([f, ρ]; sₖ = s) - model.r
+    foc(s) = ∂ₛG₁([f, ρ]; sₖ = s, model) - model.r
 
-    sₖ = foc(model.m) < 0 ? find_zero(foc, [0.01, model.m]) : model.m
+    sₖ = foc(u) < 0 ? find_zero(foc, [0.01, u]) : u
 
     return sₖ
+end
+
+"""
+G with agent's sₖ
+"""
+function G̃(x; model)
+    sₖ = agentoptimum(x[1], x[2]; model)
+    return model.G(x; sₖ)
 end
 
 function compequilibrium(model::VerticalModel)
