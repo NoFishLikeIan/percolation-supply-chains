@@ -39,7 +39,6 @@ include("simulate.jl")
 K = 20 # Length economy
 m = 100 # Size nodes
 μ₀ = 0.01 # Basal risk
-r = 0.01 # cost / profit ratio
+r = 0.02 # cost / profit ratio
 
 model = VerticalModel(m, μ₀, r, K)
-model.G([0.9, 0.01]; sₖ = 2.2)

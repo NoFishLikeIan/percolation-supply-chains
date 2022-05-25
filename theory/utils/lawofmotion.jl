@@ -4,7 +4,10 @@ function ∂ₛG₁(x; sₖ, model)
     if ρ ≈ 0
         -(1 - f)^sₖ * log(1 - f)
     else
-        ForwardDiff.derivative(s -> model.G(x; sₖ = s) |> first, sₖ)
+        (1 - model.G₁(x; sₖ)) * (
+            ψ(0, sₖ + (1 - ρ) / ρ) - 
+            ψ(0, sₖ + (1 - f) * (1 - ρ) / ρ)
+        )
     end
 end
 
@@ -38,9 +41,7 @@ function Gfactory(m::Int64; N = 40_000)
         return min((Ep² - fⁿ^2) / (fⁿ * (1 - fⁿ)), 1)
     end
 
-    G(x; sₖ) = [G₁(x; sₖ), G₂(x; sₖ)]
-
-    return G
+    return G₁, G₂
 end
 
 function sequencemoments(s::Vector{<:Real}; model::VerticalModel)

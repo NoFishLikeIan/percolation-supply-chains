@@ -3,11 +3,20 @@ Agent's optimal s given the f and ρ in previous layer.
 """
 function agentoptimum(f, ρ; model::VerticalModel)
 
+    bs = [0.01, model.m]
+
     foc(s) = ∂ₛG₁([f, ρ]; sₖ = s, model) - model.r
 
-    sₖ = foc(model.m) < 0 ? find_zero(foc, [0.01, model.m]) : model.m
+    pospay = foc(bs[1]) > 0
+    negmax = foc(bs[2]) < 0
 
-    return sₖ
+    if !pospay
+        bs[1]
+    elseif !negmax
+        bs[2]
+    else
+        find_zero(foc, bs)
+    end
 end
 
 """
