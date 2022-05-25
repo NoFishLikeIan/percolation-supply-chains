@@ -8,6 +8,7 @@
     \usepackage{csquotes}
 
     \usepackage{amsmath, amssymb, mathtools, bbm}
+    \usepackage{amsthm}
     \usepackage{xcolor}
     \usepackage{xcolor-solarized}
     \usepackage{bm}
@@ -28,7 +29,9 @@
     \setlength{\fboxsep}{1em}
     \newcommand\headercell[1]{\smash[b]{\begin{tabular}[t]{@{}c@{}} #1 \end{tabular}}}
 
-    % Graphs
+    % Theorems
+    \theoremstyle{plain}
+    \newtheorem{claim}{Claim}
 
     % Math commands
 
@@ -54,6 +57,8 @@
 
     \newcommand{\Beta}{\text{Beta}}
     \newcommand{\Bin}{\text{Bin}}
+
+    \DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
 
     % Make title page
 
@@ -263,33 +268,101 @@ and noting that
 we can write a recursive relationship for the derivatives of $\varphi_s(v)$
 
 \begin{equation}
-    \varphi_s^{(n)}(v) = a_{n}(v) \ \varphi_s(v)
+    \varphi_s^{(n)}(v) = (-1)^n a_{n}(v) \ \varphi_s(v)
 \end{equation}
 
 where
 
 \begin{equation}
-    a_{n+1}(v) = \frac{\text{d}}{\text{d}v} a_n(v) + 2 \Delta \psi^{(n)}_s(v) a_n(v) \text{ with } a_{0}(v) = 1.
+    a_{n+1} = \frac{\text{d}a_n}{\text{d}v} + 2 \Delta \psi^{(n)}_s \ a_n \text{ with } a_{0} = 1.
 \end{equation}  
 
 A Taylor expansion of $\varphi_s$ around $0$ allows us to write
 
 \begin{equation}
-    \E\left[\frac{\varphi_s(F)}{\varphi_s(0)}\right] = 1 + \sum^{\infty}_{k = 0} \left.\frac{\text{d} a_k}{\text{d}v}\right\rvert_{v = 0} \frac{\E[F^{k + 1}]}{(k + 1)!} + 2\Delta \psi^{(0)}_s(0) \sum^{\infty}_{k = 0} a_k(0) \frac{\E[F^{k + 1}]}{(k + 1)!}
+    \E\left[\frac{\varphi_s(F)}{\varphi_s(0)}\right] = 1 + \sum^{\infty}_{n = 0} (-1)^n a_{n}(0) \frac{\E[F^n]}{n!}
 \end{equation}
 
 \subsubsection{Ratio approach}
 
-Let $r = F / m$. Then we can write compactly $p$ as
+Let $r_m = F / m$. Then we can write compactly $p$ as
 
 \begin{equation}
-    p(s, r) = 1 - \frac{(m(1- r))_s}{(m)_s}
+    p(s, r) = 1 - \frac{(m(1- r_m))_s}{(m)_s}
 \end{equation}
 
 such that
 
 \begin{equation}
-   \lim_{m \rightarrow \infty} \E \left[p(s, r)^2\right] = 1 - 2(1 - f') + \E\left[(1 - r)^{2s}\right].
+   \lim_{m \rightarrow \infty} \E \left[p(s, r)^2\right] = 1 - 2(1 - f') + \E\big[(1 - r)^{2s}\big]
+\end{equation}
+
+where $r = \lim_{m \rightarrow \infty} r_m$. We can now look at the distribution of $r$.
+
+\begin{claim}
+    If $F \sim \Beta\Bin(m, \alpha, \beta)$ then $\lim_{m \rightarrow \infty} F / m \eqqcolon r \sim \Beta(\alpha, \beta)$.
+\end{claim}
+
+\begin{proof}
+    The probability mass function of $F$, $f_F: [m] \to [0, 1]$, is defined as
+    \begin{equation}
+        f_F(k) = \binom{m}{k} \frac{B(k + \alpha, m - k + \beta)}{B(\alpha, \beta)}.
+    \end{equation}
+
+    Using properties of the beta function\footnote{Particularly $B(x + 1, y) = \frac{x}{x + y} B(x, y)$ and $B(x, y) = B(y, x)$.} we can show
+
+    \begin{equation}
+        f_F(k+1) = \left(\frac{(m - k)(m-k-1 + \beta)}{(k + 1)(k + \alpha)}\right) f_F(k).
+    \end{equation}
+
+    Using this, we can define a sequence of functions in $m$, $g_m: [0, 1] \to [0, 1]$
+
+    \begin{equation}
+        \begin{split}
+            g_m(x) &= f_F(\floor{xm}) + \big(f_F(\floor{xm} + 1) - f_F(\floor{xm})\big)  (xm - \floor{xm}) \\
+            &= f_F(\floor{xm}) \left(1 + \left(\frac{(m - \floor{xm})(m-\floor{xm}-1 + \beta)}{(\floor{xm} + 1)(\floor{xm} + \alpha)} - 1 \right) (xm - \floor{xm})\right)
+        \end{split}
+    \end{equation}
+
+    The function $g_m$ is simply an extension of $f_F$ to $[0, 1]$ by interpolating it where it is not defined (see Figure \ref{fig:pmfextension}).
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width = 0.8\linewidth]{../plots/pmfextension.pdf}
+        \caption{$f_F$ and $g_m$}
+        \label{fig:pmfextension}
+    \end{figure}
+
+    Now consider the probability density function of the Beta distribution 
+
+    \begin{equation}
+        f_B(x) = \frac{x^{\alpha - 1} (1 - x)^{\beta - 1}}{B(\alpha, \beta)}
+    \end{equation}
+
+    and the distance 
+
+    \begin{equation}
+        \begin{split}
+            x \mapsto \ &g_m(x) - f_B(x) \\
+            &\frac{1}{B(\alpha, \beta)} \left( f_F() \right)
+        \end{split}
+    \end{equation}
+
+\end{proof}
+
+
+
+\newpage
+
+\section{Agent First Order Condition}
+
+Agents pick $s_k$ such that
+
+\begin{equation}
+    \begin{split}
+        \frac{\kappa}{\pi} &= \left.\frac{\partial G_f(f, \rho, s)}{\partial s}\right\vert_{s = s_k} \\ 
+        &= \big(1 - G_f(f, \rho, s_k)\big) \left(\psi^{(0)}\left( \frac{(1-\rho)}{\rho} + s_k \right) - \psi^{(0)}\left( \frac{(1-f)(1- \rho)}{\rho} + s \right) \right)
+    \end{split}
 \end{equation}
 
 \end{document}
