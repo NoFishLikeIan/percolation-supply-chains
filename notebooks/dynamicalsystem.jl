@@ -115,11 +115,17 @@ begin
 
 end
 
+# ╔═╡ 32138a9f-b9bc-4db8-ae0a-0b4718d80a7b
+contourf(fspace, ρspace, (f, ρ) -> G₂([f, ρ]; sₖ))
+
 # ╔═╡ 7d5ceec9-9496-4a5b-aa8a-4250a30df02f
+# ╠═╡ disabled = true
+#=╠═╡
 let
 	Φ(f, ρ) = G([f, ρ]; sₖ = sₖ) .- [f, ρ]
 	plotvectorfield(Φ, fspace, ρspace; xlabel = L"f", ylabel = L"\rho", title = latexstring("Vector field \$G(x) - x\$"))
 end
+  ╠═╡ =#
 
 # ╔═╡ dc3fb1d5-ee54-4cdf-a0ef-ac65c68a1846
 md"## Competitive, $\tilde{G}$"
@@ -1326,7 +1332,8 @@ version = "0.9.1+5"
 # ╟─b67eb0ba-6db7-40ba-a0b2-21151c4eb748
 # ╟─49e1c995-831b-472e-b68c-b56a21d1f308
 # ╠═e518339b-9781-4f37-895f-19343315c79c
-# ╟─7d5ceec9-9496-4a5b-aa8a-4250a30df02f
+# ╠═32138a9f-b9bc-4db8-ae0a-0b4718d80a7b
+# ╠═7d5ceec9-9496-4a5b-aa8a-4250a30df02f
 # ╟─dc3fb1d5-ee54-4cdf-a0ef-ac65c68a1846
 # ╠═98904f31-4676-40a1-ab7c-da9c0b6911e0
 # ╠═edd31412-ad76-4527-ac46-06a877d1ed99
