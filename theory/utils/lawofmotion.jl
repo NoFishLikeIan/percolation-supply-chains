@@ -36,9 +36,12 @@ function Gfactory(m::Int64; N = 40_000)
     end
 
     function G₂(x; sₖ)
+        f, ρ = x
+        
         fⁿ = G₁(x; sₖ)
-        Ep² = 1 - 2*(1 - fⁿ) + g(sₖ, x[1], x[2])
-        return min((Ep² - fⁿ^2) / (fⁿ * (1 - fⁿ)), 1)
+        Bᵣ = beta((1 - ρ) / ρ, 2sₖ) / beta(f * (1 - ρ) / ρ, 2sₖ)
+        
+        return Bᵣ / (fⁿ * (1 - fⁿ)) - (1 - fⁿ) / fⁿ
     end
 
     return G₁, G₂

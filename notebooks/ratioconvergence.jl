@@ -21,7 +21,7 @@ using PlutoUI
 using Plots, LaTeXStrings
 
 # ╔═╡ 81412f29-a379-4bdb-8aac-8f87d2d5566e
-using SpecialFunctions
+using SpecialFunctions, HypergeometricFunctions
 
 # ╔═╡ 7dcc5169-3a0e-4fe1-a96f-efae1c818c59
 using Distributions
@@ -37,6 +37,37 @@ md"
 - ``\alpha``: $(@bind α Slider(range(0, 10, length = 101), default = 0.3, show_value = true))
 
 - ``\beta``: $(@bind β Slider(range(0, 10, length = 101), default = 0.3, show_value = true))
+"
+
+# ╔═╡ 495268a3-0d35-4f38-8355-33d293dda9a2
+md"## Distribution of $r$"
+
+# ╔═╡ 65d4b4e0-5d66-4d12-beb9-1aaede6e89b7
+let
+	m̂ = 20_000
+	N = 150_000
+	F = BetaBinomial(m̂, α, β)
+	r̂ = rand(F, N) ./ m̂
+	
+	rdist = fit(Beta, r̂)
+
+	fig = scatter(
+		0:0.01:1, x -> cdf(rdist, x); 
+		label = latexstring("C.d.f. Beta\$(\\alpha, \\beta)\$"),
+		dpi = 80
+	)
+	plot!(fig,
+		sort(r̂), (1:N)./N;
+		label = latexstring("Simulated c.d.f.\nof \$R_m\$")
+	)
+
+	savefig(fig, "../docs/plots/rlimit.pdf")
+	fig
+end
+
+# ╔═╡ 14d0006d-a9c4-42c2-aeef-611b76a3d999
+md"
+## Convergence of prob. density function
 "
 
 # ╔═╡ 106dc642-5e8c-4e87-9bac-a698a8f29f39
@@ -75,6 +106,7 @@ end
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+HypergeometricFunctions = "34004b35-14d8-5ef3-9330-4cdb6864b03a"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
@@ -82,6 +114,7 @@ SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 
 [compat]
 Distributions = "~0.25.59"
+HypergeometricFunctions = "~0.3.10"
 LaTeXStrings = "~1.3.0"
 Plots = "~1.29.0"
 PlutoUI = "~0.7.39"
@@ -1086,6 +1119,9 @@ version = "0.9.1+5"
 # ╠═a604838a-679f-4a2b-9892-f787c39d24cd
 # ╠═7dcc5169-3a0e-4fe1-a96f-efae1c818c59
 # ╟─9dce7a42-cfbb-47de-8e01-602d557f3e0a
+# ╟─495268a3-0d35-4f38-8355-33d293dda9a2
+# ╠═65d4b4e0-5d66-4d12-beb9-1aaede6e89b7
+# ╠═14d0006d-a9c4-42c2-aeef-611b76a3d999
 # ╠═106dc642-5e8c-4e87-9bac-a698a8f29f39
 # ╠═66785817-4eb5-4f5a-9ad3-87aefc8afc48
 # ╠═5dbec5bb-1c23-419e-a8f4-e6f7749517ab
