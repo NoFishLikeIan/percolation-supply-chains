@@ -89,7 +89,7 @@ begin
 end
 
 # ╔═╡ 551ba67b-5317-4dd0-9b9d-126ca8c13eb0
-m = 30; K = 20
+m = 100; K = 20
 
 # ╔═╡ b67eb0ba-6db7-40ba-a0b2-21151c4eb748
 md"
@@ -109,14 +109,44 @@ begin
 	G(x; sₖ) = [G₁(x; sₖ), G₂(x; sₖ)]
 	
 	L = 20
-	fspace = range(0.05, 0.99; length = L)
+	fspace = range(1e-3, 0.99; length = L)
 	ρspace = range(1e-3, 0.99; length = L)
 	space = product(fspace, ρspace)
 
 end
 
-# ╔═╡ 32138a9f-b9bc-4db8-ae0a-0b4718d80a7b
-contourf(fspace, ρspace, (f, ρ) -> G₂([f, ρ]; sₖ))
+# ╔═╡ 5228005b-19f6-4cab-bd31-31aedb4fcf6c
+let
+	sfig = 5
+
+	g1fig = contourf(
+		range(0.01, 0.99, length = 101),
+		range(0.01, 0.99, length = 101),
+		(f, ρ) -> G₁([f, ρ]; sₖ = sfig) - f;
+		c = :RdYlBu, xlabel = L"f", ylabel = L"\rho", title = L"G_{f}(f, \rho, s = 5) - f", dpi = 180,
+		clims = (-.25, .25)
+	)
+	
+	g1fig
+	
+end
+
+# ╔═╡ 2bfb0d6e-15c3-4a15-9a12-cdde48970bf0
+let
+
+	g2fig = contourf(
+		range(0.01, 0.99, length = 101),
+		range(0.01, 0.99, length = 101),
+		(f, ρ) -> G₂([f, ρ]; sₖ = 5) - ρ;
+		c = :RdYlBu, xlabel = L"f", ylabel = L"\rho", title = L"G_{\rho}(f, \rho, s = 5) - \rho", dpi = 180,
+		clims = (-.25, .25)
+	)
+
+	# savefig(g2fig, "../docs/plots/grho_large.pdf")
+	
+	g2fig
+	
+end
 
 # ╔═╡ 7d5ceec9-9496-4a5b-aa8a-4250a30df02f
 let
@@ -1327,9 +1357,10 @@ version = "0.9.1+5"
 # ╠═7eec1e2e-f469-4437-8c27-1e86bccc3d9e
 # ╠═551ba67b-5317-4dd0-9b9d-126ca8c13eb0
 # ╟─b67eb0ba-6db7-40ba-a0b2-21151c4eb748
-# ╟─49e1c995-831b-472e-b68c-b56a21d1f308
-# ╠═e518339b-9781-4f37-895f-19343315c79c
-# ╠═32138a9f-b9bc-4db8-ae0a-0b4718d80a7b
+# ╠═49e1c995-831b-472e-b68c-b56a21d1f308
+# ╟─e518339b-9781-4f37-895f-19343315c79c
+# ╟─5228005b-19f6-4cab-bd31-31aedb4fcf6c
+# ╟─2bfb0d6e-15c3-4a15-9a12-cdde48970bf0
 # ╠═7d5ceec9-9496-4a5b-aa8a-4250a30df02f
 # ╟─dc3fb1d5-ee54-4cdf-a0ef-ac65c68a1846
 # ╠═98904f31-4676-40a1-ab7c-da9c0b6911e0

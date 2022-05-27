@@ -192,17 +192,17 @@ where $B(x, y)$ is the beta function.
     \centering
     \begin{subfigure}{.5\textwidth}
       \centering
-      \includegraphics[width=\linewidth]{../plots/gf_small} 
+      \includegraphics[width=\linewidth]{../plots/gf_small.pdf} 
       \caption{With $s = 1$}
       \label{fig:gf:small}  
     \end{subfigure}%
     \begin{subfigure}{.5\textwidth}
       \centering
-      \includegraphics[width=\linewidth]{../plots/gf_large}       
+      \includegraphics[width=\linewidth]{../plots/gf_large.pdf}       
       \caption{With $s = 20$}
       \label{fig:gf:large}
     \end{subfigure}
-    \caption{Contour plot of $G_f$}
+    \caption{Contour plot of $G_f - f$}
     \label{fig:gf}
   \end{figure}
 
@@ -313,11 +313,13 @@ such that
 Consider the last term
 
 \begin{equation}
-    \E\left[\left(\frac{(m(1- R_m))_s}{(m)_s} \right)^2\right] =
-    \E\left[\frac{m^{2s}(1- R_m)^{2s} + o(m^{2s - 1})}{m^{2s} + o(m^{2s - 1})}\right] \xrightarrow{m \rightarrow \infty} \E\Big[ (1 - R)^{2s} \Big]
+    \begin{split}
+        \E\left[\left(\frac{(m(1- R_m))_s}{(m)_s} \right)^2\right] &= \E\left[ \frac{m^2 (1 - R_m)^2 (m (1 - R_m) - 1)^2 \ldots (m(1-R_m) - s + 1)^2}{m^2 (m - 1)^2 \ldots (m - s + 1)^2} \right] \\
+        &= \E\left[\frac{m^{2s}(1- R_m)^{2s} + o(m^{2s - 1})}{m^{2s} + o(m^{2s - 1})}\right] \xrightarrow{m \rightarrow \infty} \E\Big[ (1 - R)^{2s} \Big]
+    \end{split}
 \end{equation}
 
-where $R = \lim_{m \rightarrow \infty} R_m$. We can now look at the distribution of $R$. I will make a claim motivated by a simulation (see Figure \ref{fig:rdist})
+where $R = \lim_{m \rightarrow \infty} R_m$. We can now look at the distribution of $R$. I will make a claim motivated by a simulation (see Figure \ref{fig:rdist}).
 
 
 \begin{figure}[H]
@@ -370,7 +372,7 @@ hence, for large $m$,
         \E \left[p(s, R_m)^2\right] &\eqsim 1 - 2(1 - f') + \left.\frac{\text{d}^{2s} \prescript{}{1}{F}_1}{\text{d}t^{2s}} \right\rvert_{(\beta, \alpha + \beta, 0)} \\
         &= 1 - 2(1 - f') + \frac{\beta(\beta + 1)\ldots(\beta + 2s - 1)}{(\alpha + \beta)(\alpha + \beta + 1) \ldots (\alpha + \beta + 2s - 1)} \\
         \text{re-parametrising, } &= 1 - 2(1 - f') + \prod^{2s - 1}_{k = 0} \frac{f \frac{1 - \rho}{\rho} + k}{\frac{1 - \rho}{\rho} + k} \\
-        &= 1 - 2(1 - f') + B\left(\frac{1 - \rho}{\rho}, 2s \right) \Big/ B\left(f \frac{1 - \rho}{\rho}, 2s \right)
+        &= 1 - 2(1 - f') + B\left(\frac{1 - \rho}{\rho}, 2s \right) \Big/ B\left((1 - f) \ \frac{1 - \rho}{\rho}, 2s \right)
     \end{split}
 \end{equation}
 
@@ -380,21 +382,26 @@ Hence, for large $m$, we can write our mapping $G_{\rho}$, letting $f' = G_f(f, 
 
 
 \begin{equation}
-    G_{\rho}(f, \rho, s) = \frac{ B\left(\frac{1 - \rho}{\rho}, 2s \right) \Big/ B\left(f \frac{1 - \rho}{\rho}, 2s \right)}{f' (1 - f')} - \frac{1 - f'}{f'}
+    G_{\rho}(f, \rho, s) = \frac{ B\left(\frac{1 - \rho}{\rho}, 2s \right) \Big/ B\left((1 - f) \frac{1 - \rho}{\rho}, 2s \right)}{f' (1 - f')} - \frac{1 - f'}{f'}
 \end{equation}
 
 
-\newpage
-
-\section{Agent First Order Condition}
-
-Agents pick $s_k$ such that
-
-\begin{equation}
-    \begin{split}
-        \frac{\kappa}{\pi} &= \left.\frac{\partial G_f(f, \rho, s)}{\partial s}\right\vert_{s = s_k} \\ 
-        &= \big(1 - G_f(f, \rho, s_k)\big) \left(\psi^{(0)}\left( \frac{(1-\rho)}{\rho} + s_k \right) - \psi^{(0)}\left( \frac{(1-f)(1- \rho)}{\rho} + s \right) \right)
-    \end{split}
-\end{equation}
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{../plots/grho_small.pdf} 
+      \caption{With $s = 1$}
+      \label{fig:grho:small}  
+    \end{subfigure}%
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{../plots/grho_large.pdf}       
+      \caption{With $s = 5$}
+      \label{fig:grho:large}
+    \end{subfigure}
+    \caption{Contour plot of $G_\rho - \rho$}
+    \label{fig:grho}
+  \end{figure}
 
 \end{document}

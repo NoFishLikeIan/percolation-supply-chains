@@ -40,7 +40,7 @@ function Gfactory(m::Int64; N = 40_000)
         
         fⁿ = G₁(x; sₖ)
 
-        E₁₋ᵣ = beta((1 - ρ) / ρ, n) / beta((1 - f) * (1 - ρ) / ρ, n)
+        E₁₋ᵣ = beta((1 - ρ) / ρ, 2sₖ) / beta((1 - f) * (1 - ρ) / ρ, 2sₖ)
         
         return (E₁₋ᵣ - (1 - fⁿ)^2) / ((1 - fⁿ) * fⁿ)
     end
