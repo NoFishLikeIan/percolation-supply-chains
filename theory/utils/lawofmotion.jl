@@ -39,9 +39,10 @@ function Gfactory(m::Int64; N = 40_000)
         f, ρ = x
         
         fⁿ = G₁(x; sₖ)
-        Bᵣ = beta((1 - ρ) / ρ, 2sₖ) / beta(f * (1 - ρ) / ρ, 2sₖ)
+
+        E₁₋ᵣ = beta((1 - ρ) / ρ, n) / beta((1 - f) * (1 - ρ) / ρ, n)
         
-        return Bᵣ / (fⁿ * (1 - fⁿ)) - (1 - fⁿ) / fⁿ
+        return (E₁₋ᵣ - (1 - fⁿ)^2) / ((1 - fⁿ) * fⁿ)
     end
 
     return G₁, G₂

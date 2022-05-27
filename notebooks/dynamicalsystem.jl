@@ -119,13 +119,10 @@ end
 contourf(fspace, ρspace, (f, ρ) -> G₂([f, ρ]; sₖ))
 
 # ╔═╡ 7d5ceec9-9496-4a5b-aa8a-4250a30df02f
-# ╠═╡ disabled = true
-#=╠═╡
 let
 	Φ(f, ρ) = G([f, ρ]; sₖ = sₖ) .- [f, ρ]
 	plotvectorfield(Φ, fspace, ρspace; xlabel = L"f", ylabel = L"\rho", title = latexstring("Vector field \$G(x) - x\$"))
 end
-  ╠═╡ =#
 
 # ╔═╡ dc3fb1d5-ee54-4cdf-a0ef-ac65c68a1846
 md"## Competitive, $\tilde{G}$"
