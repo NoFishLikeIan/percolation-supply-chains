@@ -105,10 +105,7 @@ md"
 
 # ╔═╡ e518339b-9781-4f37-895f-19343315c79c
 begin
-	G₁, G₂ = Gfactory(m)
-	G(x; sₖ) = [G₁(x; sₖ), G₂(x; sₖ)]
-	
-	L = 20
+	L = 10
 	fspace = range(1e-3, 0.99; length = L)
 	ρspace = range(1e-3, 0.99; length = L)
 	space = product(fspace, ρspace)
@@ -117,34 +114,23 @@ end
 
 # ╔═╡ 5228005b-19f6-4cab-bd31-31aedb4fcf6c
 let
-	sfig = 5
-
 	g1fig = contourf(
 		range(0.01, 0.99, length = 101),
 		range(0.01, 0.99, length = 101),
-		(f, ρ) -> G₁([f, ρ]; sₖ = sfig) - f;
-		c = :RdYlBu, xlabel = L"f", ylabel = L"\rho", title = L"G_{f}(f, \rho, s = 5) - f", dpi = 180,
+		(f, ρ) -> first(G([f, ρ]; sₖ)) - f;
+		c = :RdYlBu, xlabel = L"f", ylabel = L"\rho", title = L"G_{f}(f, \rho, s) - f", dpi = 180,
 		clims = (-.25, .25)
 	)
-	
-	g1fig
-	
-end
-
-# ╔═╡ 2bfb0d6e-15c3-4a15-9a12-cdde48970bf0
-let
 
 	g2fig = contourf(
 		range(0.01, 0.99, length = 101),
 		range(0.01, 0.99, length = 101),
-		(f, ρ) -> G₂([f, ρ]; sₖ = 5) - ρ;
-		c = :RdYlBu, xlabel = L"f", ylabel = L"\rho", title = L"G_{\rho}(f, \rho, s = 5) - \rho", dpi = 180,
+		(f, ρ) -> last(G([f, ρ]; sₖ)) - ρ;
+		c = :RdYlBu, xlabel = L"f", ylabel = L"\rho", title = L"G_{\rho}(f, \rho, s) - \rho", dpi = 180,
 		clims = (-.25, .25)
 	)
-
-	# savefig(g2fig, "../docs/plots/grho_large.pdf")
 	
-	g2fig
+	plot(g1fig, g2fig; size = (1000, 400), margins = 5Plots.mm)
 	
 end
 
@@ -162,26 +148,79 @@ md"
 ``r`` $(@bind r Slider(
 	0.01:0.01:0.6, show_value = true, default = 0.01
 ))
+
+
+``\mu_0`` $(@bind μ₀ Slider(
+	0.01:0.01:0.9, show_value = true, default = 0.01
+))
+
+``\rho_0`` $(@bind ρ₀ Slider(
+	0.01:0.01:0.5, show_value = true, default = 0.01
+))
 "
 
-# ╔═╡ edd31412-ad76-4527-ac46-06a877d1ed99
-model = VerticalModel(m, 0.01, r, K)
+# ╔═╡ dc3b28b0-def2-4c24-8104-51b9081d51e6
+model = VerticalModel(m, μ₀, r, K)
 
-# ╔═╡ 0aa958f1-7cea-40d7-b289-f8147bee2fb6
-contourf(
-    0.01:0.01:0.99, 0:0.01:0.99,
-    (f, ρ) -> agentoptimum(f, ρ; model);
-	clims = (0, model.m),
-    xlabel = L"f", ylabel = L"\rho",
-    c = :Reds,
-    title = latexstring("Competitive \$s_k\$")
-)
+# ╔═╡ 4e34b762-f359-4d5f-b21a-2fd6246b2315
+begin
+	T = 20
+	X = Array{Float64}(undef, T, 2)
+	X[1, :] = [1 - μ₀, ρ₀] 
+
+	for t ∈ 2:T
+		X[t, :] = G̃(X[t - 1, :]; model)
+	end
+end
+
+# ╔═╡ 5fe06523-d985-4586-862a-315c2696fada
+begin
+	function makecurvefrompoints(points)
+		T = length(points)
+		C = maximum(length.(points))
+	
+		curve = NaN .* zeros(T, C)
+	
+		for (t, p) ∈ enumerate(points)
+			for (i, pᵢ) ∈ enumerate(p)
+				curve[t, i] = pᵢ
+			end
+		end
+	
+		return curve
+	end
+	unit = range(0.01, 0.99; length = 50)
+	nullρ = NG̃ρ.(unit; model)
+	nullf = filter.(x -> x < 1, NG̃f.(unit; model))
+
+	ρcurve = makecurvefrompoints(nullρ)
+	fcurve = makecurvefrompoints(nullf)
+	""
+end
 
 # ╔═╡ ae7a7c1d-c3b6-4dc8-aeab-ef2af11ac25d
 begin	
+
 	Φ̃(f, ρ) = G̃([f, ρ]; model) .- [f, ρ]
 
-	plotvectorfield(Φ̃, fspace, ρspace; xlabel = L"f", ylabel = L"\rho")
+	vecfig = plotvectorfield(
+		Φ̃, fspace, ρspace; 
+		xlabel = L"f", ylabel = L"\rho",
+		xlims = extrema(fspace), 
+		ylims = extrema(ρspace),
+		aspect_ratio = 1, dpi = 180
+	)
+
+	
+	plot!(vecfig, unit, ρcurve; c = :darkgreen, label = L"G_\rho = \rho", linewidth = 2)
+	plot!(vecfig, fcurve, unit; c = :darkred, label = L"G_f = f", linewidth = 2)
+
+	plot!(vecfig, X[:, 1], X[:, 2], c = :red, label = L"x_k")
+	scatter!(vecfig, [X[1, 1]], [X[1, 2]], c = :red, label = nothing)
+	
+
+	vecfig
+
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1357,15 +1396,15 @@ version = "0.9.1+5"
 # ╠═7eec1e2e-f469-4437-8c27-1e86bccc3d9e
 # ╠═551ba67b-5317-4dd0-9b9d-126ca8c13eb0
 # ╟─b67eb0ba-6db7-40ba-a0b2-21151c4eb748
-# ╠═49e1c995-831b-472e-b68c-b56a21d1f308
-# ╟─e518339b-9781-4f37-895f-19343315c79c
+# ╟─49e1c995-831b-472e-b68c-b56a21d1f308
+# ╠═e518339b-9781-4f37-895f-19343315c79c
 # ╟─5228005b-19f6-4cab-bd31-31aedb4fcf6c
-# ╟─2bfb0d6e-15c3-4a15-9a12-cdde48970bf0
-# ╠═7d5ceec9-9496-4a5b-aa8a-4250a30df02f
+# ╟─7d5ceec9-9496-4a5b-aa8a-4250a30df02f
 # ╟─dc3fb1d5-ee54-4cdf-a0ef-ac65c68a1846
-# ╠═98904f31-4676-40a1-ab7c-da9c0b6911e0
-# ╠═edd31412-ad76-4527-ac46-06a877d1ed99
-# ╟─0aa958f1-7cea-40d7-b289-f8147bee2fb6
-# ╠═ae7a7c1d-c3b6-4dc8-aeab-ef2af11ac25d
+# ╟─98904f31-4676-40a1-ab7c-da9c0b6911e0
+# ╠═dc3b28b0-def2-4c24-8104-51b9081d51e6
+# ╟─4e34b762-f359-4d5f-b21a-2fd6246b2315
+# ╟─5fe06523-d985-4586-862a-315c2696fada
+# ╟─ae7a7c1d-c3b6-4dc8-aeab-ef2af11ac25d
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
