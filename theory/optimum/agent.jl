@@ -14,8 +14,8 @@ end
 """
 Agent's optimal s given the f and ρ in previous layer.
 """
-agentoptimum(f, ρ; model::VerticalModel) = agentoptimum(f, ρ, model.m, model.r)
-function agentoptimum(f, ρ, m, r)
+agentoptimum(f, ρ; model::VerticalModel) = agentoptimum(f, ρ; m = model.m, r = model.r)
+function agentoptimum(f, ρ; m, r)
 
     bs = [0.01, m]
 
@@ -38,6 +38,10 @@ G with agent's sₖ
 """
 function G̃(x; model)
     sₖ = agentoptimum(x[1], x[2]; model)
+    return G(x; sₖ)
+end
+function G̃(x; m, r)
+    sₖ = agentoptimum(x[1], x[2]; m, r)
     return G(x; sₖ)
 end
 
