@@ -1,0 +1,86 @@
+\documentclass[american, abstract=on]{scrartcl}
+
+    \newcommand{\lang}{en}
+
+    \usepackage{babel}
+    \usepackage[utf8]{inputenc}
+
+    \usepackage{csquotes}
+
+    \usepackage{amsmath, amssymb, mathtools, bbm}
+    \usepackage{amsthm}
+    \usepackage{xcolor}
+    \usepackage{xcolor-solarized}
+    \usepackage{bm}
+
+    \usepackage{graphicx}
+    \usepackage{wrapfig}
+    \usepackage{relsize}
+    \usepackage{makecell}
+    \usepackage{booktabs}
+    \usepackage[font=footnotesize,labelfont=bf]{caption}
+    \usepackage{subcaption}
+    \usepackage{float}
+    \usepackage{multirow} 
+    \usepackage{hyperref}
+    
+    % Formatting
+    \setlength{\parindent}{0em}
+    \setlength{\parskip}{0.5em}
+    \setlength{\fboxsep}{1em}
+    \newcommand\headercell[1]{\smash[b]{\begin{tabular}[t]{@{}c@{}} #1 \end{tabular}}}
+
+    % Theorems
+    \theoremstyle{plain}
+    \newtheorem{claim}{Claim}
+
+    % Math commands
+
+    \newcommand{\diff}{\text{d}}
+    \renewcommand{\Re}{\mathbb{R}}
+    \newcommand{\C}{\mathcal{C}}
+    \newcommand{\F}{\mathcal{F}}
+    \newcommand{\X}{\mathcal{X}}
+    \newcommand{\G}{\mathcal{G}}
+    \newcommand{\I}{\mathcal{I}}
+    \newcommand{\N}{\mathcal{N}}
+    \newcommand{\PF}{\mathcal{P} \F}
+
+    \renewcommand{\P}{\mathbb{P}}
+    \newcommand{\E}{\mathbb{E}}
+    \newcommand{\V}{\mathbb{V}}
+
+    \newcommand{\uI}[2][s]{\int^1_0 #2 \ \text{d} #1}
+    \newcommand{\uH}[2][s]{\int^\frac{1}{2}_0 #2 \ \text{d} #1}
+    \newcommand{\uF}[2][s]{\int^1_\frac{1}{2} #2 \ \text{d} #1}
+    \newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+    \newcommand{\abs}[1]{\left\lvert#1\right\rvert}
+
+    \newcommand{\Beta}{\text{Beta}}
+    \newcommand{\Bin}{\text{Bin}}
+
+    \DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+
+    % Make title page
+
+    \author{Andrea Titton}
+    \title{Analysis of parameter mapping}
+
+    % \setcounter{section}{-1}  % Start numbering at 0
+    
+\begin{document}
+
+\maketitle
+
+\section{The map}
+
+\begin{equation}
+    G_{\rho}(f, \rho, s) = \frac{ B\left(\frac{1 - \rho}{\rho}, 2s \right) \Big/ B\left((1 - f) \frac{1 - \rho}{\rho}, 2s \right)}{f' (1 - f')} - \frac{1 - f'}{f'}
+\end{equation}
+
+\begin{equation}
+    G_f(f, \rho, s) = 1 - \frac{B\Big( (1 - f) \frac{1 - \rho}{\rho} + s, f \frac{1 - \rho}{\rho} \Big)}{B\Big( (1 - f) \frac{1 - \rho}{\rho}, f \frac{1 - \rho}{\rho} \Big)}
+\end{equation}
+
+
+\end{document}

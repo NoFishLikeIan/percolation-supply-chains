@@ -404,4 +404,24 @@ Hence, for large $m$, we can write our mapping $G_{\rho}$, letting $f' = G_f(f, 
     \label{fig:grho}
   \end{figure}
 
+\subsection[Derivatives of map]{Derivatives of $G$}
+
+\begin{equation}
+    \frac{\partial G_f}{\partial f} = \big(1 - G_f\big) \ \frac{1 - \rho}{\rho} \left(
+        \psi ^{(0)}\left((1 - f)\frac{1- \rho}{\rho} + s\right) -
+        \psi ^{(0)}\left((1 - f)\frac{1- \rho}{\rho}\right)\right)
+\end{equation}
+
+\begin{equation}
+    \begin{split}
+        \frac{\partial G_f}{\partial \rho} = \frac{1 - G_f}{\rho^2} \Bigg[ (1-f)&\left[
+            \psi ^{(0)}\left((1 - f)\frac{1- \rho}{\rho} + s\right) -
+            \psi ^{(0)}\left((1 - f)\frac{1- \rho}{\rho}\right)\right] - \\
+            &\left[
+                \psi ^{(0)}\left(\frac{1- \rho}{\rho} + s\right) -
+                \psi ^{(0)}\left(\frac{1- \rho}{\rho}\right)\right]
+            \Bigg]
+    \end{split}
+\end{equation}
+
 \end{document}
