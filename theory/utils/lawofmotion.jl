@@ -22,6 +22,28 @@ end
 
 G(x; sₖ) = [ G₁(x; sₖ), G₂(x; sₖ) ]
 
+function JG(x; sₖ)
+    x′ = G(x; sₖ)
+
+    f, ρ = x
+    f′, ρ′ = x′
+    α, β = fρtoαβ(f, ρ)
+
+    ρ̃ = (1 - ρ) / ρ
+
+    G₁₁ = (1 - f′) * ρ̃ * (ψ(0, β + sₖ) - ψ(0, β))
+    G₁₂ = (1 - f′) *
+        (
+            (1 - f) * (ψ(0, β + sₖ) - ψ(0, β)) -
+            (ψ(0, ρ̃ + sₖ) - ψ(0, ρ̃))
+        ) / ρ^2
+
+    N = (ρ′ + (1 - f′) / f′) * f′ * (1 - f′)
+    ∂N = -N * ρ̃ * (ψ(0, β + 2sₖ) - ψ(0, β))
+
+    # TODO: Finish
+
+end
 
 function sequencemoments(s::Vector{<:Real}; model::VerticalModel)
     f₀ = 1 - model.μ₀

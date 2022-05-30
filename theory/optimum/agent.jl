@@ -1,4 +1,4 @@
-function ∂ₛG₁(x; sₖ, model)
+function ∂ₛG₁(x; sₖ)
     f, ρ = x
 
     if ρ ≈ 0
@@ -14,13 +14,12 @@ end
 """
 Agent's optimal s given the f and ρ in previous layer.
 """
-function agentoptimum(f, ρ; model::VerticalModel)
+agentoptimum(f, ρ; model::VerticalModel) = agentoptimum(f, ρ, model.m, model.r)
+function agentoptimum(f, ρ, m, r)
 
-    bs = [0.01, model.m]
+    bs = [0.01, m]
 
-    foc(s) = ∂ₛG₁([f, ρ]; sₖ = s, model) - model.r
-
-    roots(foc, 0..1)
+    foc(s) = ∂ₛG₁([f, ρ]; sₖ = s) - r
 
     pospay = foc(bs[1]) > 0
     negmax = foc(bs[2]) < 0
@@ -40,6 +39,13 @@ G with agent's sₖ
 function G̃(x; model)
     sₖ = agentoptimum(x[1], x[2]; model)
     return G(x; sₖ)
+end
+
+function JG̃(x; model)
+    # TODO: Make analytical
+    ForwardDiff.jacobian(
+        v -> G̃(v; model), x
+    )
 end
 
 function compequilibrium(model::VerticalModel)

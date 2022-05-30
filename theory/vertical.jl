@@ -3,9 +3,9 @@ using DotEnv; DotEnv.config()
 using SpecialFunctions
 using IterTools, Combinatorics
 
-using Roots, Optim
+using Roots, Optim, NLsolve
 using ForwardDiff
-using Interpolations 
+using LinearAlgebra
 
 begin
     using Random
@@ -42,3 +42,4 @@ m = 100 # Size nodes
 r = 0.02 # cost / profit ratio
 
 model = VerticalModel(m, μ₀, r, K)
+
