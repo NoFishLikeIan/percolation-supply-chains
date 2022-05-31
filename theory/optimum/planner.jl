@@ -1,36 +1,44 @@
-function valuefunction(x::Vector{Float64}, Vₖ₊₁::Real; model::VerticalModel)
-    f, ρ = x
+function plannerequilibrium(model::VerticalModel; L = 101)
+    m, r = model.m, model.r
+    fspace = range(0.01, 0.99; length = L)
+    ρspace = copy(fspace)
+
+    sspace = range(0.01, m - 1; length = 2L)
     
-    J(s) = -inv(model.r) * G₁([f, ρ]; sₖ = s) * model.m + s - Vₖ₊₁
+    sₖ = Array{Float64}(undef, (L, L, model.K))
+    Vₖ = Array{Float64}(undef, (L, L, model.K))
 
-    result = optimize(J, 0., 10_000.)
+    for i ∈ 1:L, j ∈ 1:L
+        f, ρ = fspace[i], ρspace[j]
+        s = agentoptimum(f, ρ; m, r)
+        f′ = G₁([f, ρ]; sₖ = s)
 
-    sₖ = first(result.minimizer)
-    Vₖ = -J(sₖ)
-
-    sₖ, Vₖ
-end
-
-function plannerequilibrium(model::VerticalModel)
-
-    function totalvalue(s::Vector{<:Real})
-        moments = sequencemoments(s; model)
-
-        results = Matrix{Float64}(undef, model.K, 2)
-        
-        for k ∈ reverse(1:model.K)
-            Vₖ₊₁ = k < model.K ? results[k + 1, 2] : 0.
-
-            results[k, :] .= valuefunction(moments[k, :], Vₖ₊₁; model)
-        end
-
-        return sum(results[:, 2])
+        sₖ[i, j, end] = s
+        Vₖ[i, j, end] = model.m * ( inv(model.r) * f′ - s )
     end
 
-    result = optimize(s -> -totalvalue(s), ones(model.K))
-    
-    sₖ = result.minimizer
-    moments = sequencemoments(sₖ; model)
+    for k ∈ reverse(1:(K-1))
+        print("Layer $k...\r")
+        
+        for i ∈ 1:L, j ∈ 1:L
 
-    return Tuple.(eachrow(moments)), sₖ
+            f, ρ = fspace[i], ρspace[j]
+            Jₖᵢⱼ = Vector{Float64}(undef, 2L)  
+            for (l, s) ∈ enumerate(sspace) 
+                f′, ρ′ = G([f, ρ]; sₖ = s)
+                itp = LinearInterpolation(
+                    (fspace, ρspace), Vₖ[:, :, k + 1]; 
+                    extrapolation_bc = Line()
+                )
+
+                Jₖᵢⱼ[l] = model.m * ( inv(model.r) * f′ - s ) + itp(f′, ρ′)
+            end
+            
+            idxmax = argmax(Jₖᵢⱼ)
+            sₖ[i, j, k] = sspace[idxmax]
+            Vₖ[i, j, k] = Jₖᵢⱼ[idxmax]
+        end
+    end
+
+    return sₖ, Vₖ
 end

@@ -15,6 +15,10 @@ function G₂(x; sₖ)
     
     fⁿ = G₁(x; sₖ)
 
+    if fⁿ ≈ 1 || fⁿ ≈ 0 # By definition
+        return 0.
+    end
+
     E₁₋ᵣ = beta((1 - ρ) / ρ, 2sₖ) / beta((1 - f) * (1 - ρ) / ρ, 2sₖ)
     
     return (E₁₋ᵣ - (1 - fⁿ)^2) / ((1 - fⁿ) * fⁿ)

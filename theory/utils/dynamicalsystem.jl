@@ -1,20 +1,20 @@
 """
 f nullcline for G̃
 """
-function NG̃f(ρ; model)
-    find_zeros(f -> G̃([f, ρ]; model)[1] - f, 0, 1)
+function NG̃f(ρ, model::VerticalModel)
+    find_zeros(f -> first(G̃([f, ρ], model.m, model.r)) - f, 0, 1)
 end
 
 """
 ρ nullcline for G̃
 """
-function NG̃ρ(f; model)
-    find_zeros(ρ -> G̃([f, ρ]; model)[2] - ρ, 0, 1)
+function NG̃ρ(f, model::VerticalModel)
+    find_zeros(ρ -> last(G̃([f, ρ], model.m, model.r)) - ρ, 0, 1)
 end
 
 function fixedpoints(model, x₀)
     function f!(F, x)
-        F .= G̃(x; model) - x
+        F .= G̃([f, ρ], model.m, model.r) - x
     end
     
     sol = mcpsolve(

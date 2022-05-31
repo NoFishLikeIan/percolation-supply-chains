@@ -6,6 +6,9 @@ using IterTools, Combinatorics
 using Roots, Optim, NLsolve
 using ForwardDiff
 using LinearAlgebra
+using Interpolations
+
+using DynamicalSystems
 
 begin
     using Random
@@ -43,3 +46,4 @@ r = 0.02 # cost / profit ratio
 
 model = VerticalModel(m, μ₀, r, K)
 
+sₖ, Vₖ = plannerequilibrium(model; L = 4)
