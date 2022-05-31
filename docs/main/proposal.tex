@@ -26,7 +26,7 @@
     \usepackage{tikz} 
     \usepackage{tikzit}
     \usetikzlibrary{positioning,fit,calc}
-    \input{diagrams/percolation.tikzstyles}
+    \input{../diagrams/percolation.tikzstyles}
 
     \newcommand{\inputTikZ}[2]{%  
       \scalebox{#1}{\input{#2}}  
@@ -79,7 +79,7 @@
     % Bibliography
 
     \usepackage[bibencoding=utf8, style=apa, backend=biber]{biblatex}
-    \addbibresource{supply-chain-reallocation.bib}
+    \addbibresource{../supply-chain-reallocation.bib}
 
     \newcommand{\citein}[1]{\citeauthor{#1} (\citeyear{#1})}
 
@@ -108,13 +108,13 @@ To understand these results, consider the two simple production networks illustr
   \centering
   \begin{subfigure}{.5\textwidth}
     \centering
-    \inputTikZ{0.5}{diagrams/example-idio.tikz} 
+    \inputTikZ{0.5}{../diagrams/example-idio.tikz} 
     \caption{Idiosyncratic upstream risk}
     \label{fig:example:idio}  
   \end{subfigure}%
   \begin{subfigure}{.5\textwidth}
     \centering
-    \inputTikZ{0.5}{diagrams/example-covariate.tikz} 
+    \inputTikZ{0.5}{../diagrams/example-covariate.tikz} 
     \caption{Covariate upstream risk}
     \label{fig:example:cov}
   \end{subfigure}
@@ -125,17 +125,17 @@ To understand these results, consider the two simple production networks illustr
 
 \begin{figure}[H]
   \centering
-  \inputTikZ{0.5}{diagrams/model-presentation.tikz} 
+  \inputTikZ{0.5}{../diagrams/model-presentation.tikz} 
   \caption{Idiosyncratic upstream risk}
 \end{figure}
 
 Now assume that \textit{one} cannot observe the supplier decisions of the red good producers but assigns equal probability to every possible configuration. Given that there are more configurations in which diversification is optimal\footnote{
-  Diversification is optimal if \inputTikZ{0.1}{diagrams/conf-idyof.tikz} or, with equal probability, \inputTikZ{0.1}{diagrams/conf-covpref.tikz}, and not optimal if \inputTikZ{0.1}{diagrams/conf-covind.tikz}
+  Diversification is optimal if \inputTikZ{0.1}{../diagrams/conf-idyof.tikz} or, with equal probability, \inputTikZ{0.1}{../diagrams/conf-covpref.tikz}, and not optimal if \inputTikZ{0.1}{../diagrams/conf-covind.tikz}
 }, diversification under incomplete information and with uniform priors will be closer to the social optimum. This simple example makes it immediately clear that firms beliefs play a crucial role in the endogenous formation of production networks. 
 
 \begin{figure}[H]
   \centering
-  \inputTikZ{0.5}{diagrams/example-limited.tikz} 
+  \inputTikZ{0.5}{../diagrams/example-limited.tikz} 
   \caption{Same production network as in Figure \ref{fig:example}, but with limited information. Firm $1$ cannot observe edges stemming from opaque nodes.}
   \label{fig:example:unknown}  
 \end{figure}
@@ -183,13 +183,13 @@ Going back to the example production network introduced above, consider the case
   \centering
   \begin{subfigure}{.5\textwidth}
     \centering
-    \inputTikZ{0.5}{diagrams/example-functional.tikz} 
+    \inputTikZ{0.5}{../diagrams/example-functional.tikz} 
     \caption{$\X_1(\G_{\text{red}}) = \{2, 3\}$ and $1 \in \PF$}
     \label{fig:functional_example:yes}  
   \end{subfigure}%
   \begin{subfigure}{.5\textwidth}
     \centering
-    \inputTikZ{0.5}{diagrams/example-notfunctional.tikz} 
+    \inputTikZ{0.5}{../diagrams/example-notfunctional.tikz} 
     \caption{$\X_1(\G_{\text{red}}) = \{2\}$ and $1 \notin \PF$}
     \label{fig:functional_example:no}
   \end{subfigure}
@@ -231,7 +231,7 @@ as displayed in Figure \ref{fig:vertical}. Since each good only requires one inp
 
 \begin{figure}[H]
   \centering
-  \inputTikZ{0.7}{diagrams/vertical-economy.tikz} 
+  \inputTikZ{0.7}{../diagrams/vertical-economy.tikz} 
   \caption{One possible realization of a vertical economy with three goods}
   \label{fig:vertical}
 \end{figure}
@@ -337,14 +337,14 @@ Given this recursive definition, we can find a explicit expression for the optim
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width = \textwidth]{plots/splot.pdf} 
+  \includegraphics[width = \textwidth]{../plots/splot.pdf} 
   \caption{Optimal number of suppliers of $i \in \G_k$ as a function of $p_{k - 1}$ for different levels of $\kappa \Big/ \pi_k (1 - \mu_k)$. The dashed line represents the lower bound on $s_k$}
   \label{fig:splot}
 \end{figure}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width = \textwidth]{plots/pplot.pdf} 
+  \includegraphics[width = \textwidth]{../plots/pplot.pdf} 
   \caption{Equilibrium probability $p_k$ given $p_{k- 1}$ for different $\mu_k$, assuming $\kappa / \pi_k = 1/20$. The dashed line represents the lower bound on $s_k$}
   \label{fig:pplot}
 \end{figure}
@@ -380,7 +380,7 @@ An increase in the number of suppliers of a firm has a strictly positive externa
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width = \textwidth]{plots/vert_foc.pdf} 
+  \includegraphics[width = \textwidth]{../plots/vert_foc.pdf} 
   \caption{The first order condition of the planner and the firm. Ceteris paribus, the externality yields a higher solution $\tilde{s}_k > s_k$ for each layer but the last one, where there are no externalities.}
   \label{fig:vert_foc}
 \end{figure}
@@ -501,7 +501,7 @@ As before, we can compute an optimum of the continuous problem, $\tilde{s}_a$. T
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width = \textwidth]{plots/foc_corr.pdf} 
+  \includegraphics[width = \textwidth]{../plots/foc_corr.pdf} 
   \caption{First order conditions, for various values of $\abs{\F_k}$}
   \label{fig:vert_foc_cor}
 \end{figure}

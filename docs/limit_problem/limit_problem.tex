@@ -64,7 +64,7 @@
     % Make title page
 
     \author{Andrea Titton}
-    \title{Analysis of parameter mapping}
+    \title{Firms' and Suppliers'\\Problem For Large Size}
 
     % \setcounter{section}{-1}  % Start numbering at 0
     
@@ -82,5 +82,25 @@
     G_f(f, \rho, s) = 1 - \frac{B\Big( (1 - f) \frac{1 - \rho}{\rho} + s, f \frac{1 - \rho}{\rho} \Big)}{B\Big( (1 - f) \frac{1 - \rho}{\rho}, f \frac{1 - \rho}{\rho} \Big)}
 \end{equation}
 
+
+\section{Planner problem}
+
+The planner problem has a finite state Bellman formulation. For a layer $k \in [K]$ the value function is 
+
+\begin{equation}
+    V_k(f_{k - 1}, \rho_{k - 1}) = \sup_{s_k \in \Re_{\geq 0}} \left\{ m \pi G_f(f_{k - 1}, \rho_{k-1}; s_k) - \kappa s_k  + V_{k + 1}\Big(G(f_{k - 1}, \rho_{k-1}; s_k)\Big) \right\} 
+\end{equation}
+
+with $V_{K + 1} = 0$ and initial values $f_0 = 1 - \mu_0$ and $\rho_0$. Here we have used
+
+\begin{equation}
+    \E\Big[ p(s_k, F_{k-1}) \Big] = f_k = G_f(f_{k - 1}, \rho_{k-1}).
+\end{equation}
+
+We can solve this by backward induction. In particular, in layer $K$ the first order condition of the planner and the agent is the same 
+
+\begin{equation}
+    s_K: \frac{\partial G_f}{\partial s}\Big(f_{K-1}, \rho_{K-1}; s_{K}(f_{K-1}, \rho_{K-1})\Big) = \frac{\kappa}{\pi}.
+\end{equation}
 
 \end{document}
