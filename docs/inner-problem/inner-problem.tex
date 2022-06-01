@@ -61,6 +61,14 @@
 
     \DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
 
+    % Bibliography
+
+    \usepackage[bibencoding=utf8, style=apa, backend=biber]{biblatex}
+    \addbibresource{../supply-chain-reallocation.bib}
+    \addbibresource{../math.bib}
+
+    \newcommand{\citein}[1]{\citeauthor{#1} (\citeyear{#1})}
+
     % Make title page
 
     \author{Andrea Titton}
@@ -335,9 +343,7 @@ where $R = \lim_{m \rightarrow \infty} R_m$. We can now look at the distribution
 
 \begin{proof}
 
-    The idea of the proof is to show that the moment generating function of $R_m$ converges pointwise to that of a beta distribution. This implies that the sequence $R_m$ converges in distribution to a beta, since the latter is determined by its moments\footnote{Theorem 30.2 of the Third edition of Billingsley}.
-
-    The moment generating function of $R_m$ can be written in terms of that of $F$ (\ref{eq:mgf_betabinomial}) as 
+    The idea of the proof is to show that the moment generating function of $R_m$ converges pointwise to that of a beta distribution. This implies that the sequence $R_m$ converges in distribution to a beta, since the latter is determined by its moments (Theorem 30.2 in \citein{billingsley_probability_1995}). The moment generating function of $R_m$ can be written in terms of that of $F$ (\ref{eq:mgf_betabinomial}) as 
 
     \begin{equation}
         \begin{split}
@@ -423,5 +429,9 @@ Hence, for large $m$, we can write our mapping $G_{\rho}$, letting $f' = G_f(f, 
             \Bigg]
     \end{split}
 \end{equation}
+
+% --- Bibliography
+\newpage
+\printbibliography
 
 \end{document}
