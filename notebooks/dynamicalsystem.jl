@@ -31,7 +31,7 @@ begin
 	using IterTools, Combinatorics
 	using LinearAlgebra
 	
-	using Roots, Optim
+	using Roots, Optim, NLsolve
 	using ForwardDiff
 	using Interpolations
 
@@ -91,6 +91,9 @@ end
 # ╔═╡ 551ba67b-5317-4dd0-9b9d-126ca8c13eb0
 m = 100; K = 20
 
+# ╔═╡ 7bb7dd41-0768-476f-b815-536607ecbdf0
+unit = range(0.01, 0.99; length = 50)
+
 # ╔═╡ b67eb0ba-6db7-40ba-a0b2-21151c4eb748
 md"
 ## Function $G$
@@ -140,58 +143,86 @@ let
 	plotvectorfield(Φ, fspace, ρspace; xlabel = L"f", ylabel = L"\rho", title = latexstring("Vector field \$G(x) - x\$"))
 end
 
+# ╔═╡ 82d52cc7-c6d4-45e5-8eeb-e81fda6317f8
+function makecurvefrompoints(points)
+	T = length(points)
+	C = maximum(length.(points))
+
+	curve = NaN .* zeros(T, C)
+
+	for (t, p) ∈ enumerate(points)
+		for (i, pᵢ) ∈ enumerate(p)
+			curve[t, i] = pᵢ
+		end
+	end
+
+	return curve
+end
+
+# ╔═╡ 96d2b336-da08-4d69-aec7-1f40cb3f4b3c
+md"
+## Social $G$
+
+``r`` $(@bind r Slider(
+	0.01:0.01:0.6, show_value = true, default = 0.01
+))
+"
+
+# ╔═╡ dc3b28b0-def2-4c24-8104-51b9081d51e6
+model = VerticalModel(m, 0, r, K)
+
+# ╔═╡ 40332269-7e8d-475c-879d-ffeaace264b5
+# ╠═╡ show_logs = false
+begin
+	grid_size = 20
+	ssocial, _ = plannerequilibrium(model; L = grid_size)
+
+	itp_space = range(0.01, 0.99; length = grid_size)
+	itps = [
+		LinearInterpolation(
+			(itp_space, itp_space), ssocial[:, :, k]; 
+			extrapolation_bc = Line()
+		) for k ∈ 1:size(ssocial, 3)
+	]
+	
+	sₛ(f, ρ, k::Int64) = itps[k](f, ρ)
+
+end
+
+# ╔═╡ 0cdd8f03-235b-4236-ae73-4e55373cf838
+function G̃ₛ(x, k::Int64)
+	G(x; sₖ = sₛ(x[1], x[2], k))
+end
+
 # ╔═╡ dc3fb1d5-ee54-4cdf-a0ef-ac65c68a1846
 md"## Competitive, $\tilde{G}$"
 
 # ╔═╡ 98904f31-4676-40a1-ab7c-da9c0b6911e0
 md"
-``r`` $(@bind r Slider(
-	0.01:0.01:0.6, show_value = true, default = 0.01
-))
-
-
 ``\mu_0`` $(@bind μ₀ Slider(
-	0.01:0.01:0.9, show_value = true, default = 0.01
+	0.01:0.01:0.9, show_value = true, default = 0.5
 ))
 
 ``\rho_0`` $(@bind ρ₀ Slider(
-	0.01:0.01:0.5, show_value = true, default = 0.01
+	0.01:0.01:0.5, show_value = true, default = 0.3
 ))
 "
 
-# ╔═╡ dc3b28b0-def2-4c24-8104-51b9081d51e6
-model = VerticalModel(m, μ₀, r, K)
-
 # ╔═╡ 4e34b762-f359-4d5f-b21a-2fd6246b2315
 begin
-	T = 20
-	X = Array{Float64}(undef, T, 2)
-	X[1, :] = [1 - μ₀, ρ₀] 
+	X = Array{Float64}(undef, 2, model.K, 2) # (comp, soc), k, (f, ρ)
+	X[1, 1, :] = X[2, 1, :] = [1 - μ₀, ρ₀] 
 
-	for t ∈ 2:T
-		X[t, :] = G̃(X[t - 1, :]; model)
+	for k ∈ 2:model.K
+		X[1, k, :] = G̃(X[1, k - 1, :], model)
+		X[2, k, :] = G̃ₛ(X[2, k - 1, :], k)
 	end
 end
 
-# ╔═╡ 5fe06523-d985-4586-862a-315c2696fada
+# ╔═╡ adc389bc-d15b-432f-9213-7ea8222428e0
 begin
-	function makecurvefrompoints(points)
-		T = length(points)
-		C = maximum(length.(points))
-	
-		curve = NaN .* zeros(T, C)
-	
-		for (t, p) ∈ enumerate(points)
-			for (i, pᵢ) ∈ enumerate(p)
-				curve[t, i] = pᵢ
-			end
-		end
-	
-		return curve
-	end
-	unit = range(0.01, 0.99; length = 50)
-	nullρ = NG̃ρ.(unit; model)
-	nullf = filter.(x -> x < 1, NG̃f.(unit; model))
+	nullρ = (x -> NG̃ρ(x, model)).(unit)
+	nullf = (x -> NG̃f(x, model)).(unit)
 
 	ρcurve = makecurvefrompoints(nullρ)
 	fcurve = makecurvefrompoints(nullf)
@@ -201,7 +232,7 @@ end
 # ╔═╡ ae7a7c1d-c3b6-4dc8-aeab-ef2af11ac25d
 begin	
 
-	Φ̃(f, ρ) = G̃([f, ρ]; model) .- [f, ρ]
+	Φ̃(f, ρ) = G̃([f, ρ], model) .- [f, ρ]
 
 	vecfig = plotvectorfield(
 		Φ̃, fspace, ρspace; 
@@ -215,8 +246,14 @@ begin
 	plot!(vecfig, unit, ρcurve; c = :darkgreen, label = L"G_\rho = \rho", linewidth = 2)
 	plot!(vecfig, fcurve, unit; c = :darkred, label = L"G_f = f", linewidth = 2)
 
-	plot!(vecfig, X[:, 1], X[:, 2], c = :red, label = L"x_k")
-	scatter!(vecfig, [X[1, 1]], [X[1, 2]], c = :red, label = nothing)
+	# Competitive
+	plot!(vecfig, X[1, :, 1], X[1, :, 2], c = :red, label = L"x^{(c)}_k")
+	scatter!(vecfig, [X[1, 1, 1]], [X[1, 1, 2]], c = :red, label = nothing)
+
+	# Social planner
+	plot!(vecfig, X[2, :, 1], X[2, :, 2], c = :blue, label = L"x^{(s)}_k", linestyle = :dash)
+	scatter!(vecfig, [X[2, 1, 1]], [X[2, 1, 2]], c = :blue, label = nothing)
+
 	
 
 	vecfig
@@ -234,6 +271,7 @@ Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 IterTools = "c8e1da08-722c-5040-9ed9-7db0dc04731e"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+NLsolve = "2774e3e8-f4cf-5e23-947b-6d7e65073b56"
 Optim = "429524aa-4258-5aef-a3af-852621145aeb"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
@@ -249,6 +287,7 @@ ForwardDiff = "~0.10.30"
 Interpolations = "~0.13.6"
 IterTools = "~1.4.0"
 LaTeXStrings = "~1.3.0"
+NLsolve = "~4.5.1"
 Optim = "~1.7.0"
 Plots = "~1.29.0"
 PlutoUI = "~0.7.39"
@@ -426,6 +465,12 @@ deps = ["IrrationalConstants", "LogExpFunctions", "NaNMath", "Random", "SpecialF
 git-tree-sha1 = "28d605d9a0ac17118fe2c5e9ce0fbb76c3ceb120"
 uuid = "b552c78f-8df3-52c6-915a-8e097449b14b"
 version = "1.11.0"
+
+[[Distances]]
+deps = ["LinearAlgebra", "SparseArrays", "Statistics", "StatsAPI"]
+git-tree-sha1 = "3258d0659f812acde79e8a74b11f17ac06d0ca04"
+uuid = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
+version = "0.10.7"
 
 [[Distributed]]
 deps = ["Random", "Serialization", "Sockets"]
@@ -823,6 +868,12 @@ deps = ["DiffResults", "Distributed", "FiniteDiff", "ForwardDiff"]
 git-tree-sha1 = "50310f934e55e5ca3912fb941dec199b49ca9b68"
 uuid = "d41bc354-129a-5804-8e4c-c37616107c6c"
 version = "7.8.2"
+
+[[NLsolve]]
+deps = ["Distances", "LineSearches", "LinearAlgebra", "NLSolversBase", "Printf", "Reexport"]
+git-tree-sha1 = "019f12e9a1a7880459d0173c182e6a99365d7ac1"
+uuid = "2774e3e8-f4cf-5e23-947b-6d7e65073b56"
+version = "4.5.1"
 
 [[NaNMath]]
 git-tree-sha1 = "b086b7ea07f8e38cf122f5016af580881ac914fe"
@@ -1393,18 +1444,23 @@ version = "0.9.1+5"
 # ╠═963896ed-ae03-4b68-bec2-6b9917093454
 # ╟─c87845ef-2a91-41c8-933a-b6e139739927
 # ╠═edf0c6f6-db46-11ec-19d0-f3a901cbdf5e
-# ╠═7eec1e2e-f469-4437-8c27-1e86bccc3d9e
+# ╟─7eec1e2e-f469-4437-8c27-1e86bccc3d9e
 # ╠═551ba67b-5317-4dd0-9b9d-126ca8c13eb0
+# ╠═7bb7dd41-0768-476f-b815-536607ecbdf0
 # ╟─b67eb0ba-6db7-40ba-a0b2-21151c4eb748
 # ╟─49e1c995-831b-472e-b68c-b56a21d1f308
-# ╠═e518339b-9781-4f37-895f-19343315c79c
+# ╟─e518339b-9781-4f37-895f-19343315c79c
 # ╟─5228005b-19f6-4cab-bd31-31aedb4fcf6c
-# ╟─7d5ceec9-9496-4a5b-aa8a-4250a30df02f
+# ╠═7d5ceec9-9496-4a5b-aa8a-4250a30df02f
+# ╠═82d52cc7-c6d4-45e5-8eeb-e81fda6317f8
+# ╟─96d2b336-da08-4d69-aec7-1f40cb3f4b3c
+# ╠═dc3b28b0-def2-4c24-8104-51b9081d51e6
+# ╟─40332269-7e8d-475c-879d-ffeaace264b5
+# ╠═0cdd8f03-235b-4236-ae73-4e55373cf838
 # ╟─dc3fb1d5-ee54-4cdf-a0ef-ac65c68a1846
 # ╟─98904f31-4676-40a1-ab7c-da9c0b6911e0
-# ╠═dc3b28b0-def2-4c24-8104-51b9081d51e6
 # ╟─4e34b762-f359-4d5f-b21a-2fd6246b2315
-# ╟─5fe06523-d985-4586-862a-315c2696fada
+# ╟─adc389bc-d15b-432f-9213-7ea8222428e0
 # ╟─ae7a7c1d-c3b6-4dc8-aeab-ef2af11ac25d
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

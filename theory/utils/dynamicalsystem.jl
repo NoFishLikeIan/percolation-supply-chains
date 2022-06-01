@@ -14,7 +14,7 @@ end
 
 function fixedpoints(model, x₀)
     function f!(F, x)
-        F .= G̃([f, ρ], model.m, model.r) - x
+        F .= G̃(x, model.m, model.r) - x
     end
     
     sol = mcpsolve(
