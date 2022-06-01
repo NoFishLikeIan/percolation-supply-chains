@@ -91,8 +91,8 @@
     \end{equation} and the rising factorial of $x$ to $s$ be \begin{equation}
         x^{(s)} \coloneqq \begin{cases} x(x + 1)(x + 2)\ldots(x + (s - 1)) & \text{if } s \in \mathbb{N}_0 \\
             \Gamma(1 + x + s) \Big/ \Gamma(1 + x)& \text{if } s \in \Re^{+}
-             \end{cases}
-    \end{equation}. This notation is a bit contentious.
+             \end{cases}.
+    \end{equation} This notation is a bit contentious since the Pochhammer symbol $(x)_s$ has been used to denote rising factorials, falling factorials, and binomial coefficients. The notation I chose is used in the Combinatorics and Graph Theory literature (\cite{harris_combinatorics_2008}).
 \end{enumerate}
 
 \section{Problem statement}
@@ -137,7 +137,7 @@ Hereafter I will fit, by moments matching,
     p(s, F) \ \dot{\sim} \ \Beta(f', \rho').
 \end{equation}
 
-Motivated by simulated results (see \ref{fig:pfit}), I believe this to be not an approximation but the true distribution of $p(s, F)$. 
+Motivated by simulated results (see Figure \ref{fig:pfit}), I believe this to be not an approximation but the true distribution of $p(s, F)$.\footnote{Currently working on the proof using the moment generating function of $F$.}
 
 \begin{figure}[H]
     \centering
@@ -154,7 +154,7 @@ We parametrised $p(s, F)$ with $(f', \rho')$, which have the same interpretation
 
 Again, if $\rho' = 0$, then $p(s, F) = f'$.
 
-\section{Mapping between $F$ and $F'$}
+\section[Mapping]{Mapping between $F$ and $F'$}
 
 Given that the probability of failure in the next layer is $p(s, F) \sim \Beta(f', \rho')$, the distribution of functioning firms 
 
@@ -172,7 +172,7 @@ This formulation allows as to write, through $p(s, F)$, the mapping between the 
     \end{pmatrix} =: G(f, \rho, s).
 \end{equation}
 
-\subsection{The mapping of the mean, $G_f$}
+\subsection[Mean mapping]{Mean mapping, $G_f$}
 
 We can derive analytically the mapping $f' = G_f(f, \rho, s)$. In particular
 
@@ -216,7 +216,7 @@ where $B(x, y)$ is the beta function.
 
 Again, by rewriting
 
-\begin{equation}
+\begin{equation} \label{eq:limit_Gf}
     G_f(f, \rho, s) = 1 - \frac{\Big( (1-f) \frac{1 - \rho}{\rho} \Big)_s}{\Big( \frac{1 - \rho}{\rho} \Big)_s} = 1 - \frac{(1 - f)^s \left(\frac{1 - \rho}{\rho}\right)^s + o\left(\left(\frac{1 - \rho}{\rho}\right)^{s - 1} \right) }{\left(\frac{1 - \rho}{\rho}\right)^s + o\left(\left(\frac{1 - \rho}{\rho}\right)^{s - 1} \right)}
 \end{equation}
 
@@ -228,7 +228,7 @@ we can see that
 
 which is the limit case we expect if there is no correlation among suppliers and, hence, $F$ follows a binomial distribution.
 
-\subsection{The mapping of overdispersion, $G_\rho$}
+\subsection[Overdispersion mapping]{Overdispersion mapping, $G_\rho$}
 
 Unfortunately, we are not as lucky with the mapping for $\rho' = G_{\rho}(f, \rho, s)$. The first link we can make is using the definition of $\V[p(s, F)]$ to see that
 
@@ -250,59 +250,6 @@ Using the definition of $p$ we can write
         &= 1 - 2(1 - f') + \E\left[ \left(\frac{(m - F)_s}{(m)_s}  \right)^2 \right].
     \end{split}
 \end{equation}
-
-\iffalse
-\subsubsection{Taylor series approach}
-
-Let 
-
-\begin{equation}
-    \varphi_s(v) \coloneqq (m - v)^2_s.
-\end{equation}
-
-such that
-
-\begin{equation}
-    \E\big[ p(s, F)^2 \big] = 1 - 2(1 - f') + \E\left[ \frac{\varphi_s(F)}{\varphi_s(0)} \right].
-\end{equation}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\linewidth]{../plots/phiplot.pdf} 
-    \caption{A plot of $\varphi_s(v) / \varphi_s(0) = (m-v)^2_s / (m)^2_s$}
-    \label{fig:phi}    
-\end{figure}
-
-Letting
-
-\begin{equation}
-    \Delta \psi^{(n)}_s(v) = \psi^{(n)}(1 + m - v) - \psi^{(n)}(1 + m - v - s)
-\end{equation}
-
-and noting that
-
-\begin{equation}
-    \frac{\text{d}}{\text{d}v} \Delta \psi^{(n)}_s(v) = -\Delta \psi^{(n + 1)}_s(v)
-\end{equation}
-
-we can write a recursive relationship for the derivatives of $\varphi_s(v)$
-
-\begin{equation}
-    \varphi_s^{(n)}(v) = (-1)^n a_{n}(v) \ \varphi_s(v)
-\end{equation}
-
-where
-
-\begin{equation}
-    a_{n+1} = \frac{\text{d}a_n}{\text{d}v} + 2 \Delta \psi^{(n)}_s \ a_n \text{ with } a_{0} = 1.
-\end{equation}  
-
-A Taylor expansion of $\varphi_s$ around $0$ allows us to write
-
-\begin{equation}
-    \E\left[\frac{\varphi_s(F)}{\varphi_s(0)}\right] = 1 + \sum^{\infty}_{n = 0} (-1)^n a_{n}(0) \frac{\E[F^n]}{n!}
-\end{equation}
-\fi
 
 \subsubsection[Solution for m sufficiently large]{Solution for $m$ sufficiently large}
 
@@ -343,25 +290,55 @@ where $R = \lim_{m \rightarrow \infty} R_m$. We can now look at the distribution
 
 \begin{proof}
 
-    The idea of the proof is to show that the moment generating function of $R_m$ converges pointwise to that of a beta distribution. This implies that the sequence $R_m$ converges in distribution to a beta, since the latter is determined by its moments (Theorem 30.2 in \citein{billingsley_probability_1995}). The moment generating function of $R_m$ can be written in terms of that of $F$ (\ref{eq:mgf_betabinomial}) as 
+    The idea of the proof is to show that the moment generating function of $R_m$ converges pointwise to that of a beta distribution. This implies that the sequence $R_m$ converges in distribution to a beta, since the latter is determined by its moments (Theorem 30.2 in \cite{billingsley_probability_1995}). The moment generating function of $R_m$ can be written in terms of that of $F$ (\ref{eq:mgf_betabinomial}) as 
 
-    \begin{equation}
+    \begin{equation} \label{eq:mgf_rm}
         \begin{split}
             M_{R_m}(t) &= \E\left[e^{t R_m}\right] \\ 
             &= \E\left[e^{(t / m) F}\right] = M_F(t / m) \\
-            &= \prescript{}{2}{F}_1(-m, \alpha, \alpha + \beta; 1 - e^{t / m}) \\
-            &= \sum^m_{n = 0} (-1)^n \binom{m}{n} \frac{B(\alpha + n, \beta)}{B(\alpha, \beta)} (1 - e^{t / m}).
+            &= \prescript{}{2}{F}_1(-m, \alpha, \alpha + \beta; 1 - e^{t / m}). 
         \end{split}
     \end{equation}
 
     We seek to prove that this converges pointwise to 
 
     \begin{equation}
-        M_R(t) = \prescript{}{1}{F}_1(\alpha, \alpha + \beta, t)= \sum^{\infty}_{n = 0} \frac{B(\alpha + n, \beta)}{B(\alpha, \beta)} \frac{t^n}{n!}.
+        M_R(t) = \prescript{}{1}{F}_1(\alpha, \alpha + \beta, t).
+    \end{equation}
+
+    Consider the Taylor series of 
+
+    \begin{equation}
+        1 - e^{t / m} = -\frac{t}{m} - \sum^{\infty}_{k = 2} \frac{t^k}{m^k \ k!}.
+    \end{equation}
+
+    This and the fact that $\prescript{}{2}{F}_1$ is continuous in $\abs{t} < m$, allows us to write
+
+    \begin{equation}
+        \begin{split}
+            \lim_{m \rightarrow \infty} M_{R_m}(t) &= \lim_{m \rightarrow \infty} \prescript{}{2}{F}_1(-m, \alpha, \alpha + \beta; 1 - e^{t / m})\\
+            &= \lim_{m \rightarrow \infty} \prescript{}{2}{F}_1(-m, \alpha, \alpha + \beta; - t/ m) \\
+            &= \lim_{m \rightarrow \infty}\sum^{\infty}_{n=0} \frac{\alpha^{(n)}}{(\alpha + \beta)^{(n)}} t^n \  \frac{(-m)^{(n)}}{(-m)^n}.
+        \end{split}
     \end{equation}
 
     
-    \textbf{To do...}\footnote{Unclear how to continue but a useful fact could be $\prescript{}{1}{F}_1(a; c; z) = \lim_{b \rightarrow \infty} \prescript{}{2}{F}_1(a, b; c; z / b)$}
+    Consider the last term in the summand 
+
+    \begin{equation}
+        \begin{split}
+            \frac{(-m)^{(n)}}{(-m)^n} &= \frac{(-m)(-m + 1)(-m + 2)\ldots(-m + n - 1)}{(-1)^n m^n} \\
+            &= \frac{(-1)^n m^n + o((-m)^{m - 1})}{(-1)^n m^n} \xrightarrow{m\rightarrow \infty} 1.
+        \end{split}
+    \end{equation}
+
+    Hence 
+
+    \begin{equation}
+        \lim_{m \rightarrow \infty} M_{R_m}(t) = \lim_{m \rightarrow \infty}\sum^{\infty}_{n=0} \frac{\alpha^{(n)}}{(\alpha + \beta)^{(n)}} t^n \  \frac{(-m)^{(n)}}{(-m)^n} = \sum^{\infty}_{n=0} \frac{\alpha^{(n)}}{(\alpha + \beta)^{(n)}} t^n = M_R(t)
+    \end{equation}
+
+    such that $R_m \xrightarrow{d} R$.
 
 \end{proof}
 
@@ -382,15 +359,26 @@ hence, for large $m$,
     \end{split}
 \end{equation}
 
-where we have used $\frac{\text{d}}{\text{d}t} \prescript{}{1}{F}_1(a; b; t) = \frac{a}{b} \prescript{}{1}{F}_1(a + 1; b + 1; t)$ and $\prescript{}{1}{F}_1(\cdot, \cdot, 0) = 1$.
-
-Hence, for large $m$, we can write our mapping $G_{\rho}$, letting $f' = G_f(f, \rho, s)$
+where we have used $\frac{\text{d}}{\text{d}t} \prescript{}{1}{F}_1(a; b; t) = \frac{a}{b} \prescript{}{1}{F}_1(a + 1; b + 1; t)$ and $\prescript{}{1}{F}_1(\cdot, \cdot, 0) = 1$. This implies that, for large $m$ and letting $f' = G_f(f, \rho, s)$, we can write our mapping $G_{\rho}$
 
 
 \begin{equation}
     G_{\rho}(f, \rho, s) = \frac{ B\left(\frac{1 - \rho}{\rho}, 2s \right) \Big/ B\left((1 - f) \frac{1 - \rho}{\rho}, 2s \right)}{f' (1 - f')} - \frac{1 - f'}{f'}
 \end{equation}
 
+As a sanity check, we can do the same exercises as above (\ref{eq:limit_Gf}) and compute the limit as $\rho \rightarrow 0$. We know already that $\lim_{\rho \rightarrow 0} f' = 1 - (1 - f)^s$. We are left to compute
+
+\begin{equation}
+    \lim_{\rho \rightarrow 0} \frac{B\left(\frac{1 - \rho}{\rho}, 2s \right)}{B\left((1 - f) \frac{1 - \rho}{\rho}, 2s \right)} = \lim_{\rho \rightarrow 0} \frac{\left((1-f)\frac{1 - \rho}{\rho} + 2s\right)_{2s}}{\left(\frac{1 - \rho}{\rho} + 2s\right)_{2s}} = (1 - f)^{2s}.
+\end{equation}
+
+Then, as expected
+
+\begin{equation}
+    \lim_{\rho \rightarrow 0} G_{\rho}(f, \rho, s) = \frac{(1-f)^{2s}}{(1 - f)^s \big(1 - (1 - f)^s\big)} - \frac{(1 - f)^s}{\big(1 - (1 - f)^s\big)} = 0.
+\end{equation}
+
+So, if there is no correlation among suppliers and $F \sim \Bin$, there will be no correlation downstream and $F' \sim \Bin$.
 
 \begin{figure}[H]
     \centering
@@ -409,6 +397,8 @@ Hence, for large $m$, we can write our mapping $G_{\rho}$, letting $f' = G_f(f, 
     \caption{Contour plot of $G_\rho - \rho$}
     \label{fig:grho}
   \end{figure}
+
+\iffalse
 
 \subsection[Derivatives of map]{Derivatives of $G$}
 
@@ -429,6 +419,8 @@ Hence, for large $m$, we can write our mapping $G_{\rho}$, letting $f' = G_f(f, 
             \Bigg]
     \end{split}
 \end{equation}
+
+\fi
 
 % --- Bibliography
 \newpage

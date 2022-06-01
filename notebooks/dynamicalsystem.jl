@@ -164,7 +164,7 @@ md"
 ## Social $G$
 
 ``r`` $(@bind r Slider(
-	0.01:0.01:0.6, show_value = true, default = 0.01
+	0.01:0.01:0.6, show_value = true, default = 0.08
 ))
 "
 
@@ -1451,8 +1451,8 @@ version = "0.9.1+5"
 # ╟─49e1c995-831b-472e-b68c-b56a21d1f308
 # ╟─e518339b-9781-4f37-895f-19343315c79c
 # ╟─5228005b-19f6-4cab-bd31-31aedb4fcf6c
-# ╠═7d5ceec9-9496-4a5b-aa8a-4250a30df02f
-# ╠═82d52cc7-c6d4-45e5-8eeb-e81fda6317f8
+# ╟─7d5ceec9-9496-4a5b-aa8a-4250a30df02f
+# ╟─82d52cc7-c6d4-45e5-8eeb-e81fda6317f8
 # ╟─96d2b336-da08-4d69-aec7-1f40cb3f4b3c
 # ╠═dc3b28b0-def2-4c24-8104-51b9081d51e6
 # ╟─40332269-7e8d-475c-879d-ffeaace264b5
