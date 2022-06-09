@@ -75,12 +75,13 @@
 \section{The map}
 
 \begin{equation}
-    G_{\rho}(f, \rho, s) = \frac{ B\left(\frac{1 - \rho}{\rho}, 2s \right) \Big/ B\left((1 - f) \frac{1 - \rho}{\rho}, 2s \right)}{f' (1 - f')} - \frac{1 - f'}{f'}
+    G_f(f, \rho, s) = 1 - \frac{B\Big( (1 - f) \frac{1 - \rho}{\rho} + s, f \frac{1 - \rho}{\rho} \Big)}{B\Big( (1 - f) \frac{1 - \rho}{\rho}, f \frac{1 - \rho}{\rho} \Big)}
 \end{equation}
 
 \begin{equation}
-    G_f(f, \rho, s) = 1 - \frac{B\Big( (1 - f) \frac{1 - \rho}{\rho} + s, f \frac{1 - \rho}{\rho} \Big)}{B\Big( (1 - f) \frac{1 - \rho}{\rho}, f \frac{1 - \rho}{\rho} \Big)}
+    G_{\rho}(f, \rho, s) = \frac{ B\left(\frac{1 - \rho}{\rho}, 2s \right) \Big/ B\left((1 - f) \frac{1 - \rho}{\rho}, 2s \right)}{G_f(f, \rho, s) \ (1 - G_f(f, \rho, s))} - \frac{1 - G_f(f, \rho, s)}{G_f(f, \rho, s)}
 \end{equation}
+
 
 
 \section{Planner problem}
@@ -102,5 +103,7 @@ We can solve this by backward induction. In particular, in layer $K$ the first o
 \begin{equation}
     s_K: \frac{\partial G_f}{\partial s}\Big(f_{K-1}, \rho_{K-1}; s_{K}(f_{K-1}, \rho_{K-1})\Big) = \frac{\kappa}{\pi}.
 \end{equation}
+
+\subsection{Limit of Planner Problem}
 
 \end{document}
