@@ -1,4 +1,4 @@
-function plannerequilibrium(model::VerticalModel; L = 101)
+function plannerequilibrium(model::VerticalModel; L = 101, verbose = false)
     m, r = model.m, model.r
     fspace = range(0.01, 0.99; length = L)
     ρspace = copy(fspace)
@@ -16,9 +16,9 @@ function plannerequilibrium(model::VerticalModel; L = 101)
         sₖ[i, j, end] = s
         Vₖ[i, j, end] = model.m * ( inv(model.r) * f′ - s )
     end
-
+    
     for k ∈ reverse(1:(K-1))
-        print("Layer $k...\r")
+        verbose && print("Layer $k...\r")
         
         for i ∈ 1:L, j ∈ 1:L
 

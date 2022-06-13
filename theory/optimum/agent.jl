@@ -16,19 +16,19 @@ Agent's optimal s given the f and ρ in previous layer.
 """
 function agentoptimum(f, ρ; m, r)
 
-    bs = [0.01, m]
+    brackets = [0.01, m]
 
     foc(s) = ∂ₛG₁([f, ρ]; sₖ = s) - r
 
-    pospay = foc(bs[1]) > 0
-    negmax = foc(bs[2]) < 0
+    pospay = foc(brackets[1]) > 0
+    negmax = foc(brackets[2]) < 0
 
     if !pospay
-        bs[1]
+        brackets[1]
     elseif !negmax
-        bs[2]
+        brackets[2]
     else
-        find_zero(foc, bs)
+        find_zero(foc, brackets)
     end
 end
 

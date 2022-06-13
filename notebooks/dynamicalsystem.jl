@@ -168,12 +168,12 @@ md"
 ## Social $G$
 
 ``r`` $(@bind r Slider(
-	0.01:0.01:0.6, show_value = true, default = 0.08
+	0.01:0.01:0.6, show_value = true, default = 0.15
 ))
 "
 
 # ╔═╡ dc3b28b0-def2-4c24-8104-51b9081d51e6
-model = VerticalModel(m, 0, r, K)
+model = VerticalModel(m, 0.01, r, K)
 
 # ╔═╡ 40332269-7e8d-475c-879d-ffeaace264b5
 # ╠═╡ show_logs = false
@@ -247,8 +247,8 @@ begin
 	)
 
 	
-	plot!(vecfig, unit, ρcurve; c = :darkgreen, label = L"G_\rho = \rho", linewidth = 2)
-	plot!(vecfig, fcurve, unit; c = :darkred, label = L"G_f = f", linewidth = 2)
+	plot!(vecfig, unit, ρcurve; c = :darkgreen, label = L"G_\rho = \rho", linewidth = 2, alpha = 1., linestyle = :dot)
+	plot!(vecfig, fcurve, unit; c = :darkred, label = L"G_f = f", linewidth = 2, alpha = 0.5)
 
 	# Competitive
 	plot!(vecfig, X[1, :, 1], X[1, :, 2], c = :red, label = L"x^{(c)}_k")
@@ -265,17 +265,17 @@ begin
 end
 
 # ╔═╡ 381fc3b1-55b3-48dc-85cd-1a4efab77d97
-md"## Dynamical System"
+md"## Dynamical System agent"
 
 # ╔═╡ 779daf41-9752-4653-b3f0-9fe7de089396
 function G̃!(dx, x, p, t)
 	m, r = p
-	model = VerticalModel(m, 0, r, K)
+	model = VerticalModel(m, 0.01, r, K)
 	dx .= G̃(x, model)
 end
 
-# ╔═╡ 4e2e1fd0-1f9f-4859-be3b-dbe1c783fd8c
-xbasin = ybasin = range(0.01, 0.99; length = 201)
+# ╔═╡ 6b53d35c-350c-4335-9d27-b19cf37c7e5f
+xbasin = ybasin = range(0.01, 0.99; length = 301)
 
 # ╔═╡ fc984dae-fa9f-43e1-abf9-9637563941fe
 md"
@@ -283,7 +283,7 @@ md"
 
 
 ``r`` $(@bind rbasin Slider(
-	0.01:0.01:0.6, show_value = true, default = 0.08
+	0.01:0.01:0.6, show_value = true, default = 0.1
 ))
 
 "
@@ -295,37 +295,50 @@ ds = DiscreteDynamicalSystem(G̃!, [0.99, 0.01], [100, rbasin])
 begin
 	mapper = AttractorsViaRecurrences(ds, (xbasin, ybasin))
 	basins, attractors = basins_of_attraction(mapper; show_progress = false)
+
+	resattractors = Dict([k => v[1][1] for (k, v) in attractors])
 	""
 end
 
 # ╔═╡ d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
 begin
-	pal = palette(:coolwarm, length(attractors))
-	conv = (b -> b > 0 ? 1 : 0).(basins)
-	basinfig = heatmap(
+	pal = palette(:Blues, length(attractors))
+	conv = (b -> b > 0 ? resattractors[b] : 0).(basins)
+	basinfig = contourf(
 		xbasin, ybasin, conv'; 
 		c = pal,
-		legend = nothing, 
-		aspect_ratio = 1, xlims = (0, 1), ylims = (0, 1),
-		dpi = 180,
-		xlabel = L"f", ylabel = L"\rho"
+		aspect_ratio = 1, 
+		xlims = extrema(xbasin), 
+		ylims = extrema(ybasin),
+		dpi = 180, clims = (0, 1),
+		xlabel = L"f", ylabel = L"\rho",
+		title = latexstring("Basin of attraction with \$\\pi / \\kappa =$rbasin\$"),
+		linewidth = 0
 	)
 
 	for (key, coord) ∈ attractors
 		x, y = coord |> first
-			scatter!(basinfig, [x], [y], c = :white, markersize = 2
+			scatter!(basinfig, [x], [y], 
+			c = :red, markersize = 1.5,
+				label = nothing
 		)
 	end
-
+	
 	basinfig
 end
+
+# ╔═╡ e901e035-1c0f-48ad-aae9-aee946027a04
+# savefig(basinfig, joinpath("../docs/plots", "basin_small.png"))
+
+# ╔═╡ 777e44ed-5795-43c9-b90d-4bd1019f46ea
+md"### Bifurcation"
 
 # ╔═╡ 2d0b4c04-f29c-4fbd-ba29-c9b1a312c0f2
 begin
 	dsbif = DiscreteDynamicalSystem(G̃!, [0.9, 0.1], [100, 0.01])
 	n = 2000
 	Ttr = 2000
-	rvalues = range(0.1, 0.5; length = 101)
+	rvalues = range(0.1, 0.5; length = 30)
 	output = orbitdiagram(dsbif, [1, 2], 2, rvalues; n = n, Ttr = Ttr)
 end
 
@@ -347,7 +360,7 @@ begin
 		yguidefontcolor = :darkblue,
 		xlabel = L"\pi / \kappa",
 		legend = false, rightmargin = 20Plots.mm,
-		alpha = 0.5
+		alpha = 0.8, dpi = 180
 	)
 
 	scatter!(
@@ -355,8 +368,139 @@ begin
 		rvalues, ρbars;
 		ylabel = L"\rho",
 		legend = false, c = :darkred,
-		alpha = 0.5,
+		alpha = 0.8,
 		yguidefontcolor = :darkred)
+end
+
+# ╔═╡ e5fa7b5e-7d34-46f3-907d-a5462ea1d91e
+md"## Dynamical System planner"
+
+# ╔═╡ 32a7c59c-6005-4a90-b41e-81609a2f7317
+modelbasin = VerticalModel(m, 0.01, rbasin, K)
+
+# ╔═╡ c3082242-e023-4ba3-8219-f5489027107a
+begin
+	ssocialbasin, _ = plannerequilibrium(modelbasin; L = grid_size)
+
+	itpsbasin = [
+		LinearInterpolation(
+			(itp_space, itp_space), ssocialbasin[:, :, k]; 
+			extrapolation_bc = Line()
+		) for k ∈ 1:size(ssocialbasin, 3)
+	]
+	
+	sₛbasin(f, ρ, k::Int64) = max(0.01, itpsbasin[min(k + 1, grid_size)](f, ρ))
+end
+
+# ╔═╡ 88be829b-d7e0-40e0-85a1-27d7e1cdbcda
+function G̃ₛ!(dx, x, p, k)		
+	dx .= G(x; sₖ = sₛbasin(x[1], x[2], k))
+end
+
+# ╔═╡ 77823dc2-14bc-48cf-9a6a-57f802059ab9
+# ╠═╡ show_logs = false
+dsocial = DiscreteDynamicalSystem(G̃ₛ!, [0.9, 0.1], [m, rbasin])
+
+# ╔═╡ 46a5b238-5206-4e59-99eb-16144b463c4e
+begin
+	N, M = length(xbasin), length(ybasin)
+	
+	basinsocial = Matrix{Int64}(undef, N, M)
+	attractorsocial = []
+	
+	for (i, x) ∈ enumerate(xbasin), (j, y) ∈ enumerate(ybasin)
+		
+		dsiter = DiscreteDynamicalSystem(G̃ₛ!, [x, y], [m, rbasin])
+		last = trajectory(dsiter, grid_size)[end]
+
+		if isnan(last[1])
+			basinsocial[i, j] = -1
+
+		else
+			idx = findfirst(t -> t == last, attractorsocial)
+	
+			if isnothing(idx)
+				push!(attractorsocial, last)
+				idx = length(attractorsocial)
+			end
+			
+			basinsocial[i, j] = idx
+		end
+	end
+
+	resattractorsocial = first.(attractorsocial)
+	
+	""
+end
+
+# ╔═╡ 107be6c2-c507-48d0-ba75-a13240668f3c
+begin
+	basindifference = Matrix{Float64}(undef, size(basins))
+
+	for i in 1:length(xbasin), j in 1:length(ybasin)
+		agidx = basins[i, j]
+		ag = get(resattractors, agidx, 0)
+		
+		sidx = basinsocial[i, j]
+		s = get(resattractorsocial, sidx, 0)
+
+		
+		basindifference[i, j] = s - ag
+	end
+end
+
+# ╔═╡ 2b0f73a7-0de3-4a92-b034-18831cb2ad23
+let
+	diffbasinfig = contourf(
+		xbasin, ybasin, basindifference'; 
+		aspect_ratio = 1, 
+		xlims = extrema(xbasin), 
+		ylims = extrema(ybasin),
+		dpi = 180, clims = (-1, 1),
+		c = :coolwarm,
+		xlabel = L"f", ylabel = L"\rho",
+		title = latexstring("Gain in resilience from social planner \$\\pi / \\kappa =$rbasin\$"),
+		linewidth = 0
+	)
+
+	diffbasinfig
+end
+
+# ╔═╡ a8e6536e-35b1-448f-990c-c8dad3d82c1c
+# savefig(basinfig, joinpath("../docs/plots", "basin_gain_small.png"))
+
+# ╔═╡ 475f959a-8467-4ee1-913f-8aa286d6fb14
+md"### Planner bifurcation"
+
+# ╔═╡ 11dba15a-f8ea-46fd-8f71-2012aee09084
+begin
+	dsbifsoc = DiscreteDynamicalSystem(G̃ₛ!, [0.9, 0.01], [100, 0.01])
+
+	outputsoc = orbitdiagram(dsbifsoc, [1, 2], 2, rvalues; n = n, Ttr = Ttr)
+end
+
+# ╔═╡ a7156881-2692-4f82-a857-ea9472b43241
+begin
+	fsocbars = []
+
+	for out ∈ outputsoc
+		push!(fsocbars, out[1][1])
+	end
+
+	diffbiffig = scatter(
+		rvalues, fbars;
+		c = :darkblue,
+		ylabel = L"f",
+		xlabel = L"\pi / \kappa",
+		legend = false, rightmargin = 20Plots.mm,
+		alpha = 0.8, dpi = 180
+	)
+
+	scatter!(
+		diffbiffig, 
+		rvalues, fsocbars;
+		c = :darkred,
+		alpha = 0.8)
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -2044,29 +2188,43 @@ version = "0.9.1+5"
 # ╠═551ba67b-5317-4dd0-9b9d-126ca8c13eb0
 # ╠═7bb7dd41-0768-476f-b815-536607ecbdf0
 # ╟─b67eb0ba-6db7-40ba-a0b2-21151c4eb748
-# ╠═49e1c995-831b-472e-b68c-b56a21d1f308
+# ╟─49e1c995-831b-472e-b68c-b56a21d1f308
 # ╟─e518339b-9781-4f37-895f-19343315c79c
 # ╟─5228005b-19f6-4cab-bd31-31aedb4fcf6c
 # ╟─7d5ceec9-9496-4a5b-aa8a-4250a30df02f
 # ╟─82d52cc7-c6d4-45e5-8eeb-e81fda6317f8
 # ╟─96d2b336-da08-4d69-aec7-1f40cb3f4b3c
 # ╠═dc3b28b0-def2-4c24-8104-51b9081d51e6
-# ╟─40332269-7e8d-475c-879d-ffeaace264b5
+# ╠═40332269-7e8d-475c-879d-ffeaace264b5
 # ╠═0cdd8f03-235b-4236-ae73-4e55373cf838
 # ╟─dc3fb1d5-ee54-4cdf-a0ef-ac65c68a1846
 # ╟─98904f31-4676-40a1-ab7c-da9c0b6911e0
 # ╟─4e34b762-f359-4d5f-b21a-2fd6246b2315
-# ╟─adc389bc-d15b-432f-9213-7ea8222428e0
-# ╟─ae7a7c1d-c3b6-4dc8-aeab-ef2af11ac25d
-# ╟─381fc3b1-55b3-48dc-85cd-1a4efab77d97
+# ╠═adc389bc-d15b-432f-9213-7ea8222428e0
+# ╠═ae7a7c1d-c3b6-4dc8-aeab-ef2af11ac25d
+# ╠═381fc3b1-55b3-48dc-85cd-1a4efab77d97
 # ╠═9f11ee9e-e89f-41c4-8ef4-d91c7d4e8db3
 # ╠═779daf41-9752-4653-b3f0-9fe7de089396
-# ╠═4e2e1fd0-1f9f-4859-be3b-dbe1c783fd8c
-# ╟─fc984dae-fa9f-43e1-abf9-9637563941fe
-# ╟─25c861f8-9103-4e4f-a76f-b1816d842e31
+# ╠═6b53d35c-350c-4335-9d27-b19cf37c7e5f
+# ╠═fc984dae-fa9f-43e1-abf9-9637563941fe
+# ╠═25c861f8-9103-4e4f-a76f-b1816d842e31
 # ╟─a20c0d6e-0e25-40d5-90bf-e156c4721b85
 # ╟─d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
+# ╠═e901e035-1c0f-48ad-aae9-aee946027a04
+# ╟─777e44ed-5795-43c9-b90d-4bd1019f46ea
 # ╟─2d0b4c04-f29c-4fbd-ba29-c9b1a312c0f2
-# ╠═7cab141b-40cd-4906-91f2-9e33c19b9985
+# ╟─7cab141b-40cd-4906-91f2-9e33c19b9985
+# ╟─e5fa7b5e-7d34-46f3-907d-a5462ea1d91e
+# ╠═32a7c59c-6005-4a90-b41e-81609a2f7317
+# ╟─c3082242-e023-4ba3-8219-f5489027107a
+# ╠═88be829b-d7e0-40e0-85a1-27d7e1cdbcda
+# ╠═77823dc2-14bc-48cf-9a6a-57f802059ab9
+# ╟─46a5b238-5206-4e59-99eb-16144b463c4e
+# ╟─107be6c2-c507-48d0-ba75-a13240668f3c
+# ╟─2b0f73a7-0de3-4a92-b034-18831cb2ad23
+# ╠═a8e6536e-35b1-448f-990c-c8dad3d82c1c
+# ╟─475f959a-8467-4ee1-913f-8aa286d6fb14
+# ╠═11dba15a-f8ea-46fd-8f71-2012aee09084
+# ╟─a7156881-2692-4f82-a857-ea9472b43241
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
