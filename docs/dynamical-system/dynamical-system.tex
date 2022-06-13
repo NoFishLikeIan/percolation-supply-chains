@@ -1,0 +1,114 @@
+\documentclass[american, abstract=on]{scrartcl}
+
+    \newcommand{\lang}{en}
+
+    \usepackage{babel}
+    \usepackage[utf8]{inputenc}
+
+    \usepackage{csquotes}
+
+    \usepackage{amsmath, amssymb, mathtools, bbm}
+    \usepackage{amsthm}
+    \usepackage{xcolor}
+    \usepackage{xcolor-solarized}
+    \usepackage{bm}
+
+    \usepackage{graphicx}
+    \usepackage{wrapfig}
+    \usepackage{relsize}
+    \usepackage{makecell}
+    \usepackage{booktabs}
+    \usepackage[font=footnotesize,labelfont=bf]{caption}
+    \usepackage{subcaption}
+    \usepackage{float}
+    \usepackage{multirow} 
+    \usepackage{hyperref}
+    
+    % Formatting
+    \setlength{\parindent}{0em}
+    \setlength{\parskip}{0.5em}
+    \setlength{\fboxsep}{1em}
+    \newcommand\headercell[1]{\smash[b]{\begin{tabular}[t]{@{}c@{}} #1 \end{tabular}}}
+
+    % Theorems
+    \theoremstyle{plain}
+    \newtheorem{claim}{Claim}
+
+    % Math commands
+
+    \newcommand{\diff}{\text{d}}
+    \renewcommand{\Re}{\mathbb{R}}
+    \newcommand{\C}{\mathcal{C}}
+    \newcommand{\F}{\mathcal{F}}
+    \newcommand{\X}{\mathcal{X}}
+    \newcommand{\G}{\mathcal{G}}
+    \newcommand{\I}{\mathcal{I}}
+    \newcommand{\N}{\mathcal{N}}
+    \newcommand{\PF}{\mathcal{P} \F}
+
+    \renewcommand{\P}{\mathbb{P}}
+    \newcommand{\E}{\mathbb{E}}
+    \newcommand{\V}{\mathbb{V}}
+
+    \newcommand{\uI}[2][s]{\int^1_0 #2 \ \text{d} #1}
+    \newcommand{\uH}[2][s]{\int^\frac{1}{2}_0 #2 \ \text{d} #1}
+    \newcommand{\uF}[2][s]{\int^1_\frac{1}{2} #2 \ \text{d} #1}
+    \newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+    \newcommand{\abs}[1]{\left\lvert#1\right\rvert}
+
+    \newcommand{\Beta}{\text{Beta}}
+    \newcommand{\Bin}{\text{Bin}}
+
+    \DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+
+    % Bibliography
+
+    \usepackage[bibencoding=utf8, style=apa, backend=biber]{biblatex}
+    \addbibresource{../supply-chain-reallocation.bib}
+    \addbibresource{../math.bib}
+
+    \newcommand{\citein}[1]{\citeauthor{#1} (\citeyear{#1})}
+
+    % Make title page
+
+    \author{Andrea Titton}
+    \title{Dynamical System}
+
+    % \setcounter{section}{-1}  % Start numbering at 0
+    
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+The dynamical system
+
+\section{Agent Problem}
+
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../plots/basin_small.png}
+        \caption{Basin plot}
+        \label{fig:firm:basin}  
+    \end{subfigure}%
+    \begin{subfigure}{.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../plots/biftipping.pdf}     
+        \caption{Bifurcation diagram}
+        \label{fig:firm:bif}
+    \end{subfigure}
+    \caption{Firm Dynamical System}
+    \label{fig:firm}
+\end{figure}
+
+\section{Planner Problem}
+
+% --- Bibliography
+\newpage
+\printbibliography
+
+\end{document}
