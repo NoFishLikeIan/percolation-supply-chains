@@ -41,25 +41,22 @@ unit = range(0, 1; length = 101)
 md"
 ## $\mathbb{E}\big[ (1 - R)^{sL}\big]$
 
-``L`` $(@bind L Slider(1:1:10; show_value = true, default = 2))
+``f`` $(@bind f Slider(
+	0.01:0.01:0.99; show_value = true, default = 0.5
+))
 
-``s`` $(@bind s Slider(
-	0.5:0.01:1.5; show_value = true, default = 1.
+``\rho`` $(@bind ρ Slider(
+	0.01:0.01:0.99; show_value = true, default = 0.5
 ))
 "
 
 # ╔═╡ 3f55074c-eddc-45a2-a872-4dc60d84231a
-begin
-	g(f, ρ, k) = beta((1 - ρ) / ρ, s * k) / beta((1 - f)*(1 - ρ) / ρ, s * k)
-
-	Ep(f, ρ) = 1 + sum(
-		binomial(L, k) * (-1)^k * g(f, ρ, k)
-		for k ∈ 1:L
-	)
-end
+Ep(sL) = 1 - beta((1 - ρ) / ρ, sL) / beta((1 - f)*(1 - ρ) / ρ, sL)
 
 # ╔═╡ 95dd4735-db4b-4dda-922c-861c11715328
-contourf(unit, unit, Ep; c = :Blues, ylabel = L"\rho", xlabel = L"f", aspect_ratio = 1, xlims = (0, 1), ylims = (0, 1))
+begin
+	plot(0.5:0.01:10, Ep)
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1084,9 +1081,9 @@ version = "0.9.1+5"
 # ╠═af1b169b-88d6-41d8-a516-a36834d73a53
 # ╠═2ecb8efa-e7fd-11ec-39ba-7f5617604c78
 # ╠═dcf31428-c0da-426d-98d1-268156822fab
-# ╟─434d2e5b-52d5-461f-9dbb-f5d0376c77f2
+# ╠═434d2e5b-52d5-461f-9dbb-f5d0376c77f2
 # ╟─2c0d87a7-1b88-49f8-b416-69ee6eac36ff
-# ╟─3f55074c-eddc-45a2-a872-4dc60d84231a
-# ╟─95dd4735-db4b-4dda-922c-861c11715328
+# ╠═3f55074c-eddc-45a2-a872-4dc60d84231a
+# ╠═95dd4735-db4b-4dda-922c-861c11715328
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
