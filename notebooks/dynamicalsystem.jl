@@ -98,6 +98,9 @@ m = 100; K = 20
 # ╔═╡ 7bb7dd41-0768-476f-b815-536607ecbdf0
 unit = range(0.01, 0.99; length = 50)
 
+# ╔═╡ da670796-1695-4929-8edc-4e12343c33b2
+?agentoptimum
+
 # ╔═╡ b67eb0ba-6db7-40ba-a0b2-21151c4eb748
 md"
 ## Function $G$
@@ -223,6 +226,29 @@ begin
 	end
 end
 
+# ╔═╡ 91b18abe-f770-4613-9c84-8ebe9041ec98
+begin
+
+	rlow = 0.1
+	rhigh = 0.3
+	clims = (0, 3.5)
+
+	agentsfig = contourf(
+		unit, unit,
+		(f, ρ) -> agentoptimum(f, ρ; m, r = rlow),
+		c = :Blues, linewidth = 0,
+		clims = clims,
+		dpi = 180, 
+		xlabel = L"f", ylabel = L"\rho",
+		title = latexstring("\$\\tilde{s}_a(f, \\rho)\$ with \$\\kappa / \\pi = $rlow\$"),
+	)
+
+	
+	savefig(agentsfig, joinpath("../docs/plots", "agents.png"))
+	
+	agentsfig
+end
+
 # ╔═╡ adc389bc-d15b-432f-9213-7ea8222428e0
 begin
 	nullρ = (x -> NG̃ρ(x, model)).(unit)
@@ -312,7 +338,7 @@ begin
 		ylims = extrema(ybasin),
 		dpi = 180, clims = (0, 1),
 		xlabel = L"f", ylabel = L"\rho",
-		title = latexstring("Basin of attraction with \$\\pi / \\kappa =$rbasin\$"),
+		title = latexstring("Basin of attraction with \$\\kappa / \\pi =$rbasin\$"),
 		linewidth = 0
 	)
 
@@ -338,12 +364,13 @@ begin
 	dsbif = DiscreteDynamicalSystem(G̃!, [0.9, 0.1], [100, 0.01])
 	n = 2000
 	Ttr = 2000
-	rvalues = range(0.1, 0.5; length = 30)
+	rvalues = range(0.01, 0.5; length = 251)
 	output = orbitdiagram(dsbif, [1, 2], 2, rvalues; n = n, Ttr = Ttr)
 end
 
 # ╔═╡ 7cab141b-40cd-4906-91f2-9e33c19b9985
 begin
+
 	fbars = []
 	ρbars = []
 
@@ -353,24 +380,47 @@ begin
 		push!(ρbars, out[1][2])
 	end
 
-	fig = scatter(
-		rvalues, fbars;
+	first_zero = findfirst(f -> isnan(f) || f ≈ 0 , fbars)
+	tipping_point = !isnothing(first_zero) ? first_zero : length(fbars)
+
+	fig = plot(
+		rvalues[1:(tipping_point - 1)], fbars[1:(tipping_point - 1)];
 		c = :darkblue,
 		ylabel = L"f",
 		yguidefontcolor = :darkblue,
-		xlabel = L"\pi / \kappa",
+		xlabel = L"\kappa / \pi",
 		legend = false, rightmargin = 20Plots.mm,
-		alpha = 0.8, dpi = 180
+		alpha = 0.8, dpi = 180,
+		ylims = (-0.01, 1)
 	)
 
-	scatter!(
+	plot!(
+		fig, rvalues[tipping_point:end], fbars[tipping_point:end],
+		c = :darkblue
+	)
+
+	rtip = rvalues[tipping_point] 
+
+	vline!(fig, [rtip], linestyle = :dash)
+	annotate!(
+		fig, rtip + 0.01, 0.3, 
+		text(
+			latexstring("\$\\pi = 3 \\kappa\$"), 
+			:left, 10))
+
+	plot!(
 		twinx(fig), 
-		rvalues, ρbars;
+		rvalues[1:(tipping_point - 1)], ρbars[1:(tipping_point - 1)];
 		ylabel = L"\rho",
 		legend = false, c = :darkred,
 		alpha = 0.8,
 		yguidefontcolor = :darkred)
+
+	
 end
+
+# ╔═╡ b480192d-79ff-494f-b320-fc09436f07d0
+savefig(fig, joinpath("../docs/plots", "biftipping.png"))
 
 # ╔═╡ e5fa7b5e-7d34-46f3-907d-a5462ea1d91e
 md"## Dynamical System planner"
@@ -463,11 +513,10 @@ let
 		linewidth = 0
 	)
 
+	# savefig(diffbasinfig, joinpath("../docs/plots", "basin_gain_small.png"))
+
 	diffbasinfig
 end
-
-# ╔═╡ a8e6536e-35b1-448f-990c-c8dad3d82c1c
-# savefig(basinfig, joinpath("../docs/plots", "basin_gain_small.png"))
 
 # ╔═╡ 475f959a-8467-4ee1-913f-8aa286d6fb14
 md"### Planner bifurcation"
@@ -2187,6 +2236,7 @@ version = "0.9.1+5"
 # ╟─7eec1e2e-f469-4437-8c27-1e86bccc3d9e
 # ╠═551ba67b-5317-4dd0-9b9d-126ca8c13eb0
 # ╠═7bb7dd41-0768-476f-b815-536607ecbdf0
+# ╠═da670796-1695-4929-8edc-4e12343c33b2
 # ╟─b67eb0ba-6db7-40ba-a0b2-21151c4eb748
 # ╟─49e1c995-831b-472e-b68c-b56a21d1f308
 # ╟─e518339b-9781-4f37-895f-19343315c79c
@@ -2200,20 +2250,22 @@ version = "0.9.1+5"
 # ╟─dc3fb1d5-ee54-4cdf-a0ef-ac65c68a1846
 # ╟─98904f31-4676-40a1-ab7c-da9c0b6911e0
 # ╟─4e34b762-f359-4d5f-b21a-2fd6246b2315
+# ╠═91b18abe-f770-4613-9c84-8ebe9041ec98
 # ╠═adc389bc-d15b-432f-9213-7ea8222428e0
 # ╠═ae7a7c1d-c3b6-4dc8-aeab-ef2af11ac25d
 # ╠═381fc3b1-55b3-48dc-85cd-1a4efab77d97
 # ╠═9f11ee9e-e89f-41c4-8ef4-d91c7d4e8db3
 # ╠═779daf41-9752-4653-b3f0-9fe7de089396
 # ╠═6b53d35c-350c-4335-9d27-b19cf37c7e5f
-# ╠═fc984dae-fa9f-43e1-abf9-9637563941fe
+# ╟─fc984dae-fa9f-43e1-abf9-9637563941fe
 # ╠═25c861f8-9103-4e4f-a76f-b1816d842e31
 # ╟─a20c0d6e-0e25-40d5-90bf-e156c4721b85
-# ╟─d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
+# ╠═d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
 # ╠═e901e035-1c0f-48ad-aae9-aee946027a04
 # ╟─777e44ed-5795-43c9-b90d-4bd1019f46ea
-# ╟─2d0b4c04-f29c-4fbd-ba29-c9b1a312c0f2
+# ╠═2d0b4c04-f29c-4fbd-ba29-c9b1a312c0f2
 # ╟─7cab141b-40cd-4906-91f2-9e33c19b9985
+# ╠═b480192d-79ff-494f-b320-fc09436f07d0
 # ╟─e5fa7b5e-7d34-46f3-907d-a5462ea1d91e
 # ╠═32a7c59c-6005-4a90-b41e-81609a2f7317
 # ╟─c3082242-e023-4ba3-8219-f5489027107a
@@ -2221,8 +2273,7 @@ version = "0.9.1+5"
 # ╠═77823dc2-14bc-48cf-9a6a-57f802059ab9
 # ╟─46a5b238-5206-4e59-99eb-16144b463c4e
 # ╟─107be6c2-c507-48d0-ba75-a13240668f3c
-# ╟─2b0f73a7-0de3-4a92-b034-18831cb2ad23
-# ╠═a8e6536e-35b1-448f-990c-c8dad3d82c1c
+# ╠═2b0f73a7-0de3-4a92-b034-18831cb2ad23
 # ╟─475f959a-8467-4ee1-913f-8aa286d6fb14
 # ╠═11dba15a-f8ea-46fd-8f71-2012aee09084
 # ╟─a7156881-2692-4f82-a857-ea9472b43241
