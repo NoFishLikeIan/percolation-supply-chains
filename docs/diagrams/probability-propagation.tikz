@@ -1,0 +1,23 @@
+\begin{tikzpicture}
+	\begin{pgfonlayer}{nodelayer}
+		\node [style=probability] (2) at (6, 4) {$F_{k + 1}$};
+		\node [style=probability] (3) at (-6, 4) {$F_k$};
+		\node [style=probability] (4) at (0, 4) {$p_{k + 1}$};
+		\node [style=distribution] (8) at (-6, -4) {$f_k, \rho_k$};
+		\node [style=distribution] (12) at (3, -4) {$f_{k + 1}, \rho_{k + 1} $};
+		\node [style=empty] (19) at (-3, 4) {$\frac{{m - s_k \choose F_k}}{{m  \choose F_k}}$};
+		\node [style=empty] (21) at (3, 4) {Bin$(p_{k + 1})$};
+		\node [style=empty] (22) at (-1.5, -4) {$G(\cdot, s_k)$};
+		\node [style=dashed] (23) at (0.5, 0) {Beta};
+		\node [style=dashed] (24) at (5.5, 0) {BetaBin};
+		\node [style=dashed] (25) at (-6, 0) {BetaBin};
+	\end{pgfonlayer}
+	\begin{pgfonlayer}{edgelayer}
+		\draw [style=follows] (3) to (8);
+		\draw [style=follows, bend right, looseness=0.75] (4) to (12);
+		\draw [style=implies, in=180, out=0] (3) to (4);
+		\draw [style=implies] (4) to (2);
+		\draw [style=implies] (8) to (12);
+		\draw [style=follows, bend left, looseness=0.75] (2) to (12);
+	\end{pgfonlayer}
+\end{tikzpicture}
