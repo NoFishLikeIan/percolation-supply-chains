@@ -1,0 +1,181 @@
+\documentclass[american, abstract=on]{scrartcl}
+
+    \newcommand{\lang}{en}
+
+    \usepackage{babel}
+    \usepackage[utf8]{inputenc}
+
+    \usepackage{csquotes}
+
+    \usepackage{amsmath, amssymb, mathtools, bbm}
+    \usepackage{amsthm}
+    \usepackage{xcolor}
+    \usepackage{xcolor-solarized}
+    \usepackage{bm}
+
+    \usepackage{graphicx}
+    \usepackage{wrapfig}
+    \usepackage{relsize}
+    \usepackage{makecell}
+    \usepackage{booktabs}
+    \usepackage[font=footnotesize,labelfont=bf]{caption}
+    \usepackage{subcaption}
+    \usepackage{float}
+    \usepackage{multirow} 
+    \usepackage{hyperref}
+
+    \usepackage{graphicx}
+    \usepackage{wrapfig}
+    \usepackage{relsize}
+    \usepackage{makecell}
+    \usepackage{booktabs}
+    \usepackage[font=footnotesize,labelfont=bf]{caption}
+    \usepackage{subcaption}
+    \usepackage{float}
+    \usepackage{multirow} 
+    
+    % Diagrams
+    \usepackage{tikz} 
+    \usepackage{tikzit}
+    \usetikzlibrary{positioning,fit,calc}
+    \input{../diagrams/percolation.tikzstyles}
+    \input{../diagrams/diagram.tikzstyles}
+
+    \newcommand{\inputTikZ}[2]{%  
+      \scalebox{#1}{\input{#2}}  
+    }
+    
+    % Refs
+    \usepackage{hyperref}
+    \usepackage{cleveref}
+    \hypersetup{
+        colorlinks = true, 
+        urlcolor = blue,
+        linkcolor = blue, 
+        citecolor = blue 
+      }      
+
+    \usepackage{subfiles} % Load last
+
+    % Theorems
+    \theoremstyle{plain}
+    \newtheorem{claim}{Claim}
+
+    % Paths
+
+    % Formatting
+    \setlength{\parindent}{0em}
+    \setlength{\parskip}{0.5em}
+    \setlength{\fboxsep}{1em}
+    \newcommand\headercell[1]{\smash[b]{\begin{tabular}[t]{@{}c@{}} #1 \end{tabular}}}
+
+    % Graphs
+
+    % Math commands
+
+    \newcommand{\diff}{\text{d}}
+    \renewcommand{\Re}{\mathbb{R}}
+    \newcommand{\C}{\mathcal{C}}
+    \newcommand{\F}{\mathcal{F}}
+    \newcommand{\X}{\mathcal{X}}
+    \newcommand{\G}{\mathcal{G}}
+    \newcommand{\I}{\mathcal{I}}
+    \newcommand{\N}{\mathcal{N}}
+    \newcommand{\PF}{\mathcal{P} \F}
+
+    \renewcommand{\P}{\mathbb{P}}
+    \newcommand{\E}{\mathbb{E}}
+    \newcommand{\V}{\mathbb{V}}
+
+    \newcommand{\uI}[2][s]{\int^1_0 #2 \ \text{d} #1}
+    \newcommand{\uH}[2][s]{\int^\frac{1}{2}_0 #2 \ \text{d} #1}
+    \newcommand{\uF}[2][s]{\int^1_\frac{1}{2} #2 \ \text{d} #1}
+    \newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+    \newcommand{\abs}[1]{\left\lvert#1\right\rvert}
+
+    \newcommand{\Beta}{\text{Beta}}
+    \newcommand{\Bin}{\text{Bin}}
+
+    % Bibliography
+
+    \usepackage[bibencoding=utf8, style=apa, backend=biber]{biblatex}
+    \addbibresource{../supply-chain-reallocation.bib}
+
+    \newcommand{\citein}[1]{\citeauthor{#1} (\citeyear{#1})}
+
+    \newcommand\notes[1]{\textcolor{teal}{\textbf{#1}}}
+    \newcommand\red[1]{\textcolor{red}{#1}}
+
+    % Make title page
+
+    \author{Andrea Titton}
+    \title{Firms' Sourcing Decisions and\\ Production Network Fragility}
+    
+\begin{document}
+
+\maketitle
+\section{Introduction}
+
+\section{Model}
+
+\subsection{Setup}
+
+Consider a vertical economy producing $K$ goods (Figure \ref{fig:vertical-economy-diagram}). Each firm produces a single good and each good is produced by $m$ firms. The good produced in layer $k$ requires only the good produced in layer $k - 1$ as input. Each firm picks a set of suppliers in the previous layer to source from. Establishing a relation with a supplier has a fixed cost $\kappa$. If no firm, among its suppliers, is able to deliver the input good then the firm is not ``functional'' and hence not able to deliver downstream. I assume that being functional yields an exogenous payoff $\pi$. This assumption will be relaxed later by introducing market structure to endogenise $\pi$, but this will not change the main model mechanics. Finally, we assume that firms know the structure of the economy but do not observe the realised supplier relationship in upstream layers. Firms need to balance the marginal cost of acquiring new suppliers for their inputs and the gain in reduced risk that they obtain by doing so. 
+
+\begin{figure}[H]
+  \centering
+  \inputTikZ{0.5}{../diagrams/model-presentation.tikz} 
+  \caption{$K$-layers vertical economy}
+  \label{fig:vertical-economy-diagram}
+\end{figure}
+
+By symmetry, a firm producing good $k$ will ($\ldots$). Let $F_k$ be the ex-ante distribution of functioning firms producing good $k$. Then, if a firm producing good $k + 1$ were to pick $s_{k + 1}$ suppliers among those producing $k$, the probability that all of its suppliers are not functional is simply
+
+\begin{equation}
+  \binom{m - s_k}{F_k} \Bigg/ \binom{m}{F_k}. 
+\end{equation}
+
+Hence, we can write the probability that a firm in layer $k + 1$ is functional, as a function of $s_k$ and $F_k$ as,
+
+\begin{equation}
+  p_m(s_k, F_k) = 1 - \binom{m - s_k}{F_k} \Bigg/ \binom{m}{F_k}.
+\end{equation}
+
+\begin{claim}
+  If $F_k \sim \Beta\Bin(m, f_k, \rho_k)$ then \begin{equation*}\lim_{m \rightarrow \infty} p_m(s_k, F_k) = p(s_k, F_k) \sim \Beta(f_{k + 1}, \rho_{k + 1})\end{equation*} for some $f_{k + 1}$ and $\rho_{k + 1}$.
+\end{claim}
+
+\begin{proof}
+  \color{red}{TODO!}
+\end{proof}
+
+Hence for large $m$, we can derive an exact mapping between $F_k$ and $F_{k + 1}$, since, if $p(s_k, F_k) \sim \Beta(f_{k + 1}, \rho_{k + 1})$ then
+
+\begin{equation}
+  F_{k+1}\sim \Bin(m, p(s_k, F_k)) \equiv \Beta\Bin(m, f_{k + 1}, \rho_{k + 1}).
+\end{equation}
+
+This exact relationship allows as to derive an analytical mapping, call it $G$ between the parameters of $F_k$ and $F_{k + 1}$. See the diagram (\ref{fig:propagation-of-risk}) for a schematic illustration of the relationship.
+
+\begin{figure}[H]
+  \centering
+  \inputTikZ{1}{../diagrams/probability-propagation.tikz} 
+  \caption{Diagram of the relation between $F_k$, $p_k$, and $F_{k - 1}$, for sufficiently large $m$.}
+  \label{fig:propagation-of-risk}
+\end{figure}
+
+\subsection[Interpretation of the parameters]{Interpretation of $f$ and $\rho$}
+
+The first parameter simply indicates the expected ratio of firms operating in equilibrium, namely
+
+\begin{equation}
+  \E[F_k] = f_k. 
+\end{equation}
+
+The second is an overdispersion parameter and determines how overdispersed $F_k$ is vis-à-vis a Binomial distribution with the same expectation. The excess overdispersion arises from the fact that supplier risk might be correlated.
+
+\newpage
+\nocite{*}
+\printbibliography
+
+\end{document}
