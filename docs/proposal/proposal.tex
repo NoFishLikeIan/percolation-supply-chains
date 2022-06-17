@@ -1,0 +1,637 @@
+\documentclass[american, abstract=on]{scrartcl}
+
+    \newcommand{\lang}{en}
+
+    \usepackage{babel}
+    \usepackage[utf8]{inputenc}
+
+    \usepackage{csquotes}
+
+    \usepackage{amsmath, amssymb, mathtools, bbm}
+    \usepackage{xcolor}
+    \usepackage{xcolor-solarized}
+    \usepackage{bm}
+
+    \usepackage{graphicx}
+    \usepackage{wrapfig}
+    \usepackage{relsize}
+    \usepackage{makecell}
+    \usepackage{booktabs}
+    \usepackage[font=footnotesize,labelfont=bf]{caption}
+    \usepackage{subcaption}
+    \usepackage{float}
+    \usepackage{multirow} 
+    
+    % Diagrams
+    \usepackage{tikz} 
+    \usepackage{tikzit}
+    \usetikzlibrary{positioning,fit,calc}
+    \input{../diagrams/percolation.tikzstyles}
+
+    \newcommand{\inputTikZ}[2]{%  
+      \scalebox{#1}{\input{#2}}  
+    }
+    
+    % Refs
+    \usepackage{hyperref}
+    \usepackage{cleveref}
+    \hypersetup{
+        colorlinks = true, 
+        urlcolor = blue,
+        linkcolor = blue, 
+        citecolor = blue 
+      }      
+
+    \usepackage{subfiles} % Load last
+
+    % Paths
+
+    % Formatting
+    \setlength{\parindent}{0em}
+    \setlength{\parskip}{0.5em}
+    \setlength{\fboxsep}{1em}
+    \newcommand\headercell[1]{\smash[b]{\begin{tabular}[t]{@{}c@{}} #1 \end{tabular}}}
+
+    % Graphs
+
+    % Math commands
+
+    \newcommand{\diff}{\text{d}}
+    \renewcommand{\Re}{\mathbb{R}}
+    \newcommand{\C}{\mathcal{C}}
+    \newcommand{\F}{\mathcal{F}}
+    \newcommand{\X}{\mathcal{X}}
+    \newcommand{\G}{\mathcal{G}}
+    \newcommand{\I}{\mathcal{I}}
+    \newcommand{\N}{\mathcal{N}}
+    \newcommand{\PF}{\mathcal{P} \F}
+
+    \renewcommand{\P}{\mathbb{P}}
+    \newcommand{\E}{\mathbb{E}}
+    \newcommand{\V}{\mathbb{V}}
+
+    \newcommand{\uI}[2][s]{\int^1_0 #2 \ \text{d} #1}
+    \newcommand{\uH}[2][s]{\int^\frac{1}{2}_0 #2 \ \text{d} #1}
+    \newcommand{\uF}[2][s]{\int^1_\frac{1}{2} #2 \ \text{d} #1}
+    \newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+    \newcommand{\abs}[1]{\left\lvert#1\right\rvert}
+
+    % Bibliography
+
+    \usepackage[bibencoding=utf8, style=apa, backend=biber]{biblatex}
+    \addbibresource{../supply-chain-reallocation.bib}
+
+    \newcommand{\citein}[1]{\citeauthor{#1} (\citeyear{#1})}
+
+    \newcommand\notes[1]{\textcolor{teal}{\textbf{#1}}}
+    \newcommand\red[1]{\textcolor{red}{#1}}
+
+    % Make title page
+
+    \author{Andrea Titton}
+    \title{Limited Information and Fragility of Endogenous Production Networks}
+    
+\begin{document}
+
+\maketitle
+\section{Introduction}
+
+It has long been recognized that increasingly complex production networks drive economic growth by allowing the production of more technically sophisticated goods and fostering specialisation (\cite{acemoglu_endogenous_2020}). At the same time, highly complex production networks increase the probability of cascading failures, thereby exacerbating fluctuations caused by idiosyncratic shocks (\cite{baqaee_macroeconomic_2019}). In light of this, endogenising the supplier decisions of firms is central in understanding the opportunities and threats posed by complex production networks. Recent work by \citein{elliott_supply_2022} shows how endogenous production networks can organise towards fragility, when firms operate under uncertainty. This is an important result but it does not account for the fact that firms have limited information about their supplier risk, particularly further up the production network (\cite{pwc_supply_2019}). 
+
+To address this, I develop a model in which firms endogenously pick suppliers in order to minimise the risk of production failures. First, in line with \citein{elliott_supply_2022}, I show that, under complete information, firms do not internalise the downstream cost of their production failures, such that their decisions induce a greater aggregate risk than the social optimum. Second, I show that this result gives rise to fundamental non-linearities in the firms suppliers' decisions which do not ``smooth out'' once aggregated at the production network level. Third, when firms have limited information on the structure of the production network beyond their immediate suppliers, the degree of diversification will depend on their beliefs on the covariance of the risk of the potential suppliers. I show that, if firms learn over time the distribution of the risk by observing their suppliers, their choices bring the production network closer to the social optimum.
+
+\subsection{Example}
+
+To understand these results, consider the two simple production networks illustrated in Figure \ref{fig:example}. Firm \textit{one} produces the yellow good and needs to source the red good from either firm \textit{two}, \textit{three}, or both. In turn, these two firms source the blue good from \textit{four} and \textit{five}. Assume that sourcing from a firm requires a fixed cost. If producers of the red good have different suppliers (\ref{fig:example:idio}), firm \textit{one} can diversify its inputs by supplying from both firm \textit{two} and \textit{three}, since their upstream risk is idiosyncratic. On the other hand, if the producers of the red good have the same supplier, hence covariate risk (\ref{fig:example:cov}), the reduction in risk that firm \textit{one} would obtain by diversifying might be too small to justify paying the necessary fixed cost. If there are firms downstream using the yellow good as input, this choice by \textit{one} would increase the fragility of the production network. ``Under-diversification'' occurs because \textit{one} is not compensated for the reduced risk across the supply chain.
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \inputTikZ{0.5}{../diagrams/example-idio.tikz} 
+    \caption{Idiosyncratic upstream risk}
+    \label{fig:example:idio}  
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \inputTikZ{0.5}{../diagrams/example-covariate.tikz} 
+    \caption{Covariate upstream risk}
+    \label{fig:example:cov}
+  \end{subfigure}
+  \caption{Two production networks. The left with idiosyncratic supplier risk and the right with covariate supplier risk. Firm \textit{one} needs to pick a red good supplier.}
+  \label{fig:example}
+\end{figure}
+
+
+\begin{figure}[H]
+  \centering
+  \inputTikZ{0.5}{../diagrams/model-presentation.tikz} 
+  \caption{Idiosyncratic upstream risk}
+\end{figure}
+
+Now assume that \textit{one} cannot observe the supplier decisions of the red good producers but assigns equal probability to every possible configuration. Given that there are more configurations in which diversification is optimal, diversification under incomplete information and with uniform priors will be closer to the social optimum. This simple example makes it immediately clear that firms beliefs play a crucial role in the endogenous formation of production networks. 
+
+\begin{figure}[H]
+  \centering
+  \inputTikZ{0.5}{../diagrams/example-limited.tikz} 
+  \caption{Same production network as in Figure \ref{fig:example}, but with limited information. Firm $1$ cannot observe edges stemming from opaque nodes.}
+  \label{fig:example:unknown}  
+\end{figure}
+
+\iffalse
+
+
+\section{Literature review}
+
+The model presented here introduces insights from the literature of games on networks and learning on networks to the macroeconomic literature on endogenous production network.
+
+Particularly relevant are the models developed by \citein{dasaratha_bayesian_2018} and \citein{dasaratha_learning_2021} where agents observe neighbours characteristics to learn about a latent network state.   
+
+\notes{TODO: I collected the relevant papers, need to complete this section}
+
+\fi
+
+\section{Model}
+
+\subsection{Notation}
+
+Hereafter, I will use calligraphic letters to denote sets ($\X, \G, \F \ldots$), lower case letters to denote indices ($i, j, k, l, q, v, n \ldots$) or functions ($p, h, f, g \ldots$), and greek letters to denote parameters ($\pi, \mu, \kappa$).
+
+\subsection{Goods and firms}
+
+In the economy there are $n$ firms $\N = \{1, 2, 3, 4, \ldots, n \}$. Each firm produces a single good but multiple firms can produce the same good, such that the goods can be thought of as a partition of $\N$. Namely, let the set of goods be
+
+\begin{equation}
+    \G = \{ \overbrace{\{1, 2, 3, \ldots, m_0\}}^{\G_0},  \overbrace{\{m_0 + 1, m_0 + 2, \ldots, m_1\}}^{\G_1}, \ldots \},
+\end{equation}
+
+then we can write $i \in \G_k$ with $\G_k \in \G$ if $i$ produces $\G_k$. A random subset of the firms, $\F$, is functional and hence able to produce and supply goods. The probability with which a firm is functional depends on an idiosyncratic component and on the choice of its suppliers. Let $\F_k \subseteq \F$ be the set of functional firms producing good $g_k$,
+
+\begin{equation}
+  \F_k \coloneqq \G_k \cap \F
+\end{equation}
+
+\subsection{Supplier Decisions and Production}
+
+Each good $\G_k$ requires a set of inputs to be produced, $\mathcal{I}(\G_k) \subseteq \G$. Before observing the set of functional firms $\F$, each firm $i \in \G_k$ needs to pick, for each input good $\G_j \in \mathcal{I}(\G_k)$, a set of suppliers producing that good, denoted $\X_i(\G_j) \subseteq \G_j$. Establishing a relation with a supplier has a fixed cost $\kappa$. If, among the suppliers of a necessary input, none are functional (that is, there is a $\G_j \in \I(G_k)$ such that $\X_i(\G_j) \cap \F$ is empty), then firm $i$ cannot be functional. Hence the fundamental trade-off that firms face is between paying the cost of diversifying and its added benefit to the probability of being functional. Hereafter, I will say that a firm $i \in G_k$ is ``potentially'' functional if it satisfies $\X_i(\G_j) \cap \F$ is not empty for all $\G_j \in \I(\G_k)$. Given a choice of suppliers $\X_i(\G_j)$ for each firm $i$, we can determine the set of potentially functional firm $\PF$, with $\F \subseteq \PF \subseteq \N$.
+
+Going back to the example production network introduced above, consider the case in which firm \textit{four} is not functional, illustrated in Figure \ref{fig:functional_example}. This immediately implies that firm \textit{two} is not (potentially) functional. Hence, firm \textit{one} could be functional only if it had decided to diversify its input and pay $2\kappa$ fixed costs (\ref{fig:functional_example:yes}) instead of sourcing exclusively from \textit{two} and paying simply $\kappa$ (\ref{fig:functional_example:no}).
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \inputTikZ{0.5}{../diagrams/example-functional.tikz} 
+    \caption{$\X_1(\G_{\text{red}}) = \{2, 3\}$ and $1 \in \PF$}
+    \label{fig:functional_example:yes}  
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \inputTikZ{0.5}{../diagrams/example-notfunctional.tikz} 
+    \caption{$\X_1(\G_{\text{red}}) = \{2\}$ and $1 \notin \PF$}
+    \label{fig:functional_example:no}
+  \end{subfigure}
+  \caption{Production network of Figure (above), where $\square$ represents a non-functional firm.}
+  \label{fig:functional_example}
+\end{figure}
+
+\subsection{Conditional and Unconditional Probability of Being Functional}
+
+As mentioned above, for a firm $i \in \G_k$, there are two sources of uncertainty: an idiosyncratic ``private'' risk and the choice of its suppliers\footnote{Note that $\F \subseteq \PF$ implies that $\P\Big(i \in \F \Big) = \P\Big(i \in \F \ \vert \ i \in \PF \Big) \times \P\Big( i \in \PF \Big)$}. The former is determined by an heterogeneous firm risk measure $\mu_i$, such that  
+
+\begin{equation}
+  \P\Big(i \in \F \ \vert \ i \in \PF \Big) = 1 - \mu_i.
+\end{equation}
+
+The latter depends on the probability of the chosen suppliers being functional, namely
+
+\begin{equation}
+  \P\Big( i \in \PF \Big) = \P\Big( \forall \G_j \in \I(G_k): \ \X_i(G_j) \cap \F \neq \emptyset \Big).
+\end{equation}
+
+\subsection{Payoffs}
+
+Firms production yields an exogenous payoff $\pi_i$\footnote{This can be easily microfounded using an endogenous production network model, as in \citein{acemoglu_endogenous_2020}.} and pay a cost $\kappa$ for establishing relationships with a supplier. Hence, the expected payoff of a firm $i \in \G_k$ is
+
+\begin{equation}
+  \pi_i \ \P\Big( i \in \F \Big) - \kappa \sum_{\G_j \in \I(\G_k)} \abs{\X_i(\G_j)}.
+\end{equation}
+
+\section{Vertical economy} \label{sec:vertical}
+
+Consider a vertical economy with $n = \abs{\G}$ goods. An economy is vertical if 
+
+\begin{equation}
+  \I(\G_{k+1}) = \{ \G_k \} \text{ and } \I(\G_0) = \emptyset,
+\end{equation}
+
+as displayed in Figure \ref{fig:vertical}. Since each good only requires one input, to simplify notation I will write the set of suppliers of firm $i \in \G_k$ as $\X^k_i$ instead of $\X_i(\G_{k - 1})$. Furthermore, let $m_k \coloneqq \abs{\G_k}$ be the number of firms producing good $\G_k$.
+
+\begin{figure}[H]
+  \centering
+  \inputTikZ{0.7}{../diagrams/vertical-economy.tikz} 
+  \caption{One possible realization of a vertical economy with three goods}
+  \label{fig:vertical}
+\end{figure}
+
+
+
+I will assume that all firms producing the same good $i \in \G_k$ have the same production payoff $\pi_k$ and idiosyncratic risk $\mu_k$. This implies that a firm $j \in \G_{k+1}$ is indifferent among its potential suppliers of good $\G_k$. Hence, firm $j$ chooses first the number of suppliers, $s_{k+1}$, and then picks $s_{k+1}$ suppliers with equal probability, such that
+
+\begin{equation}
+  \X^{k+1}_j \in \{ \X \subseteq \G_{k}: \ \abs{\X} = s_{k+1} \}.
+\end{equation}
+
+
+This setup implies that each firm $j \in \G_{k+1}$ faces the same problem, hence, while two firms in $\G_{k+1}$ need not to have the same suppliers, the number of suppliers will be equal. Namely, for all $j, l \in \G_{k+1}$,
+
+\begin{equation}
+  \abs{\X^{k+1}_j} = \abs{\X^{k+1}_l} = s_{k+1}
+\end{equation}
+
+but
+
+\begin{equation}
+  \P\Big(\X^{k+1}_j = \X^{k+1}_l\Big) < 1.
+\end{equation}
+
+\subsection{Functional probability in vertical economy}
+
+Consider the probability that a firm $i \in \G_k$ is functional for a given choice of suppliers, $\X^k_i$ with $\abs{\X^k_i} = s_k$. This probability is equal for all $i \in \G_k$ and depends only on the number of suppliers chosen, $s_k$. Hence, hereafter I will write $p_k(s_k)$ for $\P(i \in \F)$. By the law of total probability and $\F \subseteq \PF$, we can write
+
+\begin{equation}
+  \begin{split}
+    p_k(s_k) &= \P(i \in \F \ \vert \ i \in \PF) \ \P(i \in \PF) \\
+    &= (1 - \mu_k) \ \P\Big( i \in \PF \Big),
+  \end{split}
+\end{equation}
+
+where
+
+\begin{equation} \label{eq:general_vertical_prob}
+  \begin{split}
+    \P\Big( i \in \PF \Big) &= \P\Big( \X^k_i \cap \F  \neq \emptyset \Big) \\
+    &= \P\Big( \exists j \in \X^k_i: \ j \in \F \Big) \\ 
+    &= 1 - \P\Big(\forall j \in \X^k_i: \ j \notin \F \Big).
+  \end{split}
+\end{equation}
+
+The firm's trade-off is apparent already in this formulation of $p_k$: the more suppliers the firm sources from, the less likely it is for all of its suppliers to not be functional, the higher the probability of obtaining $\pi_k$. 
+
+A complication arises in equation (\ref{eq:general_vertical_prob}), since the events $\{j \in \F \}$ and $\{l \in \F\}$ are in general not independent. Whether they are correlated depends on the choice of suppliers of firm $j$ and $l$. To see this consider the simple case where all of the suppliers of firm $i$ source from the same set of firms, $\X^{k-1}_j = \X^{k-1}_l$ for all $l, j \in \X^k_i$. Then the event of all the firms being potentially functional coincides with the event of one of them being potentially functional, namely
+
+\begin{equation}
+  \{\forall j \in \X^k_i: j \in \PF \} = \{l \in \PF\}
+\end{equation}
+
+such that, by the law of total probability,
+
+\begin{equation}
+  \begin{split}
+    \P\Big(\forall j \in \X^k_i: \ j \notin \F \Big) &= \P\Big(\forall j \in \X^k_i: \ j \notin \F \ \vert \ l \in \PF \Big) \ \P(l \in \PF) \\
+    &= \mu^{s_k}_{k-1} \ \P(l \in \PF) \text{ for any } l \in \X^k_i.
+  \end{split}
+\end{equation}
+
+On the other hand, if suppliers' risk is totally independent
+
+\begin{equation}
+  \P\Big(\forall j \in \X^k_i: \ j \notin \F \Big) = \mu^{s_k}_{k-1} \ \P(l \in \PF)^{s_k}\text{ for any } l \in \X^k_i.
+\end{equation}
+
+It is useful here to treat separately two cases. First, the case in which $m_k$ for all $k$ is large enough for the probability of overlap between suppliers to be approximately 0. In this case, suppliers' risk can be seen as idiosyncratic, such that $\P\Big(\forall j \in \X^k_i: \ j \notin \F \Big) = \prod_{j \in \X^k_i} \P(j \notin \F)$. Second, the case in which $m_k$ is not large and the correlation of suppliers' risk is not approximately 0.
+
+\subsection{Idiosyncratic supplier risk} \label{sec:vertical:ignoring}
+
+We will first focus on the case where $m_k$ is large. As seen above, the problem of a firm $i \in \G_k$ reduces to picking a number of suppliers $s_k = \abs{\X^k_i}$, such that  
+
+\begin{equation}
+  s_k = \arg\max_{s \in \mathbb{Z}}\{ \pi_k \ p_k(s) - \kappa \ s \}
+\end{equation}
+
+Using equation (\ref{eq:general_vertical_prob}) and the fact that the supplier risk is idiosyncratic we can write the function $p_k$ recursively 
+
+\begin{equation} \label{eq:recursive_idyo}
+  \begin{split}
+    p_k(s) &= (1 - \mu_k) \ \left(1 - \P\Big(\forall j \in \X^k_i: \ j \notin \F \Big)\right) \\
+    &= (1 - \mu_k) \left(1 - \P\Big(j \notin \F \Big)^{s}\right) \\
+    &= (1 - \mu_k) \ \Big(1 - (1 - p_{k-1}(s_{k-1}))^s \Big).
+  \end{split}
+\end{equation}
+
+
+\subsubsection{Problem of the firm}
+
+Given this recursive definition, we can find a explicit expression for the optimal $s_k$. The firm will keep adding suppliers as long as the expected profit gain from doing so exceeds the cost $\kappa$. Hence, $s_k + 1$ will be such that the expected profit gain is smaller than $\kappa$, or 
+
+\begin{equation}
+  \begin{split}
+     p_k(s_k) - p_k(s_k + 1) &< \frac{\kappa}{\pi_k} \\
+     (1 - p_{k-1})^{s_k + 1} - (1 - p_{k-1})^{s_k} &< \frac{\kappa}{\pi_k \ (1 - \mu_k)} \\
+     -(1 - p_{k-1})^{s_k} p_{k-1}&< \frac{\kappa}{\pi_k \ (1 - \mu_k)} \\
+     s_k &> \frac{\log(\kappa / \pi_k \ (1 - \mu_k)) - \log(p_{k-1})}{\log(1 - p_{k-1})}
+  \end{split}
+\end{equation}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width = \textwidth]{../plots/splot.pdf} 
+  \caption{Optimal number of suppliers of $i \in \G_k$ as a function of $p_{k - 1}$ for different levels of $\kappa \Big/ \pi_k (1 - \mu_k)$. The dashed line represents the lower bound on $s_k$}
+  \label{fig:splot}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width = \textwidth]{../plots/pplot.pdf} 
+  \caption{Equilibrium probability $p_k$ given $p_{k- 1}$ for different $\mu_k$, assuming $\kappa / \pi_k = 1/20$. The dashed line represents the lower bound on $s_k$}
+  \label{fig:pplot}
+\end{figure}
+
+\subsubsection{Social optimum}
+
+Consider the social planner problem of maximizing the total firms payoff. Letting $s = \begin{pmatrix} s_1 & s_2 & \ldots & s_n \end{pmatrix}$ be the sequence of suppliers size, the problem of the firm can be formulated as
+
+\begin{equation}
+  \max_{s \in \mathbb{Z}^n} W(s) = \max_{s \in \mathbb{Z}^n} \sum^n_{k = 0} m_k \ \left(\pi_k \ p_k(s_k) - \kappa \ s_k\right).
+\end{equation}
+
+It is useful to compute the maximum of $W$ over $\Re^n$ to compare the social optimum and the competitive equilibrium.\footnote{The function $W(s)$ is concave, hence the maximum over $\mathbb{Z}^n$ is one of the integer vertices of the cube of side 1 containing the maximum over $\Re^n$.}. Let $\tilde{s}$ be the maximizer of $W$ over $\Re^n$. Then, the first order condition of $W$ with respect to the number of suppliers of a layer $q$, using the fact that downstream firms' decisions do not affect the risk of upstream firms, that is, $\frac{\partial p_k}{\partial s_q} = 0$ if $k < q$, yields
+
+\begin{equation}
+  \underbrace{\sum_{k > q} m_k \ \pi_k \ \frac{\partial p_k}{\partial s_q}}_{\text{downstream externality}} + m_q  \underbrace{\left( \pi_q \frac{\partial p_q}{\partial s_q} - \kappa\right)}_{\text{firm's optimization}} = 0.
+\end{equation}
+
+We can see the role of the externality by writing the optimality condition as 
+
+\begin{equation} \label{eq:distortion}
+  \overbrace{\Bigg(\underbrace{\sum_{k > q} \frac{m_k\pi_k}{m_q\pi_q} \ E_{k, q}(\tilde{s})}_{\text{downstream externality}} + \ 1 \Bigg)\ \frac{\partial p_q}{\partial s_q}(\tilde{s})}^{\text{marginal increase in probability}} = \frac{\kappa}{\pi_q}
+\end{equation}
+
+with
+
+\begin{equation}
+  E_{k, q}(\tilde{s}) = s_k \ (1 - \mu_k) (1 - p_{k-1})^{-1 + s_k}\ E_{k - 1, q}(\tilde{s}).
+\end{equation}
+
+An increase in the number of suppliers of a firm has a strictly positive externality on downstream firms, $E_{k, q} > 0$. Hence, the downstream externality shifts to the right the marginal benefit curve, which yields a higher number of suppliers for each, but the last, layer, as opposed to the competitive equilibrium (as displayed in Figure \ref{fig:vert_foc}).
+
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width = \textwidth]{../plots/vert_foc.pdf} 
+  \caption{The first order condition of the planner and the firm. Ceteris paribus, the externality yields a higher solution $\tilde{s}_k > s_k$ for each layer but the last one, where there are no externalities.}
+  \label{fig:vert_foc}
+\end{figure}
+
+\subsection{Considering correlation in suppliers' risk} \label{sec:vertical:considering}
+
+Now I will turn my attention to the case where the node size $m_k$ is not large and the correlation of suppliers risk is non-negligible. A firm producing good $\G_{k + 1}$ picks $s_{k + 1}$ suppliers among the firms producing good $\G_k$. In this case $p_k(s)$ cannot be written recursively as in equation (\ref{eq:recursive_idyo}), because the supplier risk is not idiosyncratic. Nevertheless, all potential suppliers are still ex-ante the same from the point of view of a firm producing $\G_k$, hence its problem can be written in terms of distribution over the number of functioning firms producing $\G_{k-1}$. Let $F_k$ be the number of functioning firms in layer $k$. Letting
+
+\begin{equation}
+  g_{k-1}(v) \coloneqq \P\Big( F_{k - 1} = v \Big),
+\end{equation}
+
+we can write $p_k$ as a function of $s_k$ and $F_{k-1}$, namely
+
+\begin{equation}
+  p_k\left(s_k, F_{k-1} \right) = (1 - \mu_k) \ \left(1 - \binom{m_{k-1} - s_k}{F_{k-1}} \binom{m_{k-1}}{F_{k-1}}^{-1} \right).
+\end{equation}
+And the expected probability of being functional is
+
+\begin{equation}
+  \E_{F_{k-1}} \  p_k(s_k) = \sum^{m_{k-1}}_{v = 0} g_{k-1}(v) \  p_k(s_k, v).
+\end{equation}
+
+Furthermore, a choice of suppliers $s_k$ induces a probability distribution $g_k$ over the size of $\F_k$. In particular, given an $F_{k-1}$, the probability of $\{ \abs{\F_{k}} = v \}$ is 
+
+\begin{equation}
+  g_k\Big(v; F_{k-1}\Big) = \binom{m_k}{v} \ p_k(s_k, F_{k-1})^{v} \ \Big(1 - p_k(s_k, F_{k-1})\Big)^{m_k - v}.
+\end{equation}
+
+or in expectation
+
+\begin{equation}
+  \begin{split}
+    g_k(v) &\coloneqq \E_{F_{k-1}} \left[ g_k\Big(v; F_{k-1}\Big)\right] \\
+    &= \binom{m_k}{v} \sum^{m_{k-1}}_{n = 0} g_{k-1}(n) \ p_{k}(s_k, n)^{v} \ \Big(1 - p_{k}(s_k, n)\Big)^{m_k - v}
+  \end{split}
+\end{equation}
+
+with
+
+\begin{equation}
+  g_0(v) = \binom{m_0}{v} (1 - \mu_0)^{v} \ \mu_0^{(m_0 - v)}
+\end{equation}
+
+This equation establishes a relationship between the ``fragility'' of different production layers.
+
+\subsection{Propagation of risk in the production network}
+
+\newcommand{\Bin}{\text{Bin}}
+\newcommand{\Beta}{\text{Beta}}
+
+As before, to study risk propagation, it is convenient to look at $p_k$ extended over all possible real values of $s_k$. To do so, we can define
+
+\begin{equation}
+  p_k(s_k, F_{k-1}) = 1 - 
+    \frac{\Gamma(1 + m_{k - 1} - s_k)}{\Gamma(1 + m_{k - 1})} \frac{\Gamma(1 + m_{k - 1} - F_{k-1})}{\Gamma(1 + m_{k - 1} - F_{k-1} - s_k)}.
+\end{equation}
+
+Clearly, $F_0 \sim \text{\Bin}(m_0, 1 - \mu_0)$. We will approximate 
+
+\begin{equation}
+  p_k(s_k, F_{k-1}) \  \dot\sim \  \Beta(a_k, b_k).
+\end{equation}
+
+which implies $F_k \sim \Beta\Bin(m_k, a_k, b_k)$. This allows us to write a mapping from the moments of $p_k$ to those of $F_k$. Letting 
+
+\begin{equation}
+  f_k \coloneqq \E[F_k] \text{ and } \sigma^2_k \coloneqq \V[F_k]
+\end{equation}
+
+we can write
+
+\begin{equation} \label{eq:exact_varprop}
+  \begin{split}
+    f_k &= m_k \ \E[p_k] \\ 
+    \sigma^2_k &= m_k \ \Big( \E[p_k] \ (1 - \E[p_k]) + m_k \V[p_k] \Big)
+  \end{split}
+\end{equation}
+
+Finally, using a first order Taylor approximation of $\E[p_k]$ and $\V[p_k]$ around $\E[F_{k-1}] = f_{k-1}$ and $\V[F_{k-1}] = \sigma^2_{k-1}$ we obtain
+
+\begin{equation}
+  \V[p_k] \approx \sigma^2_{k-1} \ \Big( 1 - p_k(s_k, f_{k-1}) \Big)^2 \ \Big( \psi_0(1 + m_k - f_{k-1}) - \psi_0(1 + m_k - f_{k-1} - s_k) \Big)^2
+\end{equation}
+
+
+and
+
+\begin{equation}
+  \begin{split}
+    \E[p_k] \ \approx \  &p_k(s_k, f_{k-1}) - \frac{\sigma^2_{k-1}}{2} (1 - p_k(s_k, f_{k-1})) \\
+    \Big[ \Big( &\psi_0(1 + m_k - f_{k-1}) - \psi_0(1 + m_k - f_{k-1} - s_k) \Big)^2 \\
+    + &\psi_1(1 + m_k - f_{k-1}) - \psi_1(1 + m_k - f_{k-1} - s_k) \Big].
+  \end{split}
+\end{equation}
+
+Plugging these into equation (\ref{eq:exact_varprop}) gives us a dynamical system of the form
+
+\begin{equation}
+  (f_k, \sigma^2_k) = F(f_{k-1}, \sigma^2_{k-1}; s_k).
+\end{equation}
+
+
+\iffalse
+\subsubsection{Problem of the firm}
+
+To simplify notation, assume that $\pi$ and $m$ are constant in all layers. Furthermore, assume that $\mu_0 = \mu > 0$ and $\mu_k = 0$ for all $k > 0$. Note that these two assumption imply that we can write $p_{k+1}$ as $p$. The problem of a firm, can then be written as
+
+\begin{equation}
+  \max_{s \in \mathbb{Z}} \Pi(s, g_k) = \max_{s \in \mathbb{Z}} \left\{ \pi \ \E_{\F_k} \Big[ p(s) \Big] - \kappa \ s \right\}.
+\end{equation}
+
+As before, we can compute an optimum of the continuous problem, $\tilde{s}_a$. The first order condition\footnote{Here $\frac{\partial p}{\partial s} \approx \frac{\Gamma(1 + m - s) \Gamma(1 + m - f)}{\Gamma(1 + m - s - f) \Gamma(1 + m)} \Big(\log(m - s) - \log(m - s - f)\Big)$} yields
+
+\begin{equation}
+  \E_{\F_k} \left[ \frac{\partial p}{\partial s}(\tilde{s}_a ) \right] = \frac{\kappa}{\pi}
+\end{equation}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width = \textwidth]{../plots/foc_corr.pdf} 
+  \caption{First order conditions, for various values of $\abs{\F_k}$}
+  \label{fig:vert_foc_cor}
+\end{figure}
+
+\fi
+
+\iffalse
+
+\subsubsection{Social planner}
+
+The social planner problem has a Bellman formulation. Let $G$ be such that  
+
+\begin{equation}
+  g_{i+1} = G(s, g_i).
+\end{equation}
+
+Then
+
+\begin{equation}
+  V(g) = \max_{s \in \mathbb{Z}} \left\{ m \pi \ \E_{\F_i} \Big[ p(s) \Big] - \kappa \ s + \E_{\F_i}\Big[  V\left(G(s, g)\right)\Big] \right\}
+\end{equation}
+
+The social optimum $\tilde{s}_s$ satisfies the first order condition
+
+\begin{equation}
+  m \pi \ \E_{\F_i} \left[ \frac{\partial p}{\partial s}\left(\tilde{s}_s\right) \right] = \kappa - \E_{\F_i} \left[ V'(G(\tilde{s}_s, g)) \ \frac{\partial G}{\partial s}(\tilde{s}_s, g)\right].
+\end{equation}
+
+where, for a given $f$,
+
+\begin{equation}
+  V'(g(f)) = m \pi \ p(\tilde{s}_s, f) + V(G(\tilde{s}_s, g(f))) + \E_{\F_i}\left[ V'\left(G(\tilde{s}_s, g(f))\right) \  \frac{\partial G}{\partial g}(\tilde{s}_s, g(f)) \right].
+\end{equation}
+
+\fi
+
+% --- Bibliography
+\newpage
+\printbibliography
+
+\newpage
+\appendix
+\section{Taylor Expansion}
+
+Assume 
+
+\begin{equation}
+  F \sim \text{BetaBin}(m, f, \rho).
+\end{equation}
+
+The moments of $F$ can be related to its parameters as follows
+
+\begin{equation}
+  \begin{split}
+    f &= \E\left[F\right] / m \\
+    \rho &= \frac{\V[F] - m f (1 - f)}{m (1 - m) f (1 - f)}
+  \end{split}
+\end{equation}
+
+To simplify notation let $p(F) := p_k(s, F)$, such that
+
+\begin{equation}
+  p(F) = 1 - \frac{\Gamma(1 + m - s)}{\Gamma(1 + m)}\frac{\Gamma(1 + m - F)}{\Gamma(1 + m - F - s)}.
+\end{equation}
+
+We want to relate the parameters of $F$ to those of $F^*$, defined as
+
+\begin{equation}
+  F^* \sim \text{Bin}(m^*, p(F)) \equiv \text{BetaBin}(m^*, f^*, \rho^*),
+\end{equation}
+
+where we are approximating $p(F) \ \dot{\sim} \ \text{Beta}(f^*, \rho^*)$.
+
+\subsection{First parameter}
+
+The relationship between the parameter $f^*$ and $(f, \rho)$ can be derived explicitly by noticing that 
+
+\begin{equation}
+  1 - p(F) = \frac{(m - F)_s}{(m)_s},
+\end{equation}
+
+where $(x)_s \coloneqq x (x - 1)(x-2)\ldots (x - s + 1)$, and that $m - F \sim \Beta\Bin(m, 1 - f, \rho)$. Then 
+
+\begin{equation}
+  1 - f^* = 1 - \E\big[p(F)\big] =  \frac{\E\big[(m - F)_s\big]}{(m)_s} = \frac{B\left((1 - f) \frac{1 - \rho}{\rho} + s, f \frac{1 - \rho}{\rho} \right)}{B\left((1 - f) \frac{1 - \rho}{\rho} , f \frac{1 - \rho}{\rho} \right)}
+\end{equation}
+
+where $B(\cdot, \cdot)$ is the beta function. Let
+
+\begin{equation}
+  f^* = G_f(f, \rho, s) \coloneqq 1 - \frac{B\left((1 - f) \frac{1 - \rho}{\rho} + s, f \frac{1 - \rho}{\rho} \right)}{B\left((1 - f) \frac{1 - \rho}{\rho} , f \frac{1 - \rho}{\rho} \right)}
+\end{equation}
+ 
+\subsection{Second parameter}
+
+The second parameter can be approximated using the delta method. A second order taylor expansion of $p$ around $\E[F] = m f$ yields
+
+\begin{equation}
+  p(F) = p(m f) + p'(m f) \big(F - m f\big) + \frac{p''(m f)}{2} \big(F - m f\big)^2 + \mathcal{O}\left(F^3\right).
+\end{equation}
+
+We can use this to write
+
+% From: https://stats.stackexchange.com/questions/90287/delta-method-with-higher-order-terms-to-improve-variance-estimation-accuracy
+
+\begin{equation}
+  \V\big[p(F)\big] \approx p'(m f)^2 \  \V\big[F\big] + p'(mf)
+\end{equation}
+
+such that
+
+\begin{equation}
+  \begin{split}
+    \rho^* = \frac{\V[p(F)]}{\E[p(F)] \big( 1 -  \E[p(F)]\big)} \approx p'(m f)^2 \frac{m f (1 - f) (1 + (m - 1) \rho)}{ G_f(f, \rho, s) \big( 1 -  G_f(f, \rho, s)\big)} =:  G_\rho(f, \rho, s, m)
+  \end{split}
+\end{equation}
+
+where we can write the derivative of $p$ recursively as follows
+
+\begin{equation}
+  p'(x) = \big(1 - p(x)\big) \Big( \psi_0(1 + m - x) - \psi_0(1 + m - s - x) \Big).
+\end{equation}
+
+Hence we have a mapping
+
+\begin{equation}
+  \begin{pmatrix}
+    f^* \\ \rho^*
+  \end{pmatrix} \approx G(f, \rho, s, m) := \begin{pmatrix}
+    G_f(f, \rho, s) \\ G_\rho(f, \rho, s, m).
+  \end{pmatrix}
+\end{equation}
+
+
+\end{document}
