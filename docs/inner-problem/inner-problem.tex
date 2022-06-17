@@ -125,13 +125,32 @@ with $m \in \mathbb{N}_0$ and $f, \rho \in [0, 1]$.
 
 \subsection{The next layer probability}
 
-Let $p$ be the function that maps the number of functioning firms in the suppliers layer and the number of chosen suppliers to the probability of a firm being functional in a given layer. In particular, $p: [0, m] \times \{0, 1, 2, \ldots m\} \to [0, 1]$ can be written equivalently
+Let $p_m$ be the function that maps the number of functioning firms in the suppliers layer and the number of chosen suppliers to the probability of a firm being functional in a given layer. In particular, $p_m: [0, m] \times \{0, 1, 2, \ldots m\} \to [0, 1]$ can be written equivalently
 
 \begin{equation}
-    p(s, F) = 1 - \binom{m - s}{F} \binom{m}{F}^{-1} = 1 - \frac{(m - F)_s}{(m)_s}
+    p_m(s, F) = 1 - \binom{m - s}{F} \binom{m}{F}^{-1} = 1 - \frac{(m - F)_s}{(m)_s}
 \end{equation}
 
-Hereafter I will fit, by moments matching,
+\begin{claim}
+    If $F \sim \Beta\Bin(m, f, \rho)$ then $\lim_{m \rightarrow \infty} p_m(s, F) = p(s, F) \sim \Beta(f', \rho')$ for some $f'$ and $\rho'$.
+\end{claim}
+
+\begin{proof}
+    
+    To simplify things, consider $N_m \coloneqq m - F \sim \Beta\Bin(m, 1 - f, \rho)$. I will prove that $\lim_{m \rightarrow \infty} \big( 1 - p_m(s, N_m) \big) \sim \Beta(1 - f', \rho')$. We can write
+
+    \begin{equation}
+        1 - p_m(s, N_m) = \frac{N_m}{m} \frac{N_m - 1}{m - 1} \ldots \frac{N_m - (s + 1)}{m - (s + 1)}.        
+    \end{equation}
+
+    Below I show that \begin{equation}
+        \lim_{m \rightarrow \infty} \frac{N_m}{m} \sim Beta(1 - f, \rho).
+    \end{equation}
+
+
+\end{proof}
+
+I will approximate
 
 \begin{equation}
     p(s, F) \ \dot{\sim} \ \Beta(f', \rho').
