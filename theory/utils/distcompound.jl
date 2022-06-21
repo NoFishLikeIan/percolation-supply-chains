@@ -1,3 +1,4 @@
+ψ(k, x) = polygamma(k, x) # To make it slightly easier
 ψ₀(x) = polygamma(0, x)
 ψ₁(x) = polygamma(1, x)
 

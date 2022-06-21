@@ -53,13 +53,10 @@ begin
 	include("../theory/utils/dynamicalsystem.jl")
 	include("../theory/utils/distcompound.jl")
 	include("../theory/utils/lawofmotion.jl")
-	include("../theory/utils/taylorapproximation.jl")
 	
 	include("../theory/optimum/planner.jl")
 	include("../theory/optimum/agent.jl")
 	include("../theory/optimum/correlation.jl")
-	
-	include("../theory/simulate.jl")
 end
 
 # ╔═╡ 7eec1e2e-f469-4437-8c27-1e86bccc3d9e
@@ -163,27 +160,6 @@ function makecurvefrompoints(points)
 	return curve
 end
 
-# ╔═╡ 49025255-6fe8-4654-b025-8e61adcc3770
-begin
-	fb = 0.5
-	ρb = 1e-3
-	ss = 0.01:0.01:10
-	
-	ρpropfig = plot(ylims = (0, Inf))
-
-	for ρ ∈ [1e-2]
-		ρprop(s) = G([fb, ρ]; sₖ = s) |> last
-		plot!(ρpropfig, ss, ρprop; label = latexstring("\$\\rho = $ρ\$ "), xticks = 0:1:10)
-		vline!(ρpropfig, [1], linestyle = :dash, c = :black, label = nothing)
-		scatter!(ρpropfig, [1], [ρprop(1)], label = nothing)
-	end
-
-	ρpropfig
-end
-
-# ╔═╡ 55a90a45-2292-4dd7-99f0-02fbb0b614b3
-G([0.5, 0]; sₖ = 1)
-
 # ╔═╡ 96d2b336-da08-4d69-aec7-1f40cb3f4b3c
 md"
 ## Social $G$
@@ -196,42 +172,31 @@ md"
 # ╔═╡ dc3b28b0-def2-4c24-8104-51b9081d51e6
 model = VerticalModel(m, 0.01, r, K)
 
-# ╔═╡ 40332269-7e8d-475c-879d-ffeaace264b5
-# ╠═╡ show_logs = false
-begin
-	grid_size = 20
-	ssocial, _ = plannerequilibrium(model; L = grid_size)
-
-	itp_space = range(0.01, 0.99; length = grid_size)
-	itps = [
-		LinearInterpolation(
-			(itp_space, itp_space), ssocial[:, :, k]; 
-			extrapolation_bc = Line()
-		) for k ∈ 1:size(ssocial, 3)
-	]
-	
-	sₛ(f, ρ, k::Int64) = itps[k](f, ρ)
-
-end
-
-# ╔═╡ 0cdd8f03-235b-4236-ae73-4e55373cf838
-function G̃ₛ(x, k::Int64)
-	G(x; sₖ = sₛ(x[1], x[2], k))
-end
-
 # ╔═╡ dc3fb1d5-ee54-4cdf-a0ef-ac65c68a1846
 md"## Competitive, $\tilde{G}$"
+
+# ╔═╡ 5951bf61-5b86-4d55-9937-c93e8b0aaa1f
+
 
 # ╔═╡ 98904f31-4676-40a1-ab7c-da9c0b6911e0
 md"
 ``\mu_0`` $(@bind μ₀ Slider(
-	0.01:0.01:0.9, show_value = true, default = 0.5
+	0.01:0.01:0.99, show_value = true, default = 0.5
 ))
 
 ``\rho_0`` $(@bind ρ₀ Slider(
 	0.01:0.01:0.5, show_value = true, default = 0.3
 ))
 "
+
+# ╔═╡ 0cdd8f03-235b-4236-ae73-4e55373cf838
+function G̃ₛ(x, k::Int64, model::VerticalModel)
+	mb = (1 - model.μ₀^model.m) - model.r 
+	isbasal = k == 2
+	
+	sₖ = mb > 0 ? (isbasal ? model.m : 1) : 0
+	return G(x; sₖ = sₖ)
+end
 
 # ╔═╡ 4e34b762-f359-4d5f-b21a-2fd6246b2315
 begin
@@ -240,22 +205,9 @@ begin
 
 	for k ∈ 2:model.K
 		X[1, k, :] = G̃(X[1, k - 1, :], model)
-		X[2, k, :] = G̃ₛ(X[2, k - 1, :], k)
+		X[2, k, :] = G̃ₛ(X[2, k - 1, :], k, model)
 	end
 end
-
-# ╔═╡ 5bb94eb3-c23c-4567-b284-502ef80817b7
-md"## Analytical analysis"
-
-# ╔═╡ 5be351ce-90bf-4574-8da4-2de58fd28fae
-function gf(f, ρ, s)
-	pr = prod(((1 - f) * (1 - ρ) + n * ρ) / (1 - ρ + n * ρ) for n ∈ 0:(s - 1))
-
-	return 1 - pr
-end
-
-# ╔═╡ 194f85cb-f004-482c-9338-9bcb67a8952d
-gf(0.5, 0.4, 2)
 
 # ╔═╡ adc389bc-d15b-432f-9213-7ea8222428e0
 begin
@@ -311,6 +263,13 @@ end
 # ╔═╡ 6b53d35c-350c-4335-9d27-b19cf37c7e5f
 xbasin = ybasin = range(0.01, 0.99; length = 301)
 
+# ╔═╡ b1580bc0-7493-4f4d-8c9c-a20537c9aa64
+md"
+``r`` $(@bind rschoice Slider(
+	0.01:0.01:0.6, show_value = true, default = 0.1
+))
+"
+
 # ╔═╡ fc984dae-fa9f-43e1-abf9-9637563941fe
 md"
 ### Basin of attraction
@@ -321,6 +280,21 @@ md"
 ))
 
 "
+
+# ╔═╡ 766f7042-6a31-48e1-9e35-b2cd08835087
+let
+	ds = DiscreteDynamicalSystem(G̃!, [0.9, 0.5], [100, rschoice])
+	T = 35
+
+	sagent = Vector{Float64}(undef, T + 1)
+	
+	for (j, x) ∈ eachrow(trajectory(ds, T)) |> enumerate
+		sagent[j] = agentoptimum(x[1], x[2]; m = model.m, r = rbasin)
+	end
+
+
+	plot(0:T, sagent; xlabel = L"k", ylabel = L"s", marker = :o, ylims = (0, 2.5))
+end
 
 # ╔═╡ 25c861f8-9103-4e4f-a76f-b1816d842e31
 ds = DiscreteDynamicalSystem(G̃!, [0.99, 0.01], [100, rbasin])
@@ -367,8 +341,7 @@ end
 # ╔═╡ 91b18abe-f770-4613-9c84-8ebe9041ec98
 begin
 
-	rlow = 0.1
-	rhigh = 0.3
+	rlow = rbasin
 	clims = (0, 3.5)
 
 	agentsfig = contourf(
@@ -502,23 +475,16 @@ md"## Dynamical System planner"
 # ╔═╡ 32a7c59c-6005-4a90-b41e-81609a2f7317
 modelbasin = VerticalModel(m, 0.01, rbasin, K)
 
-# ╔═╡ c3082242-e023-4ba3-8219-f5489027107a
-begin
-	ssocialbasin, _ = plannerequilibrium(modelbasin; L = grid_size)
-
-	itpsbasin = [
-		LinearInterpolation(
-			(itp_space, itp_space), ssocialbasin[:, :, k]; 
-			extrapolation_bc = Line()
-		) for k ∈ 1:size(ssocialbasin, 3)
-	]
-	
-	sₛbasin(f, ρ, k::Int64) = max(0.01, itpsbasin[min(k + 1, grid_size)](f, ρ))
-end
-
 # ╔═╡ 88be829b-d7e0-40e0-85a1-27d7e1cdbcda
-function G̃ₛ!(dx, x, p, k)		
-	dx .= G(x; sₖ = sₛbasin(x[1], x[2], k))
+function G̃ₛ!(dx, x, p, k)
+	m, r = p
+
+	mb = (1 - modelbasin.μ₀^m) - r
+	isbasal = k == 2
+	
+	sₖ = mb > 0 ? (isbasal ? m : 1) : 0
+	
+	dx .= G(x; sₖ = sₖ)
 end
 
 # ╔═╡ 77823dc2-14bc-48cf-9a6a-57f802059ab9
@@ -526,6 +492,8 @@ end
 dsocial = DiscreteDynamicalSystem(G̃ₛ!, [0.9, 0.1], [m, rbasin])
 
 # ╔═╡ 46a5b238-5206-4e59-99eb-16144b463c4e
+# ╠═╡ disabled = true
+#=╠═╡
 begin
 	N, M = length(xbasin), length(ybasin)
 	
@@ -556,8 +524,10 @@ begin
 	
 	""
 end
+  ╠═╡ =#
 
 # ╔═╡ 107be6c2-c507-48d0-ba75-a13240668f3c
+#=╠═╡
 begin
 	basindifference = Matrix{Float64}(undef, size(basins))
 
@@ -572,8 +542,10 @@ begin
 		basindifference[i, j] = clamp(s - ag, 0, 1)
 	end
 end
+  ╠═╡ =#
 
 # ╔═╡ 2b0f73a7-0de3-4a92-b034-18831cb2ad23
+#=╠═╡
 let
 	
 	diffbasinfig = contourf(
@@ -582,7 +554,6 @@ let
 		xlims = extrema(xbasin), 
 		ylims = extrema(ybasin),
 		dpi = 180,
-		levels = range(0, 1, length = 6),
 		c = :Reds,
 		xlabel = L"f", ylabel = L"\rho",
 		title = latexstring("Gain in resilience from social planner \$\\pi / \\kappa =$rbasin\$"),
@@ -593,14 +564,14 @@ let
 
 	diffbasinfig
 end
-
-# ╔═╡ 1bd8be9c-a266-4782-8639-98739bcfa025
-maximum(basindifference)
+  ╠═╡ =#
 
 # ╔═╡ 475f959a-8467-4ee1-913f-8aa286d6fb14
 md"### Re-parametrisation"
 
 # ╔═╡ 2ac56369-622f-442e-8ffc-af3df35109b5
+# ╠═╡ disabled = true
+#=╠═╡
 function G̃re!(dx, x, p, t)
 	m, r = p
 	model = VerticalModel(m, 0.01, r, K)
@@ -610,11 +581,15 @@ function G̃re!(dx, x, p, t)
 
 	dx .= fρtoαβ(f′, ρ′) |> collect
 end
+  ╠═╡ =#
 
 # ╔═╡ e34b433d-bfd0-4de0-a9f2-e418438b366f
+#=╠═╡
 dsrep = DiscreteDynamicalSystem(G̃re!, collect(fρtoαβ(0.99, 0.01)), [100, rbasin])
+  ╠═╡ =#
 
 # ╔═╡ 11dba15a-f8ea-46fd-8f71-2012aee09084
+#=╠═╡
 begin
 	remapper = AttractorsViaRecurrences(dsrep, (xbasin, ybasin))
 	rebasins, reattractors = basins_of_attraction(remapper; show_progress = false)
@@ -622,8 +597,10 @@ begin
 	reresattractors = Dict([k => v[1][1] for (k, v) in reattractors])
 	""
 end
+  ╠═╡ =#
 
 # ╔═╡ a042074e-7393-4822-b15b-dc884cb9acc8
+#=╠═╡
 let
 	pal = palette(:Blues, length(reattractors))
 	conv = (b -> b > 0 ? reresattractors[b] : 0).(rebasins)
@@ -649,6 +626,7 @@ let
 	
 	rebasinfig
 end
+  ╠═╡ =#
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2329,7 +2307,7 @@ version = "0.9.1+5"
 # ╔═╡ Cell order:
 # ╟─8b32f51d-e1f7-489d-95af-5e25909d709d
 # ╠═963896ed-ae03-4b68-bec2-6b9917093454
-# ╟─c87845ef-2a91-41c8-933a-b6e139739927
+# ╠═c87845ef-2a91-41c8-933a-b6e139739927
 # ╠═edf0c6f6-db46-11ec-19d0-f3a901cbdf5e
 # ╟─7eec1e2e-f469-4437-8c27-1e86bccc3d9e
 # ╠═551ba67b-5317-4dd0-9b9d-126ca8c13eb0
@@ -2340,27 +2318,24 @@ version = "0.9.1+5"
 # ╟─5228005b-19f6-4cab-bd31-31aedb4fcf6c
 # ╟─7d5ceec9-9496-4a5b-aa8a-4250a30df02f
 # ╠═82d52cc7-c6d4-45e5-8eeb-e81fda6317f8
-# ╠═49025255-6fe8-4654-b025-8e61adcc3770
-# ╠═55a90a45-2292-4dd7-99f0-02fbb0b614b3
 # ╟─96d2b336-da08-4d69-aec7-1f40cb3f4b3c
 # ╠═dc3b28b0-def2-4c24-8104-51b9081d51e6
-# ╠═40332269-7e8d-475c-879d-ffeaace264b5
-# ╠═0cdd8f03-235b-4236-ae73-4e55373cf838
 # ╟─dc3fb1d5-ee54-4cdf-a0ef-ac65c68a1846
+# ╠═5951bf61-5b86-4d55-9937-c93e8b0aaa1f
 # ╟─98904f31-4676-40a1-ab7c-da9c0b6911e0
+# ╠═0cdd8f03-235b-4236-ae73-4e55373cf838
 # ╟─4e34b762-f359-4d5f-b21a-2fd6246b2315
 # ╟─ae7a7c1d-c3b6-4dc8-aeab-ef2af11ac25d
-# ╠═5bb94eb3-c23c-4567-b284-502ef80817b7
-# ╠═5be351ce-90bf-4574-8da4-2de58fd28fae
-# ╠═194f85cb-f004-482c-9338-9bcb67a8952d
 # ╟─adc389bc-d15b-432f-9213-7ea8222428e0
 # ╠═381fc3b1-55b3-48dc-85cd-1a4efab77d97
 # ╠═9f11ee9e-e89f-41c4-8ef4-d91c7d4e8db3
 # ╠═779daf41-9752-4653-b3f0-9fe7de089396
 # ╠═6b53d35c-350c-4335-9d27-b19cf37c7e5f
+# ╟─b1580bc0-7493-4f4d-8c9c-a20537c9aa64
+# ╟─766f7042-6a31-48e1-9e35-b2cd08835087
 # ╟─fc984dae-fa9f-43e1-abf9-9637563941fe
 # ╠═25c861f8-9103-4e4f-a76f-b1816d842e31
-# ╠═a20c0d6e-0e25-40d5-90bf-e156c4721b85
+# ╟─a20c0d6e-0e25-40d5-90bf-e156c4721b85
 # ╟─d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
 # ╠═e901e035-1c0f-48ad-aae9-aee946027a04
 # ╟─91b18abe-f770-4613-9c84-8ebe9041ec98
@@ -2372,13 +2347,11 @@ version = "0.9.1+5"
 # ╠═1c4e601d-2a55-4e5c-a032-4f8e97cd48ee
 # ╟─e5fa7b5e-7d34-46f3-907d-a5462ea1d91e
 # ╠═32a7c59c-6005-4a90-b41e-81609a2f7317
-# ╟─c3082242-e023-4ba3-8219-f5489027107a
 # ╠═88be829b-d7e0-40e0-85a1-27d7e1cdbcda
 # ╠═77823dc2-14bc-48cf-9a6a-57f802059ab9
 # ╟─46a5b238-5206-4e59-99eb-16144b463c4e
 # ╟─107be6c2-c507-48d0-ba75-a13240668f3c
-# ╟─2b0f73a7-0de3-4a92-b034-18831cb2ad23
-# ╠═1bd8be9c-a266-4782-8639-98739bcfa025
+# ╠═2b0f73a7-0de3-4a92-b034-18831cb2ad23
 # ╠═475f959a-8467-4ee1-913f-8aa286d6fb14
 # ╠═2ac56369-622f-442e-8ffc-af3df35109b5
 # ╠═e34b433d-bfd0-4de0-a9f2-e418438b366f

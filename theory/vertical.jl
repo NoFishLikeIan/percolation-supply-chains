@@ -29,13 +29,10 @@ include("utils/probability.jl")
 include("utils/dynamicalsystem.jl")
 include("utils/distcompound.jl")
 include("utils/lawofmotion.jl")
-include("utils/taylorapproximation.jl")
 
 include("optimum/planner.jl")
 include("optimum/agent.jl")
 include("optimum/correlation.jl")
-
-include("simulate.jl")
 
 # Assume that m is constant and μᵢ > 0 only for i = 0.
 
@@ -45,5 +42,3 @@ m = 100 # Size nodes
 r = 0.02 # cost / profit ratio
 
 model = VerticalModel(m, μ₀, r, K)
-
-sₖ, Vₖ = plannerequilibrium(model; L = 4)
