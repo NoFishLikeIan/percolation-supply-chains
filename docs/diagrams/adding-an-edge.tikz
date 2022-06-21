@@ -1,0 +1,74 @@
+\begin{tikzpicture}
+	\begin{pgfonlayer}{nodelayer}
+		\node [style=Red firm] (01) at (-4, 3) {};
+		\node [style=Red firm] (02) at (-2, 3) {};
+		\node [style=Red firm] (03) at (0, 3) {};
+		\node [style=Red firm] (04) at (2, 3) {};
+		\node [style=Red firm] (05) at (4, 3) {};
+		\node [style=Yellow firm] (11) at (-4, 1) {};
+		\node [style=Yellow firm] (12) at (-2, 1) {};
+		\node [style=Yellow firm] (13) at (0, 1) {};
+		\node [style=Yellow firm] (14) at (2, 1) {};
+		\node [style=Yellow firm] (15) at (4, 1) {};
+		\node [style=Green firm] (21) at (-4, -1) {};
+		\node [style=Green firm] (22) at (-2, -1) {};
+		\node [style=Green firm] (23) at (0, -1) {};
+		\node [style=Green firm] (24) at (2, -1) {};
+		\node [style=Green firm] (25) at (4, -1) {};
+		\node [style=Blue firm] (31) at (-4, -3) {};
+		\node [style=Blue firm] (32) at (-2, -3) {};
+		\node [style=Blue firm] (33) at (0, -3) {};
+		\node [style=Blue firm] (34) at (2, -3) {};
+		\node [style=Blue firm] (35) at (4, -3) {};
+		\node [draw,dotted,fit=(01) (02) (03) (04) (05),inner sep=4pt] (g0) {};
+		\node [left, outer sep=10pt, inner sep=3pt] at (g0.west) {\huge $0$};
+		\node [draw,dotted,fit=(11) (12) (13) (14) (15),inner sep=4pt] (g1) {};
+		\node [left, outer sep=10pt, inner sep=3pt] at (g1.west) {\huge $1$};
+		\node [draw,dotted,fit=(21) (22) (23) (24) (25),inner sep=4pt] (g2) {};
+		\node [left, outer sep=10pt, inner sep=3pt] at (g2.west) {\huge $2$};
+		\node [draw,dotted,fit=(31) (32) (33) (34) (35),inner sep=4pt] (g3) {};
+		\node [left, outer sep=10pt, inner sep=3pt] at (g3.west) {\huge $3$};
+		\node [minimum height=2.5cm] (dots) at (0, -5) {\Huge $\ldots$};
+	\end{pgfonlayer}
+
+	\begin{pgfonlayer}{edgelayer}
+		\draw [style=Potential supplies] (01) to (11);
+		\draw [style=Potential supplies] (01) to (12);
+		\draw [style=Potential supplies] (01) to (13);
+		\draw [style=Potential supplies] (01) to (14);
+		\draw [style=Potential supplies] (01) to (15);
+		\draw [style=Potential supplies] (02) to (11);
+		\draw [style=Potential supplies] (02) to (12);
+		\draw [style=Potential supplies] (02) to (13);
+		\draw [style=Potential supplies] (02) to (14);
+		\draw [style=Potential supplies] (02) to (15);
+		\draw [style=Potential supplies] (03) to (11);
+		\draw [style=Potential supplies] (03) to (12);
+		\draw [style=Potential supplies] (03) to (13);
+		\draw [style=Potential supplies] (03) to (14);
+		\draw [style=Potential supplies] (03) to (15);
+		\draw [style=Potential supplies] (04) to (11);
+		\draw [style=Potential supplies] (04) to (12);
+		\draw [style=Potential supplies] (04) to (13);
+		\draw [style=Potential supplies] (04) to (14);
+		\draw [style=Potential supplies] (04) to (15);
+		\draw [style=Potential supplies] (05) to (11);
+		\draw [style=Potential supplies] (05) to (12);
+		\draw [style=Potential supplies] (05) to (13);
+		\draw [style=Potential supplies] (05) to (14);
+		\draw [style=Potential supplies] (05) to (15);
+
+		\draw [style=Potential supplies] (11) to (21);
+		\draw [style=Potential supplies, red] (12) to (21);
+		\draw [style=Potential supplies] (12) to (22);
+		\draw [style=Potential supplies] (13) to (23);
+		\draw [style=Potential supplies] (14) to (24);
+		\draw [style=Potential supplies] (15) to (25);
+
+		\draw [style=Potential supplies] (21) to (31);
+		\draw [style=Potential supplies] (22) to (32);
+		\draw [style=Potential supplies] (23) to (33);
+		\draw [style=Potential supplies] (24) to (34);
+		\draw [style=Potential supplies] (25) to (35);
+	\end{pgfonlayer}
+\end{tikzpicture}

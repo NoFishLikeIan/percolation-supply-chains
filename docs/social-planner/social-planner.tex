@@ -1,0 +1,203 @@
+\documentclass[american, abstract=on]{scrartcl}
+
+    \newcommand{\lang}{en}
+
+    \usepackage{babel}
+    \usepackage[utf8]{inputenc}
+
+    \usepackage{csquotes}
+
+    \usepackage{amsmath, amssymb, mathtools, bbm}
+    \usepackage{amsthm}
+    \usepackage{xcolor}
+    \usepackage{xcolor-solarized}
+    \usepackage{bm}
+
+    \usepackage{graphicx}
+    \usepackage{wrapfig}
+    \usepackage{relsize}
+    \usepackage{makecell}
+    \usepackage{booktabs}
+    \usepackage[font=footnotesize,labelfont=bf]{caption}
+    \usepackage{subcaption}
+    \usepackage{float}
+    \usepackage{multirow} 
+    \usepackage{hyperref}
+
+    \usepackage{graphicx}
+    \usepackage{wrapfig}
+    \usepackage{relsize}
+    \usepackage{makecell}
+    \usepackage{booktabs}
+    \usepackage[font=footnotesize,labelfont=bf]{caption}
+    \usepackage{subcaption}
+    \usepackage{float}
+    \usepackage{multirow} 
+
+    % Diagrams
+    \usepackage{tikz} 
+    \usepackage{tikzit}
+    \usetikzlibrary{positioning,fit,calc}
+    \input{../diagrams/percolation.tikzstyles}
+    \input{../diagrams/diagram.tikzstyles}
+
+    \newcommand{\inputTikZ}[2]{%  
+    \scalebox{#1}{\input{#2}}  
+    }
+
+    % Refs
+    \usepackage{hyperref}
+    \usepackage{cleveref}
+    \hypersetup{
+        colorlinks = true, 
+        urlcolor = blue,
+        linkcolor = blue, 
+        citecolor = blue 
+    }      
+
+    \usepackage{subfiles} % Load last
+
+    % Theorems
+    \theoremstyle{plain}
+    \newtheorem{claim}{Claim}
+
+    % Paths
+
+    % Formatting
+    \setlength{\parindent}{0em}
+    \setlength{\parskip}{0.5em}
+    \setlength{\fboxsep}{1em}
+    \newcommand\headercell[1]{\smash[b]{\begin{tabular}[t]{@{}c@{}} #1 \end{tabular}}}
+
+    % Graphs
+
+    % Math commands
+
+    \newcommand{\diff}{\text{d}}
+    \renewcommand{\Re}{\mathbb{R}}
+    \newcommand{\C}{\mathcal{C}}
+    \newcommand{\F}{\mathcal{F}}
+    \newcommand{\X}{\mathcal{X}}
+    \newcommand{\G}{\mathcal{G}}
+    \newcommand{\I}{\mathcal{I}}
+    \newcommand{\N}{\mathcal{N}}
+    \newcommand{\PF}{\mathcal{P} \F}
+
+    \renewcommand{\P}{\mathbb{P}}
+    \newcommand{\E}{\mathbb{E}}
+    \newcommand{\V}{\mathbb{V}}
+
+    \newcommand{\uI}[2][s]{\int^1_0 #2 \ \text{d} #1}
+    \newcommand{\uH}[2][s]{\int^\frac{1}{2}_0 #2 \ \text{d} #1}
+    \newcommand{\uF}[2][s]{\int^1_\frac{1}{2} #2 \ \text{d} #1}
+    \newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+    \newcommand{\abs}[1]{\left\lvert#1\right\rvert}
+
+    \newcommand{\Beta}{\text{Beta}}
+    \newcommand{\Bin}{\text{Bin}}
+
+    % Bibliography
+
+    \usepackage[bibencoding=utf8, style=apa, backend=biber]{biblatex}
+    \addbibresource{../supply-chain-reallocation.bib}
+
+    \newcommand{\citein}[1]{\citeauthor{#1} (\citeyear{#1})}
+
+    \newcommand\notes[1]{\textcolor{teal}{\textbf{#1}}}
+    \newcommand\red[1]{\textcolor{red}{#1}} 
+
+    % Make title page
+
+    \author{Andrea Titton}
+    \title{Notes on Social Planner Problem}
+
+    \setcounter{section}{-1}  % Start numbering at 0
+    
+\begin{document}
+
+\maketitle
+
+Consider the vertical economy problem as presented in Figure (\ref{fig:vertical-economy-diagram}) with $K$ layers, $m$ firms per layer, and risk only in the zeroth layer $\mu$.
+
+\begin{figure}[H]
+    \centering
+    \inputTikZ{0.5}{../diagrams/model-presentation.tikz} 
+    \caption{$K$-layers vertical economy}
+    \label{fig:vertical-economy-diagram}
+\end{figure}
+
+Let $p_{k, i}$ be the unconditional probability of firm $i$ in layer $k$ being functional. First, I will show that the minimal (i.e. with the least number of layers) supplier network that maximises the sum probability of being functional,
+
+\begin{equation} \label{eq:sum_probability}
+    P = \sum^{K}_{k = 1} \sum^m_{i = 1} p_{k, i},
+\end{equation}
+
+is atteined by firms in the first layer sourcing from all the firms in zeroth layer and firms in all subsequent layers having a single supplier, as displayed in Figure (\ref{fig:maximal-probability-diagram}). I will refer to this configuration as \textit{min-max network}. Notice that in equation (\ref{eq:sum_probability}) the outer summation starts at $k = 1$, since $p_{0, i} = 1 - \mu$ is exogenous and hence independent of the supplier network.
+
+\begin{figure}[H]
+    \centering
+    \inputTikZ{0.6}{../diagrams/maximum-probability.tikz}
+    \caption{Min-max network} \label{fig:maximal-probability-diagram} 
+\end{figure} 
+
+I will now prove, in two steps, that the min-max network atteins the highest $P$. 
+
+\begin{claim} \label{claim:min-max:first}
+    First, adding an edge does not improve the sum probability, $P$. \end{claim} \begin{proof}
+    Notice that the min-max network is such that, in the first layer, all firms fail if and only if all firms in the zeroth layer fail. Otherwise, all firms are functional. This implies that the first layer as a whole can attein only two states. It then follows immediately that adding an edge in the second layer does not change any firm's functioning probability, since the failure of the new supplier would coincide exactly with the failure of the pre-existing supplier. 
+    
+    \begin{figure}[H]
+        \centering
+        \inputTikZ{0.6}{../diagrams/adding-an-edge.tikz}
+        \caption{Adding an edge between $1$ and $2$ (black solid)} \label{fig:adding-an-edge} 
+    \end{figure} 
+
+    
+\end{proof}
+
+\begin{claim} \label{claim:min-max:second}
+    Second, the sum probability obtained by moving an edge, $P'$, is such that $P' \leq P$.
+\end{claim}
+\begin{proof}
+    First notice, that the probability that all firms in the zeroth layer fail is $1 - \mu^m$, hence the min-max graph attains
+    \begin{equation}
+        P = m K (1 - \mu^{m}).
+    \end{equation}
+
+    Trivially, if one firm in a layer below the first one changes supplier, then $P' = P$. Similarly, if a firm drops its only supplier and another arbitrary firm picks up an extra supplier, then $P' < P$. Hence, the only non-trivial case we need to check is moving one edge from the first layer to the second layer, as in Figure (\ref{fig:min-max-moving-edge}). 
+    
+    \begin{figure}[H]
+        \centering
+        \inputTikZ{0.6}{../diagrams/min-max-moving-edge.tikz}
+        \caption{Moving the edge between layers $0$ and $1$ (red dashed) to $1$ and $2$ (red solid). One node loses some probability (red box) and all other probabilities are constant.} \label{fig:min-max-moving-edge} 
+    \end{figure} 
+
+    In this case only the node that loses the edge loses probability, hence
+
+    \begin{equation}
+        P - P' = (1 - \mu^m) - (1 - \mu^{m-1}) = \mu^m \left(\frac{1 - \mu}{\mu}\right) > 0.
+    \end{equation}
+\end{proof}
+
+Now think back to the social planner problem, that is, picking a network configuration that induces a $P$ to maximise,
+
+\begin{equation}
+    \pi \times P - \kappa \times \text{number of edges}.
+\end{equation}
+
+\begin{claim}
+    The local maximiser of the social planner problem is the min-max network if $1 - \mu^m < \kappa / \pi$ and the empty network if $1 - \mu^m > \kappa / \pi$.
+\end{claim}
+
+\begin{proof}
+    Above we have shown that the min-max network is the network that maximises $P$ given \begin{equation}
+        \text{number of edges} = m^2 + (k - 1) m.
+    \end{equation}
+    Without loss of generality, consider removing an edge between the last two layers, $K$ and $K - 1$. This is socially beneficial if the marginal loss in expected aggregate profits, $\pi (P - P')$, is smaller than the marginal cost gain in removing the node, $\kappa$. If \begin{equation}
+        \kappa > (1 - \mu^m) \ \pi,
+    \end{equation} the net marginal benefit of maintaining an edge is negative, hence the social planner will remove all edges and the empty network is a local maximiser. Otherwise, if $\kappa < (1 - \mu^m) \ \pi$ the min-max network is locally stable. 
+\end{proof}
+
+Note that the above proof only shows that if the social planner starts with the min-max network and is allowed to change an edge at a time, then he will not do so if $\kappa < (1 - \mu^m) \ \pi$ and will remove all edges, one by one, if $\kappa > (1 - \mu^m) \ \pi$. It does not prove that there does not exist another configuration that attains a higher payoff. 
+
+\end{document}
