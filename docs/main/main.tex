@@ -120,7 +120,7 @@
 
 \subsection{Setup}
 
-Consider a vertical economy producing $K$ goods (Figure \ref{fig:vertical-economy-diagram}). Each firm produces a single good and each good is produced by $m$ firms. The good produced in layer $k$ requires only the good produced in layer $k - 1$ as input. Each firm picks a set of suppliers in the previous layer to source from. Establishing a relation with a supplier has a fixed cost $\kappa$. If no firm, among its suppliers, is able to deliver the input good then the firm is not ``functional'' and hence not able to deliver downstream. I assume that being functional yields an exogenous payoff $\pi$. This assumption will be relaxed later by introducing market structure to endogenise $\pi$, but this will not change the main model mechanics. Finally, we assume that firms know the structure of the economy but do not observe the realised supplier relationship in upstream layers. Firms need to balance the marginal cost of acquiring new suppliers for their inputs and the gain in reduced risk that they obtain by doing so. 
+Consider a vertical economy producing $K$ goods (Figure \ref{fig:vertical-economy-diagram}). Each firm produces a single good and each good is produced by $m$ firms. The good produced in layer $k$ requires only the good produced in layer $k - 1$ as input. Each firm picks a set of suppliers in the previous layer to source from. Establishing a relation with a supplier has a fixed cost $\kappa$. If no firm, among its suppliers, is able to deliver the input good then the firm is not ``functional'' and hence not able to deliver downstream. I assume that being functional yields an exogenous payoff $\pi$. This assumption will be relaxed later by introducing market structure to endogenise $\pi$, but this does not change the main model mechanics. Finally, we assume that firms know the structure of the economy but do not observe the realised supplier relationship in upstream layers. Firms need to balance the marginal cost of acquiring new suppliers for their inputs and the gain in reduced risk that they obtain by doing so. 
 
 \begin{figure}[H]
   \centering
@@ -128,6 +128,8 @@ Consider a vertical economy producing $K$ goods (Figure \ref{fig:vertical-econom
   \caption{$K$-layers vertical economy}
   \label{fig:vertical-economy-diagram}
 \end{figure}
+
+\subsection{Firm problem}
 
 By symmetry, a firm producing good $k$ will ($\ldots$). Let $F_k$ be the ex-ante distribution of functioning firms producing good $k$. Then, if a firm producing good $k + 1$ were to pick $s_{k + 1}$ suppliers among those producing $k$, the probability that all of its suppliers are not functional is simply
 
@@ -164,7 +166,7 @@ This exact relationship allows as to derive an analytical mapping, call it $G$ b
   \label{fig:propagation-of-risk}
 \end{figure}
 
-\subsection[Interpretation of the parameters]{Interpretation of $f$ and $\rho$}
+\subsubsection[Interpretation of the parameters]{Interpretation of $f$ and $\rho$}
 
 The first parameter simply indicates the expected ratio of firms operating in equilibrium, namely
 
