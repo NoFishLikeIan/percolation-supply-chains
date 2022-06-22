@@ -35,15 +35,17 @@
     \usepackage{multirow} 
     
     % Diagrams
-    \usepackage{tikz} 
-    \usepackage{tikzit}
-    \usetikzlibrary{positioning,fit,calc}
-    \input{../diagrams/percolation.tikzstyles}
-    \input{../diagrams/diagram.tikzstyles}
+    \iffalse
+      \usepackage{tikz} 
+      \usepackage{tikzit}
+      \usetikzlibrary{positioning,fit,calc}
+      \input{../diagrams/percolation.tikzstyles}
+      \input{../diagrams/diagram.tikzstyles}
 
-    \newcommand{\inputTikZ}[2]{%  
-      \scalebox{#1}{\input{#2}}  
-    }
+      \newcommand{\inputTikZ}[2]{%  
+        \scalebox{#1}{\input{#2}}  
+      }
+    \fi
     
     % Refs
     \usepackage{hyperref}
@@ -120,11 +122,12 @@
 
 \subsection{Setup}
 
-Consider a vertical economy producing $K$ goods (Figure \ref{fig:vertical-economy-diagram}). Each firm produces a single good and each good is produced by $m$ firms. The good produced in layer $k$ requires only the good produced in layer $k - 1$ as input. Each firm picks a set of suppliers in the previous layer to source from. Establishing a relation with a supplier has a fixed cost $\kappa$. If no firm, among its suppliers, is able to deliver the input good then the firm is not ``functional'' and hence not able to deliver downstream. I assume that being functional yields an exogenous payoff $\pi$. This assumption will be relaxed later by introducing market structure to endogenise $\pi$, but this does not change the main model mechanics. Finally, we assume that firms know the structure of the economy but do not observe the realised supplier relationship in upstream layers. Firms need to balance the marginal cost of acquiring new suppliers for their inputs and the gain in reduced risk that they obtain by doing so. 
+Consider a vertical economy producing $K$ goods (Figure \ref{fig:vertical-economy-diagram}). Each firm produces a single good and each good is produced by $m$ firms. The good produced in layer $k$ requires only the good produced in layer $k - 1$ as input. Each firm picks a set of suppliers in the previous layer to source from. Establishing a relation with a supplier has a fixed cost $\kappa$. If no firm, among its suppliers, is able to deliver the input good then the firm is not ``functional'' and hence not able to deliver downstream. I assume that being functional yields an exogenous payoff $\pi$. This assumption will be relaxed later by introducing market structure to endogenise $\pi$, but this does not change the main model mechanics. Finally, we assume that firms know the structure of the economy but do not observe the realised supplier relationship in upstream layers. Firms need to balance the marginal cost of acquiring new suppliers for their inputs and the gain in reduced risk that they obtain by doing so.
 
 \begin{figure}[H]
   \centering
-  \inputTikZ{0.5}{../diagrams/model-presentation.tikz} 
+  % \inputTikZ{0.5}{../diagrams/model-presentation.tikz} 
+  \includegraphics[width=\textwidth]{example-image-a}
   \caption{$K$-layers vertical economy}
   \label{fig:vertical-economy-diagram}
 \end{figure}
@@ -134,7 +137,7 @@ Consider a vertical economy producing $K$ goods (Figure \ref{fig:vertical-econom
 By symmetry, a firm producing good $k$ will ($\ldots$). Let $F_k$ be the ex-ante distribution of functioning firms producing good $k$. Then, if a firm producing good $k + 1$ were to pick $s_{k + 1}$ suppliers among those producing $k$, the probability that all of its suppliers are not functional is simply
 
 \begin{equation}
-  \binom{m - s_k}{F_k} \Bigg/ \binom{m}{F_k}. 
+  \binom{m - s_k}{F_k} \Bigg/ \binom{m}{F_k}.
 \end{equation}
 
 Hence, we can write the probability that a firm in layer $k + 1$ is functional, as a function of $s_k$ and $F_k$ as,
@@ -161,7 +164,8 @@ This exact relationship allows as to derive an analytical mapping, call it $G$ b
 
 \begin{figure}[H]
   \centering
-  \inputTikZ{1}{../diagrams/probability-propagation.tikz} 
+  % \inputTikZ{1}{../diagrams/probability-propagation.tikz} 
+  \includegraphics[width=\textwidth]{example-image-a}
   \caption{Diagram of the relation between $F_k$, $p_k$, and $F_{k - 1}$, for sufficiently large $m$.}
   \label{fig:propagation-of-risk}
 \end{figure}
@@ -171,7 +175,7 @@ This exact relationship allows as to derive an analytical mapping, call it $G$ b
 The first parameter simply indicates the expected ratio of firms operating in equilibrium, namely
 
 \begin{equation}
-  \E[F_k] = f_k. 
+  \E[F_k] = f_k.
 \end{equation}
 
 The second is an overdispersion parameter and determines how overdispersed $F_k$ is vis-à-vis a Binomial distribution with the same expectation. The excess overdispersion arises from the fact that supplier risk might be correlated.
