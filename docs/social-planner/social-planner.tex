@@ -113,11 +113,13 @@
     \author{Andrea Titton}
     \title{Notes on Social Planner Problem}
 
-    \setcounter{section}{-1}  % Start numbering at 0
+    % \setcounter{section}{-1}  % Start numbering at 0
     
 \begin{document}
 
 \maketitle
+
+\section{The Min-Max Network}
 
 Consider the vertical economy problem as presented in Figure (\ref{fig:vertical-economy-diagram}) with $K$ layers, $m$ firms per layer, and risk only in the zeroth layer $\mu$.
 
@@ -143,6 +145,8 @@ is atteined by firms in the first layer sourcing from all the firms in zeroth la
     \includegraphics[width=\textwidth]{example-image-a}
     \caption{Min-max network} \label{fig:maximal-probability-diagram}
 \end{figure}
+
+\section{Local Maximum}
 
 I will now prove, in two steps, that the min-max network atteins the highest $P$.
 
@@ -205,5 +209,17 @@ Now think back to the social planner problem, that is, picking a network configu
 \end{proof}
 
 Note that the above proof only shows that if the social planner starts with the min-max network and is allowed to change an edge at a time, then he will not do so if $\kappa < (1 - \mu^m) \ \pi$ and will remove all edges, one by one, if $\kappa > (1 - \mu^m) \ \pi$. It does not prove that there does not exist another configuration that attains a higher payoff.
+
+\section{Global maximum}
+
+I will prove that the min-max network maximises the social welfare. First by proving that the social optimum configuration is very likely to be symmetric. Second by showing that the min-max yields the highest payoff among symmetric production networks.
+
+\begin{claim}
+    The social optimum will tend towards symmetry.
+\end{claim}
+
+\begin{proof}
+    It is sufficient to show that if the social planner has decided to use a particular suppliers, the marginal benefit of linking it to the node with the least number of suppliers is the highest. This happens if the marginal benefit of adding a supplier is decreasing in the existing number of suppliers. This is true because the more suppliers a firm has, the more likely it is that the new supplier will be correlated with the existing one, such that the gain in diversification is decreasing.
+\end{proof}
 
 \end{document}
