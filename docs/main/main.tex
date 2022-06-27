@@ -126,7 +126,7 @@ In this section I will introduce a stylised production game of suppliers' risk d
 
 \subsection{Setup}
 
-Consider a vertical economy producing $K$ goods (as displayed in Figure \ref{fig:vertical-economy-diagram}). Each firm produces a single good and each good is produced by $m$ firms. The good produced in layer $k$ requires only the good produced in layer $k - 1$ as input. Each firm picks a set of suppliers in the previous layer to source from. Establishing a relation with a supplier has a fixed cost $\kappa$. If no firm, among its suppliers, is able to deliver the input good then the firm is not ``functional'' and hence not able to deliver downstream. I assume that being functional yields an exogenous payoff $\pi$. This assumption will be relaxed later by introducing market structure to endogenise $\pi$, but this does not change the main model mechanics. Finally, we assume that firms know the structure of the economy but do not observe the realised supplier relationship in upstream layers. The only source of risk in the model is a idiosyncratic probability $\mu$ that firms in layer $0$, which require no inputs, are not able to carry on production.
+Consider a vertical economy producing $K$ goods (as displayed in Figure \ref{fig:vertical-economy-diagram}). Each firm produces a single good and each good is produced by $m$ firms. The good produced in layer $k$ requires only the good produced in layer $k - 1$ as input. Each firm picks a set of suppliers in the previous layer to source from. Establishing a relation with a supplier has a fixed cost $\kappa$. If no firm, among its suppliers, is able to deliver the input good then the firm is not ``functional'' and hence not able to deliver downstream. I assume that being functional yields an exogenous payoff $\pi$. This assumption will be relaxed later by introducing market structure to endogenise $\pi$, but this does not change the main model mechanics.Finally, we assume that firms know the structure of the economy but do not observe the realised supplier relationship in upstream layers. The only source of risk in the model is a idiosyncratic probability $\mu$ that firms in layer $0$, which require no inputs, are not able to carry on production.
 
 Letting $p_{k, i}$ be the probability of firm $i$ in layer $k$ being functional, the expected payoff for each firm is then
 
@@ -144,9 +144,11 @@ Letting $p_{k, i}$ be the probability of firm $i$ in layer $k$ being functional,
 
 \subsection{Social Planner Problem}
 
+The social planner aims at minimizing aggregate risk while keeping the number of suppliers law for each firm.
+
 \subsection{Firm Problem}
 
-At this stage it is useful to exploit the symmetry granted to us by firms not observing the sourcing of their potential suppliers. Hence, when faced with their supplier decision, it is sufficient for a firm to track the distribution of risk among suppliers and then pick the optimal number of sources at random. Furthermore, this choice will be identical for all firms producing a good, since they are ex-ante equal.
+At this stage it is useful to exploit the symmetry granted to us by firms not observing the sourcing of their potential suppliers. Hence, when faced with their supplier decision, it is sufficient for a firm to track the distribution of risk among suppliers and then pick the optimal number of sources at random. Furthermore, this choice will be identical for all firms producing a good, since they are ex-ante equal. Let $s_k$ be the number of suppliers picked by the repesentative firm in layer $k$.
 
 Let $F_k$ be the distribution of functioning firms producing good $k$. Then, if a firm producing good $k + 1$ were to pick $s_{k + 1}$ suppliers among those producing $k$, the probability that all of its suppliers are not functional is
 
@@ -159,7 +161,7 @@ Let $F_k$ be the distribution of functioning firms producing good $k$. Then, if 
     F_k \coloneqq \Bin\Big(m, p(s_k, F_{k-1}) \Big)
   \end{equation} follows a distribution of three parameters known as $\Beta\Bin(m, f_k, \rho_k)$, with,
 
-  \begin{equation}
+  \begin{equation} \label{eq:moments_of_F}
     \E \big[F_k\big] = m \E \big[p(s_k, F_{k-1})\big] = m f_k \text{ and } \V \big[F_k\big] = m f_k (1 - f_k) \big(1 + (m - 1) \ \rho_k\big)
   \end{equation}
 
@@ -183,9 +185,39 @@ The proof of this lemma {\color{red} is not done yet.} Lemma \ref*{lemma:Ftop} a
 
 \subsubsection{Interpretation of the Parameters}
 
-It is useful at this point to understand the interpretation of the parameters $f$ and $\rho$ in the context of our model.
+It is useful at this point to give an interpretation of $f$ and $\rho$, in the context of our model. Looking back at the relationship between the moments of $F_k$ and these parameters (Equation \ref{eq:moments_of_F}), we can see that $f_k$ is the mean probability of a firm functioning. A more subtle role is played by $\rho_k$. If $\rho_k = 0$, then there is no dispersion on the probability of failure and $F_k$ follows a binomial distribution. In this sense, we can use $\rho_k$ as a measure of suppliers' correlation in the system: if all firms have different suppliers, $\rho_k = 0$, the probability of failure is constant for all firms producing a given good, hence, the number of firms failing follows a binomial distrbution.
+
+Hereafter, I will refer to $f_k$ as \textit{functionality} {\color{red} (find a better name)} and $\rho_k$ as \textit{overdispersion}.
 
 \subsubsection{Evolution of the Parameters}
+
+Let $G$ be the function mapping the functionality and overdispersion between layers. As we have argued above, the downstream functionality and overdispersion depend only on the current one and supplier choices,
+
+\begin{equation}
+  (f_{k + 1}, \rho_{k + 1}) = G(f_k, \rho_k, s_{k + 1}).
+\end{equation}
+
+For large $m$, this mapping has an analytical form,
+
+\begin{equation}
+  f_{k + 1} = G_f(f_k, \rho_k, s_{k + 1}) \coloneqq 1 - \frac{B\Big( (1 - f_k) \frac{1 - \rho_k}{\rho_k} + s, f \frac{1 - \rho}{\rho} \Big)}{B\Big( (1 - f_k) \frac{1 - \rho_k}{\rho_k}, f_k \frac{1 - \rho_k}{\rho_k} \Big)}
+\end{equation}
+
+and
+
+\begin{equation}
+  \rho_{k + 1} = G_\rho(f_k, \rho_k, s_{k + 1}) \coloneqq \frac{ B\left(\frac{1 - \rho_k}{\rho_k}, 2s_{k + 1} \right) \Big/ B\left((1 - f) \frac{1 - \rho_k}{\rho_k}, 2s_{k + 1} \right)}{f_{k + 1} (1 - f_{k + 1})} - \frac{1 - f_{k + 1}}{f_{k + 1}}.
+\end{equation}
+
+where $B$ is the beta function. Despite looking complicated, the function $G$ simply attempts to account for the evolution of tail risk arising from suppliers correlation. As correlation disappears, the function $G$ converges to its binomial counterpart, namely
+
+\begin{equation}
+  \lim_{\rho_k \rightarrow 0} G(f_k, \rho_k, s_{k + 1}) = \begin{pmatrix}
+    1 - (1 - f_k)^{s_{k - 1}} \\ 0
+  \end{pmatrix}.
+\end{equation}
+
+Furthermore, if in a layer each firm has only one supplier, as expected, the distribution remains constant, $(f, \rho) = G(f, \rho, 1)$ for all $f$ and $\rho$.
 
 \newpage
 \nocite{*}
