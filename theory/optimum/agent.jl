@@ -5,7 +5,7 @@ function ∂ₛG₁(x; sₖ)
         -(1 - f)^sₖ * log(1 - f)
     else
         (1 - G₁(x; sₖ)) * (
-            ψ(0, sₖ + (1 - ρ) / ρ) - 
+            ψ(0, sₖ + (1 - ρ) / ρ) -
             ψ(0, sₖ + (1 - f) * (1 - ρ) / ρ)
         )
     end
@@ -18,7 +18,7 @@ function agentoptimum(f, ρ; m, r)
 
     brackets = [0.01, m]
 
-    foc(s) = ∂ₛG₁([f, ρ]; sₖ = s) - r
+    foc(s) = ∂ₛG₁([f, ρ]; sₖ=s) - r
 
     pospay = foc(brackets[1]) > 0
     negmax = foc(brackets[2]) < 0
@@ -40,3 +40,8 @@ function G̃(x, m::Int64, r::Float64)
     return G(x; sₖ)
 end
 G̃(x, model::VerticalModel) = G̃(x, model.m, model.r)
+
+function JG̃(x, m::Int64, r::Float64)
+    sₖ = agentoptimum(x[1], x[2]; m, r)
+    return JG(x; sₖ)
+end
