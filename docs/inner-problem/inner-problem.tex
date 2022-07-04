@@ -389,7 +389,7 @@ where we have used $\frac{\text{d}}{\text{d}t} \prescript{}{1}{F}_1(a; b; t) = \
 
 
 \begin{equation}
-    G_{\rho}(\mu, \rho, s) = \frac{ B\left(\frac{1 - \rho}{\rho}, 2s \right) \Big/ B\left(\mu \frac{1 - \rho}{\rho}, 2s \right)}{\mu' (1 - \mu')} - \frac{\mu'}{1 - \mu'}
+    G_{\rho}(\mu, \rho, s) = \frac{ B\left(\frac{1 - \rho}{\rho}, 2s \right) \Big/ B\left(\mu \frac{1 - \rho}{\rho}, 2s \right) - (\mu')^2}{\mu' (1 - \mu')}
 \end{equation}
 
 As a sanity check, we can do the same exercises as above (\ref{eq:limit_Gmu}) and compute the limit as $\rho \rightarrow 0$. We know already that $\lim_{\rho \rightarrow 0} \mu' = \mu^s$. We are left to compute
@@ -401,7 +401,7 @@ As a sanity check, we can do the same exercises as above (\ref{eq:limit_Gmu}) an
 Then, as expected
 
 \begin{equation}
-    \lim_{\rho \rightarrow 0} G_{\rho}(f, \rho, s) = \frac{\mu^{2s}}{\mu^s \big(1 - \mu^s\big)} - \frac{\mu^s}{\big(1 - \mu^s\big)} = 0.
+    \lim_{\rho \rightarrow 0} G_{\rho}(f, \rho, s) = \frac{\mu^{2s} - (\mu^s)^2}{\mu^s \big(1 - \mu^s\big)} = 0.
 \end{equation}
 
 So, if there is no correlation among suppliers and $F \sim \Bin$, there will be no correlation downstream and $F' \sim \Bin$.
