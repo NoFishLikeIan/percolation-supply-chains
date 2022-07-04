@@ -511,14 +511,31 @@ md"## Dynamical System planner"
 # ╔═╡ 32a7c59c-6005-4a90-b41e-81609a2f7317
 modelbasin = VerticalModel(m, 0.01, rbasin, K)
 
+# ╔═╡ 02680d17-2dad-4a3c-a090-de9c290569c7
+begin
+	solver = plannersymmetricsolution(modelbasin; L = 60)
+	sₗ = (f, ρ, k) -> solver(f, ρ, k)
+end
+
+# ╔═╡ 881c1bf9-4ba3-4361-826a-5442efd99361
+md"
+- ``k``: $(@bind k Slider(1:model.K, default = 1, show_value = true))
+"
+
+# ╔═╡ 91606412-8d8e-4110-bb6d-1b8aae93c746
+let
+	xs = ys = range(0, 1; length = 101)
+
+	Δ(f, ρ) = sₗ(f, ρ, k) - agentoptimum(f, ρ; m = modelbasin.m, r = modelbasin.r) 
+	
+	contourf(xs, ys, Δ; c = :coolwarm)
+
+end
+
 # ╔═╡ 88be829b-d7e0-40e0-85a1-27d7e1cdbcda
 function G̃ₛ!(dx, x, p, k)
 	m, r = p
-
-	mb = (1 - modelbasin.μ₀^m) - r
-	isbasal = k == 2
-	
-	sₖ = mb > 0 ? (isbasal ? m : 1) : 0
+	sₖ = sₗ(x[1], [2], k + 1)
 	
 	dx .= G(x; sₖ = sₖ)
 end
@@ -2374,7 +2391,7 @@ version = "0.9.1+5"
 # ╠═a20c0d6e-0e25-40d5-90bf-e156c4721b85
 # ╟─d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
 # ╠═e901e035-1c0f-48ad-aae9-aee946027a04
-# ╟─91b18abe-f770-4613-9c84-8ebe9041ec98
+# ╠═91b18abe-f770-4613-9c84-8ebe9041ec98
 # ╟─777e44ed-5795-43c9-b90d-4bd1019f46ea
 # ╟─2d0b4c04-f29c-4fbd-ba29-c9b1a312c0f2
 # ╟─7cab141b-40cd-4906-91f2-9e33c19b9985
@@ -2383,6 +2400,9 @@ version = "0.9.1+5"
 # ╠═1c4e601d-2a55-4e5c-a032-4f8e97cd48ee
 # ╟─e5fa7b5e-7d34-46f3-907d-a5462ea1d91e
 # ╠═32a7c59c-6005-4a90-b41e-81609a2f7317
+# ╠═02680d17-2dad-4a3c-a090-de9c290569c7
+# ╟─881c1bf9-4ba3-4361-826a-5442efd99361
+# ╠═91606412-8d8e-4110-bb6d-1b8aae93c746
 # ╠═88be829b-d7e0-40e0-85a1-27d7e1cdbcda
 # ╠═77823dc2-14bc-48cf-9a6a-57f802059ab9
 # ╟─46a5b238-5206-4e59-99eb-16144b463c4e
