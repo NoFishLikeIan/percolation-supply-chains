@@ -1,27 +1,26 @@
 function G₁(x; sₖ)
-    f, ρ = x
+    μ, ρ = x
 
     if ρ ≈ 0
-        1 - (1 - f)^sₖ
-    else 
-        δp = (1 - ρ) / ρ
-    
-        1 - beta((1 - f) * δp + sₖ, f * δp) / beta((1 - f) * δp, f * δp)
+        return μ^sₖ
     end
+
+    ρᵣ = (1 - ρ) / ρ
+    return beta(μ * ρᵣ + sₖ, (1 - μ) * ρᵣ) / beta(μ * ρᵣ, (1 - μ) * ρᵣ)
 end
 
 function G₂(x; sₖ)
-    f, ρ = x
-    
-    fⁿ = G₁(x; sₖ)
+    μ, ρ = x
+    μ′ = G₁(x; sₖ)
 
-    if fⁿ ≈ 1 || fⁿ ≈ 0 # By definition
+    if μ′ ≈ 1 || μ′ ≈ 0 || ρ ≈ 0 # By definition
         return 0.
     end
 
-    E₁₋ᵣ = beta((1 - ρ) / ρ, 2sₖ) / beta((1 - f) * (1 - ρ) / ρ, 2sₖ)
+    ρᵣ = (1 - ρ) / ρ
+    E₁₋ᵣ = beta(ρᵣ, 2sₖ) / beta(μ * ρᵣ, 2sₖ)
     
-    return (E₁₋ᵣ - (1 - fⁿ)^2) / ((1 - fⁿ) * fⁿ)
+    return (E₁₋ᵣ - (μ′)^2) / (μ′ * (1 - μ′))
 end
 
 G(x; sₖ) = [ G₁(x; sₖ), G₂(x; sₖ) ]

@@ -1,34 +1,26 @@
 function ∂ₛG₁(x; sₖ)
-    f, ρ = x
+    μ, ρ = x
 
-    if ρ ≈ 0
-        -(1 - f)^sₖ * log(1 - f)
-    else
-        (1 - G₁(x; sₖ)) * (
-            ψ(0, sₖ + (1 - ρ) / ρ) - 
-            ψ(0, sₖ + (1 - f) * (1 - ρ) / ρ)
-        )
-    end
+    d = ρ > 0 ? 
+        ψ₀(sₖ + μ * (1 - ρ) / ρ) -  ψ₀(sₖ + (1 - ρ) / ρ) : 
+        log(μ)
+
+    return G₁(x; sₖ) * d
 end
 
 """
-Agent's optimal s given the f and ρ in previous layer.
+Agent's optimal s given the μ and ρ in previous layer.
 """
-function agentoptimum(f, ρ; m, r)
+function agentoptimum(μ, ρ; m, r)
 
-    brackets = [0.01, m]
+    foc(s) = ∂ₛG₁([μ, ρ]; sₖ = s) + r
 
-    foc(s) = ∂ₛG₁([f, ρ]; sₖ = s) - r
-
-    pospay = foc(brackets[1]) > 0
-    negmax = foc(brackets[2]) < 0
-
-    if !pospay
-        brackets[1]
-    elseif !negmax
-        brackets[2]
+    if foc(0) > 0 || μ ≈ 0
+        1e-5
+    elseif foc(m) < 0
+        m
     else
-        find_zero(foc, brackets)
+        find_zero(foc, (0, m))
     end
 end
 
