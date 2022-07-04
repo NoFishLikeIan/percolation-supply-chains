@@ -110,39 +110,73 @@ md"
 # ╔═╡ e518339b-9781-4f37-895f-19343315c79c
 begin
 	L = 10
-	fspace = range(1e-3, 0.99; length = L)
+	μspace = range(1e-3, 0.99; length = L)
 	ρspace = range(1e-3, 0.99; length = L)
-	space = product(fspace, ρspace)
-
+	space = product(μspace, ρspace)
 end
 
 # ╔═╡ 5228005b-19f6-4cab-bd31-31aedb4fcf6c
 let
+
+	dμ = (x -> first(G([x[1], x[2]]; sₖ)) - x[1]).(space)
+	dρ = (x -> last(G([x[1], x[2]]; sₖ)) - x[2]).(space)
+
+	μlim = maximum(abs.(dμ))
+		
 	g1fig = contourf(
-		range(0.01, 0.99, length = 101),
-		range(0.01, 0.99, length = 101),
-		(f, ρ) -> first(G([f, ρ]; sₖ)) - f;
-		c = :RdYlBu, xlabel = L"f", ylabel = L"\rho", title = L"G_{f}(f, \rho, s) - f", dpi = 180,
-		clims = (-.25, .25)
+		μspace, ρspace, dμ';
+		c = :coolwarm, xlabel = L"\mu", ylabel = L"\rho", title = L"G_{\mu}(\mu, \rho, s) - \mu", dpi = 180,
+		clims = (-μlim, μlim)
 	)
 
+	ρlim = maximum(abs.(dρ))
+	
 	g2fig = contourf(
-		range(0.01, 0.99, length = 101),
-		range(0.01, 0.99, length = 101),
-		(f, ρ) -> last(G([f, ρ]; sₖ)) - ρ;
-		c = :RdYlBu, xlabel = L"f", ylabel = L"\rho", title = L"G_{\rho}(f, \rho, s) - \rho", dpi = 180,
-		clims = (-.25, .25)
+		μspace, ρspace, dρ';
+		c = :coolwarm, xlabel = L"f", ylabel = L"\rho", title = L"G_{\rho}(f, \rho, s) - \rho", dpi = 180,
+		clims = (-ρlim, ρlim)
 	)
 	
 	plot(g1fig, g2fig; size = (1000, 400), margins = 5Plots.mm)
-	
 end
 
 # ╔═╡ 7d5ceec9-9496-4a5b-aa8a-4250a30df02f
 let
-	Φ(f, ρ) = G([f, ρ]; sₖ = sₖ) .- [f, ρ]
-	plotvectorfield(Φ, fspace, ρspace; xlabel = L"f", ylabel = L"\rho", title = latexstring("Vector field \$G(x) - x\$"))
+	Φ(μ, ρ) = G([μ, ρ]; sₖ = sₖ) .- [μ, ρ]
+	plotvectorfield(Φ, μspace, ρspace; xlabel = L"\mu", ylabel = L"\rho", title = latexstring("Vector field \$G(x) - x\$"))
 end
+
+# ╔═╡ 96d2b336-da08-4d69-aec7-1f40cb3f4b3c
+md"
+## $\tilde{G}$
+
+``r`` $(@bind r Slider(
+	0.01:0.01:0.6, show_value = true, default = 0.15
+))
+"
+
+# ╔═╡ 0cdd8f03-235b-4236-ae73-4e55373cf838
+function G̃ₛ(x, k::Int64, model::VerticalModel)
+	mb = (1 - model.μ₀^model.m) - model.r 
+	isbasal = k == 2
+	
+	sₖ = mb > 0 ? (isbasal ? model.m : 1) : 0
+	return G(x; sₖ = sₖ)
+end
+
+# ╔═╡ dc3b28b0-def2-4c24-8104-51b9081d51e6
+model = VerticalModel(m, 0.01, r, K)
+
+# ╔═╡ 98904f31-4676-40a1-ab7c-da9c0b6911e0
+md"
+``\mu_0`` $(@bind μ₀ Slider(
+	0:0.01:0.99, show_value = true, default = 0.5
+))
+
+``\rho_0`` $(@bind ρ₀ Slider(
+	0:0.01:0.5, show_value = true, default = 0.3
+))
+"
 
 # ╔═╡ 82d52cc7-c6d4-45e5-8eeb-e81fda6317f8
 function makecurvefrompoints(points)
@@ -160,48 +194,10 @@ function makecurvefrompoints(points)
 	return curve
 end
 
-# ╔═╡ 96d2b336-da08-4d69-aec7-1f40cb3f4b3c
-md"
-## Social $G$
-
-``r`` $(@bind r Slider(
-	0.01:0.01:0.6, show_value = true, default = 0.15
-))
-"
-
-# ╔═╡ dc3b28b0-def2-4c24-8104-51b9081d51e6
-model = VerticalModel(m, 0.01, r, K)
-
-# ╔═╡ dc3fb1d5-ee54-4cdf-a0ef-ac65c68a1846
-md"## Competitive, $\tilde{G}$"
-
-# ╔═╡ 5951bf61-5b86-4d55-9937-c93e8b0aaa1f
-
-
-# ╔═╡ 98904f31-4676-40a1-ab7c-da9c0b6911e0
-md"
-``\mu_0`` $(@bind μ₀ Slider(
-	0.01:0.01:0.99, show_value = true, default = 0.5
-))
-
-``\rho_0`` $(@bind ρ₀ Slider(
-	0.01:0.01:0.5, show_value = true, default = 0.3
-))
-"
-
-# ╔═╡ 0cdd8f03-235b-4236-ae73-4e55373cf838
-function G̃ₛ(x, k::Int64, model::VerticalModel)
-	mb = (1 - model.μ₀^model.m) - model.r 
-	isbasal = k == 2
-	
-	sₖ = mb > 0 ? (isbasal ? model.m : 1) : 0
-	return G(x; sₖ = sₖ)
-end
-
 # ╔═╡ 4e34b762-f359-4d5f-b21a-2fd6246b2315
 begin
 	X = Array{Float64}(undef, 2, model.K, 2) # (comp, soc), k, (f, ρ)
-	X[1, 1, :] = X[2, 1, :] = [1 - μ₀, ρ₀] 
+	X[1, 1, :] = X[2, 1, :] = [μ₀, ρ₀] 
 
 	for k ∈ 2:model.K
 		X[1, k, :] = G̃(X[1, k - 1, :], model)
@@ -210,31 +206,41 @@ begin
 end
 
 # ╔═╡ adc389bc-d15b-432f-9213-7ea8222428e0
-begin
-	nullρ = (x -> NG̃ρ(x, model)).(unit)
-	nullf = (x -> NG̃f(x, model)).(unit)
+function stable(μ)
+	function foc₁(ρ)
+		ρ̃ = (1 - ρ) / ρ
+		μ̃ = (1 - μ) / μ
+		return ψ₀(ρ̃) - ψ₀(ρ̃ * μ) - (μ̃ / ρ̃) - (r / μ)
+	end
 
-	ρcurve = makecurvefrompoints(nullρ)
-	fcurve = makecurvefrompoints(nullf)
-	""
+	try
+		return find_zero(foc₁, (1e-5, 1 - 1e-5))
+	catch
+		return NaN
+	end
+
 end
 
 # ╔═╡ ae7a7c1d-c3b6-4dc8-aeab-ef2af11ac25d
 begin	
 
-	Φ̃(f, ρ) = G̃([f, ρ], model) .- [f, ρ]
+	Φ̃(μ, ρ) = G̃([μ, ρ], model) .- [μ, ρ]
 
 	vecfig = plotvectorfield(
-		Φ̃, fspace, ρspace; 
-		xlabel = L"f", ylabel = L"\rho",
-		xlims = extrema(fspace), 
-		ylims = extrema(ρspace),
+		Φ̃, μspace, ρspace; 
+		xlabel = L"\mu", ylabel = L"\rho",
+		xlims = (-0.01, 1.01), 
+		ylims = (-0.01, 1.01),
 		aspect_ratio = 1, dpi = 180
 	)
 
+	plot!(
+		vecfig, 
+		range(0, 1, length = 1000), stable;
+		c = :black
+	)
+
 	
-	plot!(vecfig, unit, ρcurve; c = :darkgreen, label = L"G_\rho = \rho", linewidth = 2, alpha = 1., linestyle = :dot)
-	plot!(vecfig, fcurve, unit; c = :darkred, label = L"G_f = f", linewidth = 2, alpha = 0.5)
 
 	# Competitive
 	plot!(vecfig, X[1, :, 1], X[1, :, 2], c = :red, label = L"x^{(c)}_k")
@@ -333,10 +339,9 @@ begin
 		aspect_ratio = 1, 
 		xlims = extrema(xbasin), 
 		ylims = extrema(ybasin),
-		dpi = 100, clims = (0, 1),
-		xlabel = latexstring(" Fraction of producing firms, \$f\$"), 
-		ylabel = latexstring(" Suppliers' correlation, \$ \\rho \$"),
-		title = "Basin of attraction",
+		dpi = 180, clims = (0, 1),
+		xlabel = L"\mu", ylabel = L"\rho",
+		title = latexstring("Basin of attraction with \$\\kappa / \\pi =$rbasin\$"),
 		linewidth = 0
 	)
 
@@ -372,7 +377,7 @@ begin
 end
 
 # ╔═╡ e901e035-1c0f-48ad-aae9-aee946027a04
-savefig(basinfig, joinpath("/mnt/c/Users/andre/dev/andreatitton.something/content/images/", "basin_small.png"))
+savefig(basinfig, joinpath("../docs/plots", "basin_small.png"))
 
 # ╔═╡ 91b18abe-f770-4613-9c84-8ebe9041ec98
 begin
@@ -387,7 +392,7 @@ begin
 		clims = clims,
 		dpi = 180, 
 		xlims = (0, 1), ylims = (0, 1),
-		xlabel = L"f", ylabel = L"\rho",
+		xlabel = L"\mu", ylabel = L"\rho",
 		title = latexstring("\$\\tilde{s}_a(f, \\rho)\$ with \$\\kappa / \\pi = $rlow\$"),
 	)
 
@@ -400,7 +405,7 @@ begin
 	end
 
 	
-	# savefig(agentsfig, joinpath("../docs/plots", "agents.png"))
+	savefig(agentsfig, joinpath("../docs/plots", "agents.png"))
 	
 	agentsfig
 end
@@ -413,38 +418,38 @@ begin
 	dsbif = DiscreteDynamicalSystem(G̃!, [0.9, 0.1], [100, 0.01])
 	n = 2000
 	Ttr = 2000
-	rvalues = range(0.01, 0.5; length = 251)
+	rvalues = range(0.01, 0.5; length = 351)
 	output = orbitdiagram(dsbif, [1, 2], 2, rvalues; n = n, Ttr = Ttr)
 end
 
 # ╔═╡ 7cab141b-40cd-4906-91f2-9e33c19b9985
 begin
 
-	fbars = []
+	μbars = []
 	ρbars = []
 
 	for out ∈ output
 
-		push!(fbars, out[1][1])
+		push!(μbars, out[1][1])
 		push!(ρbars, out[1][2])
 	end
 
-	first_zero = findfirst(f -> isnan(f) || f ≈ 0 , fbars)
-	tipping_point = !isnothing(first_zero) ? first_zero : length(fbars)
+	first_zero = findfirst(μ -> μ ≈ 1 , μbars)
+	tipping_point = !isnothing(first_zero) ? first_zero : length(μbars)
 
 	fig = plot(
-		rvalues[1:(tipping_point - 1)], fbars[1:(tipping_point - 1)];
+		rvalues[1:(tipping_point - 1)], μbars[1:(tipping_point - 1)];
 		c = :darkblue,
-		ylabel = L"f",
+		ylabel = L"\mu",
 		yguidefontcolor = :darkblue,
 		xlabel = L"\kappa / \pi",
 		legend = false, rightmargin = 20Plots.mm,
 		alpha = 0.8, dpi = 180,
-		ylims = (-0.01, 1)
+		ylims = (-0.01, 1.01)
 	)
 
 	plot!(
-		fig, rvalues[tipping_point:end], fbars[tipping_point:end],
+		fig, rvalues[tipping_point:end], μbars[tipping_point:end],
 		c = :darkblue
 	)
 
@@ -465,8 +470,16 @@ begin
 		alpha = 0.8,
 		yguidefontcolor = :darkred)
 
+	plot!(
+		fig, rvalues[tipping_point:end], ρbars[tipping_point:end],
+		c = :darkred
+	)
+
 	
 end
+
+# ╔═╡ aafa8bcf-0bba-41f9-bbe3-636cd1cfd3f3
+rvalues[tipping_point:end]
 
 # ╔═╡ b480192d-79ff-494f-b320-fc09436f07d0
 # savefig(fig, joinpath("../docs/plots", "biftipping.png"))
@@ -475,7 +488,7 @@ end
 begin 
 
 	sagentbif = [
-		agentoptimum(fbars[i], ρbars[i]; m, r)
+		agentoptimum(μbars[i], ρbars[i]; m, r)
 		for (i, r) ∈ enumerate(rvalues)
 	]
 	
@@ -2369,16 +2382,14 @@ version = "0.9.1+5"
 # ╟─e518339b-9781-4f37-895f-19343315c79c
 # ╟─5228005b-19f6-4cab-bd31-31aedb4fcf6c
 # ╟─7d5ceec9-9496-4a5b-aa8a-4250a30df02f
-# ╠═82d52cc7-c6d4-45e5-8eeb-e81fda6317f8
 # ╟─96d2b336-da08-4d69-aec7-1f40cb3f4b3c
-# ╠═dc3b28b0-def2-4c24-8104-51b9081d51e6
-# ╟─dc3fb1d5-ee54-4cdf-a0ef-ac65c68a1846
-# ╠═5951bf61-5b86-4d55-9937-c93e8b0aaa1f
-# ╟─98904f31-4676-40a1-ab7c-da9c0b6911e0
 # ╟─0cdd8f03-235b-4236-ae73-4e55373cf838
+# ╠═dc3b28b0-def2-4c24-8104-51b9081d51e6
+# ╟─98904f31-4676-40a1-ab7c-da9c0b6911e0
+# ╟─82d52cc7-c6d4-45e5-8eeb-e81fda6317f8
 # ╟─4e34b762-f359-4d5f-b21a-2fd6246b2315
-# ╟─ae7a7c1d-c3b6-4dc8-aeab-ef2af11ac25d
 # ╟─adc389bc-d15b-432f-9213-7ea8222428e0
+# ╠═ae7a7c1d-c3b6-4dc8-aeab-ef2af11ac25d
 # ╠═381fc3b1-55b3-48dc-85cd-1a4efab77d97
 # ╠═9f11ee9e-e89f-41c4-8ef4-d91c7d4e8db3
 # ╠═779daf41-9752-4653-b3f0-9fe7de089396
@@ -2387,14 +2398,14 @@ version = "0.9.1+5"
 # ╟─766f7042-6a31-48e1-9e35-b2cd08835087
 # ╟─fc984dae-fa9f-43e1-abf9-9637563941fe
 # ╠═25c861f8-9103-4e4f-a76f-b1816d842e31
-# ╠═1512ddae-76c5-4c86-b033-c6e82bd9aca5
-# ╠═a20c0d6e-0e25-40d5-90bf-e156c4721b85
-# ╟─d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
+# ╟─a20c0d6e-0e25-40d5-90bf-e156c4721b85
+# ╠═d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
 # ╠═e901e035-1c0f-48ad-aae9-aee946027a04
 # ╠═91b18abe-f770-4613-9c84-8ebe9041ec98
 # ╟─777e44ed-5795-43c9-b90d-4bd1019f46ea
 # ╟─2d0b4c04-f29c-4fbd-ba29-c9b1a312c0f2
 # ╟─7cab141b-40cd-4906-91f2-9e33c19b9985
+# ╠═aafa8bcf-0bba-41f9-bbe3-636cd1cfd3f3
 # ╠═b480192d-79ff-494f-b320-fc09436f07d0
 # ╟─34baaefb-27b2-445e-9f3e-e5d128acd6ef
 # ╠═1c4e601d-2a55-4e5c-a032-4f8e97cd48ee
