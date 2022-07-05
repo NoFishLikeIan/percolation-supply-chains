@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.18.0
+# v0.19.4
 
 using Markdown
 using InteractiveUtils
@@ -53,10 +53,12 @@ begin
 	include("../theory/utils/dynamicalsystem.jl")
 	include("../theory/utils/distcompound.jl")
 	include("../theory/utils/lawofmotion.jl")
+	include("../theory/utils/plotting.jl")
 	
 	include("../theory/optimum/planner.jl")
 	include("../theory/optimum/agent.jl")
 	include("../theory/optimum/correlation.jl")
+	
 end
 
 # ╔═╡ 7eec1e2e-f469-4437-8c27-1e86bccc3d9e
@@ -81,16 +83,16 @@ begin
 	  v = @. scale * last(field)
 	
 	  quiver!(
-		  figure, xm, ym, 
-		  quiver = (u, v), line_z=repeat(norm.(field), inner=4), 
-		  plotargs...; plotkwargs...
+		  figure, xm, ym, plotargs...;
+		  quiver = (u, v), line_z=repeat(norm.(field), inner=4),
+		  plotkwargs...
 	  )
 	
 	end
 end
 
 # ╔═╡ 551ba67b-5317-4dd0-9b9d-126ca8c13eb0
-m = 100; K = 20
+m = 100; K = 50
 
 # ╔═╡ 7bb7dd41-0768-476f-b815-536607ecbdf0
 unit = range(0.01, 0.99; length = 50)
@@ -109,7 +111,7 @@ md"
 
 # ╔═╡ e518339b-9781-4f37-895f-19343315c79c
 begin
-	L = 10
+	L = 13
 	μspace = range(1e-3, 0.99; length = L)
 	ρspace = range(1e-3, 0.99; length = L)
 	space = product(μspace, ρspace)
@@ -140,43 +142,11 @@ let
 	plot(g1fig, g2fig; size = (1000, 400), margins = 5Plots.mm)
 end
 
-# ╔═╡ 7d5ceec9-9496-4a5b-aa8a-4250a30df02f
-let
-	Φ(μ, ρ) = G([μ, ρ]; sₖ = sₖ) .- [μ, ρ]
-	plotvectorfield(Φ, μspace, ρspace; xlabel = L"\mu", ylabel = L"\rho", title = latexstring("Vector field \$G(x) - x\$"))
-end
+# ╔═╡ 381fc3b1-55b3-48dc-85cd-1a4efab77d97
+md"## Dynamical System agent"
 
-# ╔═╡ 96d2b336-da08-4d69-aec7-1f40cb3f4b3c
-md"
-## $\tilde{G}$
+# ╔═╡ 31979ba6-1714-4ddb-9f27-ce1f450ece70
 
-``r`` $(@bind r Slider(
-	0.01:0.01:0.6, show_value = true, default = 0.15
-))
-"
-
-# ╔═╡ 0cdd8f03-235b-4236-ae73-4e55373cf838
-function G̃ₛ(x, k::Int64, model::VerticalModel)
-	mb = (1 - model.μ₀^model.m) - model.r 
-	isbasal = k == 2
-	
-	sₖ = mb > 0 ? (isbasal ? model.m : 1) : 0
-	return G(x; sₖ = sₖ)
-end
-
-# ╔═╡ dc3b28b0-def2-4c24-8104-51b9081d51e6
-model = VerticalModel(m, 0.01, r, K)
-
-# ╔═╡ 98904f31-4676-40a1-ab7c-da9c0b6911e0
-md"
-``\mu_0`` $(@bind μ₀ Slider(
-	0:0.01:0.99, show_value = true, default = 0.5
-))
-
-``\rho_0`` $(@bind ρ₀ Slider(
-	0:0.01:0.5, show_value = true, default = 0.3
-))
-"
 
 # ╔═╡ 82d52cc7-c6d4-45e5-8eeb-e81fda6317f8
 function makecurvefrompoints(points)
@@ -194,6 +164,23 @@ function makecurvefrompoints(points)
 	return curve
 end
 
+# ╔═╡ c28509b7-df3e-44ba-b130-7626590f2f01
+xbasin = ybasin = range(0.01, 0.99; length = 301)
+
+# ╔═╡ dc3b28b0-def2-4c24-8104-51b9081d51e6
+model = VerticalModel(m, 0.01, 0.1, K)
+
+# ╔═╡ 98904f31-4676-40a1-ab7c-da9c0b6911e0
+md"
+``\mu_0`` $(@bind μ₀ Slider(
+	0:0.01:0.99, show_value = true, default = 0.5
+))
+
+``\rho_0`` $(@bind ρ₀ Slider(
+	0:0.01:0.99, show_value = true, default = 0.3
+))
+"
+
 # ╔═╡ 4e34b762-f359-4d5f-b21a-2fd6246b2315
 begin
 	X = Array{Float64}(undef, 2, model.K, 2) # (comp, soc), k, (f, ρ)
@@ -201,63 +188,30 @@ begin
 
 	for k ∈ 2:model.K
 		X[1, k, :] = G̃(X[1, k - 1, :], model)
-		X[2, k, :] = G̃ₛ(X[2, k - 1, :], k, model)
 	end
-end
-
-# ╔═╡ adc389bc-d15b-432f-9213-7ea8222428e0
-function stable(μ)
-	function foc₁(ρ)
-		ρ̃ = (1 - ρ) / ρ
-		μ̃ = (1 - μ) / μ
-		return ψ₀(ρ̃) - ψ₀(ρ̃ * μ) - (μ̃ / ρ̃) - (r / μ)
-	end
-
-	try
-		return find_zero(foc₁, (1e-5, 1 - 1e-5))
-	catch
-		return NaN
-	end
-
 end
 
 # ╔═╡ ae7a7c1d-c3b6-4dc8-aeab-ef2af11ac25d
 begin	
 
-	Φ̃(μ, ρ) = G̃([μ, ρ], model) .- [μ, ρ]
-
-	vecfig = plotvectorfield(
-		Φ̃, μspace, ρspace; 
-		xlabel = L"\mu", ylabel = L"\rho",
-		xlims = (-0.01, 1.01), 
-		ylims = (-0.01, 1.01),
-		aspect_ratio = 1, dpi = 180
-	)
-
-	plot!(
-		vecfig, 
-		range(0, 1, length = 1000), stable;
-		c = :black
-	)
-
+	vecfig = agentvectorfieldplot(model.m, model.r; L= 10, rescale = 4)
 	
 
 	# Competitive
-	plot!(vecfig, X[1, :, 1], X[1, :, 2], c = :red, label = L"x^{(c)}_k")
-	scatter!(vecfig, [X[1, 1, 1]], [X[1, 1, 2]], c = :red, label = nothing)
+	plot!(vecfig, X[1, :, 1], X[1, :, 2], c = :darkgreen, label = L"x^{(c)}_k")
+	scatter!(vecfig, [X[1, 1, 1]], [X[1, 1, 2]], c = :darkgreen, label = nothing)
 
-	# Social planner
-	plot!(vecfig, X[2, :, 1], X[2, :, 2], c = :blue, label = L"x^{(s)}_k", linestyle = :dash)
-	scatter!(vecfig, [X[2, 1, 1]], [X[2, 1, 2]], c = :blue, label = nothing)
+	if false
+		# Social planner
+		plot!(vecfig, X[2, :, 1], X[2, :, 2], c = :blue, label = L"x^{(s)}_k", linestyle = :dash)
+		scatter!(vecfig, [X[2, 1, 1]], [X[2, 1, 2]], c = :blue, label = nothing)
+	end
 
 	
 
 	vecfig
 
 end
-
-# ╔═╡ 381fc3b1-55b3-48dc-85cd-1a4efab77d97
-md"## Dynamical System agent"
 
 # ╔═╡ 779daf41-9752-4653-b3f0-9fe7de089396
 function G̃!(dx, x, p, t)
@@ -266,20 +220,73 @@ function G̃!(dx, x, p, t)
 	dx .= G̃(x, model)
 end
 
-# ╔═╡ c28509b7-df3e-44ba-b130-7626590f2f01
+# ╔═╡ 48b46e7a-5fc1-4b58-a9e8-73c2c532a3f9
+md"
+## Behaviour on the $\rho = 0$ axis.
+
+``r`` $(@bind r0 Slider(
+	0.01:0.005:1, 
+	show_value = true, default = 0.05
+))
+
+"
+
+# ╔═╡ 5a6baa64-9695-46cb-b59b-f289b0872ff7
 begin
-	xbasin = ybasin = range(0.01, 0.99; length = 301)
-	
-	curve(f, ρ, r) = ψ₀(1 / ρ) - ψ₀((1 - f * (1 - ρ)) / ρ) - r / (1 - f)
-	f̃(ρ, r) = find_zeros(f -> curve(f, ρ, r), [0, 1])
+	function plotevolution(xs, fn::Function, args...; kwargs...)
+		figure = plot(); plotevolution!(figure, xs, fn, args...; kwargs...)
+		return figure
+	end
+	function plotevolution!(fig, xs, fn::Function, args...; kwargs...)
+		xlims = extrema(xs)
+				
+		plot!(
+			fig, xs, fn, 
+			aspect_ratio = 1, xlims = xlims, ylims = xlims, 
+			args...; kwargs...
+		)
+		
+		plot!(fig, xs, x -> x, linestyle = :dash, c = :black, label = nothing)
+		
+		try 
+			roots = find_zeros(x -> fn(x) - x, xlims...)
+			colors = [abs(∂(fn, x₀)) < 1 ? :green : :red for x₀ ∈ roots]
+			scatter!(fig, roots, fn.(roots), label = nothing, c = colors)
+		catch end
+		
+	end
 end
 
-# ╔═╡ b1580bc0-7493-4f4d-8c9c-a20537c9aa64
-md"
-``r`` $(@bind rschoice Slider(
-	0.01:0.01:0.6, show_value = true, default = 0.1
-))
-"
+# ╔═╡ 23fbfae9-f653-4352-a238-55a27beabe99
+begin
+	g(μ; r) = - r / log(μ)
+	g′(μ; r) = r / (μ * log(μ)^2)
+end
+
+# ╔═╡ e93c0097-0291-4c4e-bb3d-949d3e3ea3c6
+begin
+	denseunit = range(0, 1; length = 501)
+	steady_states = find_zeros(x -> x * log(x) + r0, (0, 1))
+
+	push!(steady_states, 0)
+	
+	evolfig = plotevolution(
+		denseunit, μ -> g(μ; r = r0);
+		xlims = (-0.01, 1.01),  ylims = (-0.01, 1.01),
+		label = L"\tilde{G}_{\mu}(\mu, 0, \tilde{s})",
+		c = :darkgreen
+	)
+
+	stable = [
+		μ̄ < r0 ? :darkblue : :darkred for μ̄ ∈ steady_states
+	]
+	
+	scatter!(
+		evolfig, steady_states, steady_states; 
+		label = nothing, c = stable
+	)
+
+end
 
 # ╔═╡ fc984dae-fa9f-43e1-abf9-9637563941fe
 md"
@@ -287,38 +294,14 @@ md"
 
 
 ``r`` $(@bind rbasin Slider(
-	0.01:0.01:0.6, show_value = true, default = 0.1
+	0.01:0.005:0.2, 
+	show_value = true, default = 0.05
 ))
 
 "
 
-# ╔═╡ 766f7042-6a31-48e1-9e35-b2cd08835087
-let
-	ds = DiscreteDynamicalSystem(G̃!, [0.9, 0.5], [100, rschoice])
-	T = 35
-
-	sagent = Vector{Float64}(undef, T + 1)
-	
-	for (j, x) ∈ eachrow(trajectory(ds, T)) |> enumerate
-		sagent[j] = agentoptimum(x[1], x[2]; m = model.m, r = rbasin)
-	end
-
-
-	plot(0:T, sagent; xlabel = L"k", ylabel = L"s", marker = :o, ylims = (0, 2.5))
-end
-
 # ╔═╡ 25c861f8-9103-4e4f-a76f-b1816d842e31
-ds = DiscreteDynamicalSystem(G̃!, [0.99, 0.01], [100, rbasin])
-
-# ╔═╡ 1512ddae-76c5-4c86-b033-c6e82bd9aca5
-function isstable(x, m, r)
-	A = JG̃(x, m, r)
-	λ, v = eigen(A)
-
-	direction = sign(v[1, 1] * v[2, 1]) > 0 ? 2 : 1
-
-	return real(λ[direction]) > 0 ? 1 : 2
-end
+ds = DiscreteDynamicalSystem(G̃!, [0.01, 0.01], [100, rbasin])
 
 # ╔═╡ a20c0d6e-0e25-40d5-90bf-e156c4721b85
 begin
@@ -332,7 +315,7 @@ end
 # ╔═╡ d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
 begin
 	pal = palette(:Blues, length(attractors))
-	conv = (b -> b > 0 ? resattractors[b] : 0).(basins)
+	conv = (b -> b > 0 ? resattractors[b] : 1).(basins)
 	basinfig = contourf(
 		xbasin, ybasin, conv'; 
 		c = pal,
@@ -349,27 +332,12 @@ begin
 
 	stablecolors = [:darkred, :blue]
 		
-	for (j, ρ) ∈ enumerate(ybasin)
-		label = j > 1 ? nothing : "Unstable"
-		
-		sols = f̃(ρ, rbasin)
-
-		c = [
-			stablecolors[isstable([f, ρ], m, r)] for f ∈ sols
-		]
-			
-		ys = repeat([ρ], length(sols))
-		
-		scatter!(basinfig, sols, ys,  markersize = 1.5, c = c, label = label)
-	end
-
 	for (j, pair) ∈ enumerate(attractors)
 		key, coord = pair
-		label = j > 1 ? nothing : "Stable"
 		x, y = coord |> first
 		scatter!(basinfig, [x], [y], 
 			c = :darkgreen, markersize = 1.5,
-			label = label
+			label = nothing
 		)
 	end
 	
@@ -377,7 +345,10 @@ begin
 end
 
 # ╔═╡ e901e035-1c0f-48ad-aae9-aee946027a04
+# ╠═╡ disabled = true
+#=╠═╡
 savefig(basinfig, joinpath("../docs/plots", "basin_small.png"))
+  ╠═╡ =#
 
 # ╔═╡ 91b18abe-f770-4613-9c84-8ebe9041ec98
 begin
@@ -522,13 +493,18 @@ end
 md"## Dynamical System planner"
 
 # ╔═╡ 32a7c59c-6005-4a90-b41e-81609a2f7317
+# ╠═╡ disabled = true
+#=╠═╡
 modelbasin = VerticalModel(m, 0.01, rbasin, K)
+  ╠═╡ =#
 
 # ╔═╡ 02680d17-2dad-4a3c-a090-de9c290569c7
+#=╠═╡
 begin
 	solver = plannersymmetricsolution(modelbasin; L = 60)
 	sₗ = (f, ρ, k) -> solver(f, ρ, k)
 end
+  ╠═╡ =#
 
 # ╔═╡ 881c1bf9-4ba3-4361-826a-5442efd99361
 md"
@@ -536,6 +512,8 @@ md"
 "
 
 # ╔═╡ 91606412-8d8e-4110-bb6d-1b8aae93c746
+# ╠═╡ disabled = true
+#=╠═╡
 let
 	xs = ys = range(0, 1; length = 101)
 
@@ -544,18 +522,23 @@ let
 	contourf(xs, ys, Δ; c = :coolwarm)
 
 end
+  ╠═╡ =#
 
 # ╔═╡ 88be829b-d7e0-40e0-85a1-27d7e1cdbcda
+#=╠═╡
 function G̃ₛ!(dx, x, p, k)
 	m, r = p
 	sₖ = sₗ(x[1], [2], k + 1)
 	
 	dx .= G(x; sₖ = sₖ)
 end
+  ╠═╡ =#
 
 # ╔═╡ 77823dc2-14bc-48cf-9a6a-57f802059ab9
 # ╠═╡ show_logs = false
+#=╠═╡
 dsocial = DiscreteDynamicalSystem(G̃ₛ!, [0.9, 0.1], [m, rbasin])
+  ╠═╡ =#
 
 # ╔═╡ 46a5b238-5206-4e59-99eb-16144b463c4e
 # ╠═╡ disabled = true
@@ -694,6 +677,16 @@ let
 end
   ╠═╡ =#
 
+# ╔═╡ 1512ddae-76c5-4c86-b033-c6e82bd9aca5
+function isstable(x, m, r)
+	A = JG̃(x, m, r)
+	λ, v = eigen(A)
+
+	direction = sign(v[1, 1] * v[2, 1]) > 0 ? 2 : 1
+
+	return real(λ[direction]) > 0 ? 1 : 2
+end
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -717,7 +710,7 @@ SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 [compat]
 Colors = "~0.12.8"
 Combinatorics = "~1.0.2"
-Distributions = "~0.25.62"
+Distributions = "~0.25.64"
 DynamicalSystems = "~2.3.0"
 ForwardDiff = "~0.10.30"
 Interpolations = "~0.13.6"
@@ -737,9 +730,9 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 [[AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
-git-tree-sha1 = "6f1d9bc1c08f9f4a8fa92e3ea3cb50153a1b40d4"
+git-tree-sha1 = "69f7020bd72f069c219b5e8c236c1fa90d2cb409"
 uuid = "621f4979-c628-5d54-868e-fcf4e3e8185c"
-version = "1.1.0"
+version = "1.2.1"
 
 [[AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -764,15 +757,15 @@ version = "0.2.0"
 
 [[ArrayInterface]]
 deps = ["ArrayInterfaceCore", "Compat", "IfElse", "LinearAlgebra", "Static"]
-git-tree-sha1 = "1d062b8ab719670c16024105ace35e6d32988d4f"
+git-tree-sha1 = "6ccb71b40b04ad69152f1f83d5925de13911417e"
 uuid = "4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
-version = "6.0.18"
+version = "6.0.19"
 
 [[ArrayInterfaceCore]]
 deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse"]
-git-tree-sha1 = "5e732808bcf7bbf730e810a9eaafc52705b38bb5"
+git-tree-sha1 = "7d255eb1d2e409335835dc8624c35d97453011eb"
 uuid = "30b0a656-2188-435a-8636-2ec0e6a096e2"
-version = "0.1.13"
+version = "0.1.14"
 
 [[ArrayInterfaceOffsetArrays]]
 deps = ["ArrayInterface", "OffsetArrays", "Static"]
@@ -816,11 +809,6 @@ git-tree-sha1 = "19a35467a82e236ff51bc17a3a44b69ef35185a2"
 uuid = "6e34b625-4abd-537c-b88f-471c36dfa7a0"
 version = "1.0.8+0"
 
-[[CEnum]]
-git-tree-sha1 = "eb4cb44a499229b3b8426dcfb5dd85333951ff90"
-uuid = "fa961155-64e5-5f13-b03f-caf6b980ea82"
-version = "0.4.2"
-
 [[CPUSummary]]
 deps = ["CpuId", "IfElse", "Static"]
 git-tree-sha1 = "b1a532a582dd18b34543366322d390e1560d40a9"
@@ -853,9 +841,9 @@ version = "0.5.1"
 
 [[ChainRulesCore]]
 deps = ["Compat", "LinearAlgebra", "SparseArrays"]
-git-tree-sha1 = "9489214b993cd42d17f44c36e359bf6a7c919abf"
+git-tree-sha1 = "2dd813e5f2f7eec2d1268c57cf2373d3ee91fcea"
 uuid = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
-version = "1.15.0"
+version = "1.15.1"
 
 [[ChangesOfVariables]]
 deps = ["ChainRulesCore", "LinearAlgebra", "Test"]
@@ -933,15 +921,14 @@ uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
 
 [[ConstructionBase]]
 deps = ["LinearAlgebra"]
-git-tree-sha1 = "f74e9d5388b8620b4cee35d4c5a618dd4dc547f4"
+git-tree-sha1 = "59d00b3139a9de4eb961057eabb65ac6522be954"
 uuid = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
-version = "1.3.0"
+version = "1.4.0"
 
 [[Contour]]
-deps = ["StaticArrays"]
-git-tree-sha1 = "9f02045d934dc030edad45944ea80dbd1f0ebea7"
+git-tree-sha1 = "a599cfb8b1909b0f97c5e1b923ab92e1c0406076"
 uuid = "d38c429a-6771-53c6-b99e-75d170b6e991"
-version = "0.5.7"
+version = "0.6.1"
 
 [[CpuId]]
 deps = ["Markdown"]
@@ -998,9 +985,9 @@ version = "0.4.0"
 
 [[DiffEqBase]]
 deps = ["ArrayInterfaceCore", "ChainRulesCore", "DataStructures", "Distributions", "DocStringExtensions", "FastBroadcast", "ForwardDiff", "FunctionWrappers", "LinearAlgebra", "Logging", "MuladdMacro", "NonlinearSolve", "Parameters", "Printf", "RecursiveArrayTools", "Reexport", "Requires", "SciMLBase", "Setfield", "SparseArrays", "StaticArrays", "Statistics", "ZygoteRules"]
-git-tree-sha1 = "ab123ea2e24d20140b284413bff63e80ea976626"
+git-tree-sha1 = "f7a479aac5f3917b8472ac5f1b77d6f296fe58f1"
 uuid = "2b5f629d-d688-5b77-993f-72d75c75574e"
-version = "6.92.0"
+version = "6.92.3"
 
 [[DiffResults]]
 deps = ["StaticArrays"]
@@ -1026,9 +1013,9 @@ uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[Distributions]]
 deps = ["ChainRulesCore", "DensityInterface", "FillArrays", "LinearAlgebra", "PDMats", "Printf", "QuadGK", "Random", "SparseArrays", "SpecialFunctions", "Statistics", "StatsBase", "StatsFuns", "Test"]
-git-tree-sha1 = "0ec161f87bf4ab164ff96dfacf4be8ffff2375fd"
+git-tree-sha1 = "d530092b57aef8b96b27694e51c575b09c7f0b2e"
 uuid = "31c24e10-a181-5473-b8eb-7969acd0382f"
-version = "0.25.62"
+version = "0.25.64"
 
 [[DocStringExtensions]]
 deps = ["LibGit2"]
@@ -1122,12 +1109,6 @@ git-tree-sha1 = "6344aa18f654196be82e62816935225b3b9abe44"
 uuid = "fa42c844-2597-5d31-933b-ebd51ab2693f"
 version = "0.3.1"
 
-[[FileIO]]
-deps = ["Pkg", "Requires", "UUIDs"]
-git-tree-sha1 = "9267e5f50b0e12fdfd5a2455534345c4cf2c7f7a"
-uuid = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
-version = "1.14.0"
-
 [[FillArrays]]
 deps = ["LinearAlgebra", "Random", "SparseArrays", "Statistics"]
 git-tree-sha1 = "246621d23d1f43e3b9c368bf3b72b2331a27c286"
@@ -1164,23 +1145,11 @@ git-tree-sha1 = "2f18915445b248731ec5db4e4a17e451020bf21e"
 uuid = "f6369f11-7733-5829-9624-2563aa707210"
 version = "0.10.30"
 
-[[FreeType]]
-deps = ["CEnum", "FreeType2_jll"]
-git-tree-sha1 = "cabd77ab6a6fdff49bfd24af2ebe76e6e018a2b4"
-uuid = "b38be410-82b0-50bf-ab77-7b57e271db43"
-version = "4.0.0"
-
 [[FreeType2_jll]]
 deps = ["Artifacts", "Bzip2_jll", "JLLWrappers", "Libdl", "Pkg", "Zlib_jll"]
 git-tree-sha1 = "87eb71354d8ec1a96d4a7636bd57a7347dde3ef9"
 uuid = "d7e528f0-a631-5988-bf34-fe36492bcfd7"
 version = "2.10.4+0"
-
-[[FreeTypeAbstraction]]
-deps = ["ColorVectorSpace", "Colors", "FreeType", "GeometryBasics"]
-git-tree-sha1 = "b5c7fe9cea653443736d264b85466bad8c574f4a"
-uuid = "663a7486-cb36-511b-a19d-713bb74d65c9"
-version = "0.9.9"
 
 [[FriBidi_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1315,9 +1284,9 @@ version = "0.5.1"
 
 [[InlineStrings]]
 deps = ["Parsers"]
-git-tree-sha1 = "61feba885fac3a407465726d0c330b3055df897f"
+git-tree-sha1 = "a8671d5c9670a62cb36b7d44c376bdb09181aa26"
 uuid = "842dd82b-1e85-43dc-bf29-5d0ee9dffc48"
-version = "1.1.2"
+version = "1.1.3"
 
 [[IntelOpenMP_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1349,9 +1318,9 @@ version = "0.5.10"
 
 [[Intervals]]
 deps = ["Dates", "Printf", "RecipesBase", "Serialization", "TimeZones"]
-git-tree-sha1 = "5fe139a9f9610d0c61e85c9f522ab8bc12aec9e4"
+git-tree-sha1 = "f3c7f871d642d244e7a27e3fb81e8441e13230d8"
 uuid = "d8418881-c3e1-53bb-8760-2df7ec849ed5"
-version = "1.7.1"
+version = "1.8.0"
 
 [[InverseFunctions]]
 deps = ["Test"]
@@ -1436,11 +1405,6 @@ version = "0.1.10"
 [[LazyArtifacts]]
 deps = ["Artifacts", "Pkg"]
 uuid = "4af54fe1-eca0-43a8-85a7-787d91b784e3"
-
-[[LazyModules]]
-git-tree-sha1 = "a560dd966b386ac9ae60bdd3a3d3a326062d3c3e"
-uuid = "8cdb02fc-e678-4876-92c5-9defec4f444e"
-version = "0.3.1"
 
 [[LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
@@ -1557,21 +1521,15 @@ git-tree-sha1 = "bcaef4fc7a0cfe2cba636d84cda54b5e4e4ca3cd"
 uuid = "d125e4d3-2237-4719-b19c-fa641b8a4667"
 version = "0.1.8"
 
-[[MarchingCubes]]
-deps = ["StaticArrays"]
-git-tree-sha1 = "3bf4baa9df7d1367168ebf60ed02b0379ea91099"
-uuid = "299715c1-40a9-479a-aaf9-4a633d36f717"
-version = "0.1.3"
-
 [[Markdown]]
 deps = ["Base64"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 
 [[MbedTLS]]
-deps = ["Dates", "MbedTLS_jll", "Random", "Sockets"]
-git-tree-sha1 = "1c38e51c3d08ef2278062ebceade0e46cefc96fe"
+deps = ["Dates", "MbedTLS_jll", "MozillaCACerts_jll", "Random", "Sockets"]
+git-tree-sha1 = "891d3b4e8f8415f53108b4918d0183e61e18015b"
 uuid = "739be429-bea8-5141-9913-cc70e7f3736d"
-version = "1.0.3"
+version = "1.1.0"
 
 [[MbedTLS_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -1657,9 +1615,9 @@ version = "0.3.20"
 
 [[OffsetArrays]]
 deps = ["Adapt"]
-git-tree-sha1 = "ec2e30596282d722f018ae784b7f44f3b88065e4"
+git-tree-sha1 = "1ea784113a6aa054c5ebd95945fa5e52c2f378e7"
 uuid = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
-version = "1.12.6"
+version = "1.12.7"
 
 [[Ogg_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1915,9 +1873,9 @@ version = "0.6.33"
 
 [[SciMLBase]]
 deps = ["ArrayInterfaceCore", "CommonSolve", "ConstructionBase", "Distributed", "DocStringExtensions", "IteratorInterfaceExtensions", "LinearAlgebra", "Logging", "Markdown", "RecipesBase", "RecursiveArrayTools", "StaticArraysCore", "Statistics", "Tables", "TreeViews"]
-git-tree-sha1 = "6a3f7d9b084b508e87d12135de950ac969187954"
+git-tree-sha1 = "3243a883fa422a0a5cfe2d3b6ea6287fc396018f"
 uuid = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
-version = "1.42.0"
+version = "1.42.2"
 
 [[Scratch]]
 deps = ["Dates"]
@@ -1982,9 +1940,9 @@ version = "2.1.6"
 
 [[Static]]
 deps = ["IfElse"]
-git-tree-sha1 = "11f1b69a28b6e4ca1cc18342bfab7adb7ff3a090"
+git-tree-sha1 = "46638763d3a25ad7818a15d441e0c3446a10742d"
 uuid = "aedffcd0-7271-4cad-89d0-dc628f76c6d3"
-version = "0.7.3"
+version = "0.7.5"
 
 [[StaticArrays]]
 deps = ["LinearAlgebra", "Random", "StaticArraysCore", "Statistics"]
@@ -1993,9 +1951,9 @@ uuid = "90137ffa-7385-5640-81b9-e52037218182"
 version = "1.5.0"
 
 [[StaticArraysCore]]
-git-tree-sha1 = "6edcea211d224fa551ec8a85debdc6d732f155dc"
+git-tree-sha1 = "66fe9eb253f910fe8cf161953880cfdaef01cdf0"
 uuid = "1e83bf80-4336-4d27-bf5d-d5a4f845583c"
-version = "1.0.0"
+version = "1.0.1"
 
 [[Statistics]]
 deps = ["LinearAlgebra", "SparseArrays"]
@@ -2009,9 +1967,9 @@ version = "1.4.0"
 
 [[StatsBase]]
 deps = ["DataAPI", "DataStructures", "LinearAlgebra", "LogExpFunctions", "Missings", "Printf", "Random", "SortingAlgorithms", "SparseArrays", "Statistics", "StatsAPI"]
-git-tree-sha1 = "642f08bf9ff9e39ccc7b710b2eb9a24971b52b1a"
+git-tree-sha1 = "48598584bacbebf7d30e20880438ed1d24b7c7d6"
 uuid = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
-version = "0.33.17"
+version = "0.33.18"
 
 [[StatsFuns]]
 deps = ["ChainRulesCore", "HypergeometricFunctions", "InverseFunctions", "IrrationalConstants", "LogExpFunctions", "Reexport", "Rmath", "SpecialFunctions"]
@@ -2021,9 +1979,9 @@ version = "1.0.1"
 
 [[StrideArraysCore]]
 deps = ["ArrayInterface", "CloseOpenIntervals", "IfElse", "LayoutPointers", "ManualMemory", "SIMDTypes", "Static", "ThreadingUtilities"]
-git-tree-sha1 = "367989c5c0c856fdf7e7f6577b384e63104fb854"
+git-tree-sha1 = "ac730bd978bf35f9fe45daa0bd1f51e493e97eb4"
 uuid = "7792a7ef-975c-4747-a70f-980b88e8d1da"
-version = "0.3.14"
+version = "0.3.15"
 
 [[StructArrays]]
 deps = ["Adapt", "DataAPI", "StaticArrays", "Tables"]
@@ -2118,16 +2076,10 @@ uuid = "1cfade01-22cf-5700-b092-accc4b62d6e1"
 version = "0.4.1"
 
 [[UnicodePlots]]
-deps = ["ColorTypes", "Contour", "Crayons", "Dates", "FileIO", "FreeTypeAbstraction", "LazyModules", "LinearAlgebra", "MarchingCubes", "NaNMath", "Printf", "SparseArrays", "StaticArrays", "StatsBase", "Unitful"]
-git-tree-sha1 = "ae67ab0505b9453655f7d5ea65183a1cd1b3cfa0"
+deps = ["Crayons", "Dates", "SparseArrays", "StatsBase"]
+git-tree-sha1 = "3cb994143aba28cfe66615702505b2d294cebd3e"
 uuid = "b8865327-cd53-5732-bb35-84acbb429228"
-version = "2.12.4"
-
-[[Unitful]]
-deps = ["ConstructionBase", "Dates", "LinearAlgebra", "Random"]
-git-tree-sha1 = "b649200e887a487468b71821e2644382699f1b0f"
-uuid = "1986cc42-f94f-5a68-af5c-568840ba703d"
-version = "1.11.0"
+version = "2.5.1"
 
 [[Unzip]]
 git-tree-sha1 = "34db80951901073501137bdbc3d5a8e7bbd06670"
@@ -2136,9 +2088,9 @@ version = "0.1.2"
 
 [[VectorizationBase]]
 deps = ["ArrayInterface", "CPUSummary", "HostCPUFeatures", "IfElse", "LayoutPointers", "Libdl", "LinearAlgebra", "SIMDTypes", "Static"]
-git-tree-sha1 = "0453988844dd8ded9d63b3cdfe9e4e26b062c396"
+git-tree-sha1 = "39e55018bccc5a858217db32aa3d9e7decbefd0c"
 uuid = "3d5dd08c-fd9d-11e8-17fa-ed2836048c2f"
-version = "0.21.37"
+version = "0.21.40"
 
 [[Wavelets]]
 deps = ["DSP", "FFTW", "LinearAlgebra", "Reexport", "SpecialFunctions", "Statistics"]
@@ -2374,34 +2326,33 @@ version = "0.9.1+5"
 # ╠═963896ed-ae03-4b68-bec2-6b9917093454
 # ╠═c87845ef-2a91-41c8-933a-b6e139739927
 # ╠═edf0c6f6-db46-11ec-19d0-f3a901cbdf5e
-# ╟─7eec1e2e-f469-4437-8c27-1e86bccc3d9e
+# ╠═7eec1e2e-f469-4437-8c27-1e86bccc3d9e
 # ╠═551ba67b-5317-4dd0-9b9d-126ca8c13eb0
 # ╠═7bb7dd41-0768-476f-b815-536607ecbdf0
 # ╟─b67eb0ba-6db7-40ba-a0b2-21151c4eb748
 # ╟─49e1c995-831b-472e-b68c-b56a21d1f308
-# ╟─e518339b-9781-4f37-895f-19343315c79c
+# ╠═e518339b-9781-4f37-895f-19343315c79c
 # ╟─5228005b-19f6-4cab-bd31-31aedb4fcf6c
-# ╟─7d5ceec9-9496-4a5b-aa8a-4250a30df02f
-# ╟─96d2b336-da08-4d69-aec7-1f40cb3f4b3c
-# ╟─0cdd8f03-235b-4236-ae73-4e55373cf838
+# ╟─381fc3b1-55b3-48dc-85cd-1a4efab77d97
+# ╠═9f11ee9e-e89f-41c4-8ef4-d91c7d4e8db3
+# ╠═31979ba6-1714-4ddb-9f27-ce1f450ece70
+# ╟─82d52cc7-c6d4-45e5-8eeb-e81fda6317f8
+# ╠═c28509b7-df3e-44ba-b130-7626590f2f01
 # ╠═dc3b28b0-def2-4c24-8104-51b9081d51e6
 # ╟─98904f31-4676-40a1-ab7c-da9c0b6911e0
-# ╟─82d52cc7-c6d4-45e5-8eeb-e81fda6317f8
 # ╟─4e34b762-f359-4d5f-b21a-2fd6246b2315
-# ╟─adc389bc-d15b-432f-9213-7ea8222428e0
-# ╠═ae7a7c1d-c3b6-4dc8-aeab-ef2af11ac25d
-# ╠═381fc3b1-55b3-48dc-85cd-1a4efab77d97
-# ╠═9f11ee9e-e89f-41c4-8ef4-d91c7d4e8db3
-# ╠═779daf41-9752-4653-b3f0-9fe7de089396
-# ╠═c28509b7-df3e-44ba-b130-7626590f2f01
-# ╟─b1580bc0-7493-4f4d-8c9c-a20537c9aa64
-# ╟─766f7042-6a31-48e1-9e35-b2cd08835087
+# ╟─ae7a7c1d-c3b6-4dc8-aeab-ef2af11ac25d
+# ╟─48b46e7a-5fc1-4b58-a9e8-73c2c532a3f9
+# ╟─5a6baa64-9695-46cb-b59b-f289b0872ff7
+# ╟─23fbfae9-f653-4352-a238-55a27beabe99
+# ╟─e93c0097-0291-4c4e-bb3d-949d3e3ea3c6
 # ╟─fc984dae-fa9f-43e1-abf9-9637563941fe
-# ╠═25c861f8-9103-4e4f-a76f-b1816d842e31
+# ╟─779daf41-9752-4653-b3f0-9fe7de089396
+# ╟─25c861f8-9103-4e4f-a76f-b1816d842e31
 # ╟─a20c0d6e-0e25-40d5-90bf-e156c4721b85
-# ╠═d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
+# ╟─d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
 # ╠═e901e035-1c0f-48ad-aae9-aee946027a04
-# ╠═91b18abe-f770-4613-9c84-8ebe9041ec98
+# ╟─91b18abe-f770-4613-9c84-8ebe9041ec98
 # ╟─777e44ed-5795-43c9-b90d-4bd1019f46ea
 # ╟─2d0b4c04-f29c-4fbd-ba29-c9b1a312c0f2
 # ╟─7cab141b-40cd-4906-91f2-9e33c19b9985
@@ -2424,5 +2375,6 @@ version = "0.9.1+5"
 # ╠═e34b433d-bfd0-4de0-a9f2-e418438b366f
 # ╟─11dba15a-f8ea-46fd-8f71-2012aee09084
 # ╟─a042074e-7393-4822-b15b-dc884cb9acc8
+# ╠═1512ddae-76c5-4c86-b033-c6e82bd9aca5
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
