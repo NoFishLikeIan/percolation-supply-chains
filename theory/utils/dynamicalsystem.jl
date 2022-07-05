@@ -1,27 +1,20 @@
 """
-f nullcline for G̃
+Check if x ∈ (0, 1)
 """
-function NG̃f(ρ, model::VerticalModel)
-    find_zeros(f -> first(G̃([f, ρ], model.m, model.r)) - f, 0, 1)
+function isinopeninterval(x; ε = 0)
+    ε < x < 1 - ε
 end
 
-"""
-ρ nullcline for G̃
-"""
-function NG̃ρ(f, model::VerticalModel)
-    find_zeros(ρ -> last(G̃([f, ρ], model.m, model.r)) - ρ, 0, 1)
-end
-
-function fixedpoints(model, x₀)
-    function f!(F, x)
-        F .= G̃(x, model.m, model.r) - x
+function steadystatecurve(μ, r)
+    function focss(ρ)
+        der = ∂ₛG₁([μ, ρ]; sₖ = 1)
+        return der + r
     end
-    
-    sol = mcpsolve(
-        f!, [0., 0.], [1., 1.], x₀,
-        autodiff = :forward
-    )
 
-    return sol.zero
+    try
+        find_zero(focss, (1e-3, 1 - 1e-3))
 
-end 
+    catch
+        NaN
+    end
+end

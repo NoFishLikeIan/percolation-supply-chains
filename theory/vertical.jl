@@ -34,6 +34,7 @@ include("utils/probability.jl")
 include("utils/dynamicalsystem.jl")
 include("utils/distcompound.jl")
 include("utils/lawofmotion.jl")
+include("utils/plotting.jl")
 
 include("optimum/planner.jl")
 include("optimum/agent.jl")
@@ -47,5 +48,6 @@ m = 100 # Size nodes
 r = 0.1 # cost / profit ratio
 
 model = VerticalModel(m, μ₀, r, K)
-@btime plannersymmetricsolution(model; L=50)
-@btime plannersymmetricsolution(model; L=100)
+
+# Plots
+
