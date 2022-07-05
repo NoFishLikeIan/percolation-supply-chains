@@ -1,7 +1,7 @@
 function G₁(x; sₖ)
     μ, ρ = x
 
-    if ρ ≈ 0
+    if ρ < 1e-6
         return μ^sₖ
     end
 
@@ -13,7 +13,7 @@ function G₂(x; sₖ)
     μ, ρ = x
     μ′ = G₁(x; sₖ)
 
-    if μ′ ≈ 1 || μ′ ≈ 0 || ρ ≈ 0 # By definition
+    if μ′ > 1 - 1e-6 || μ′ < 1e-6 || ρ < 1e-6 # By definition
         return 0.
     end
 
