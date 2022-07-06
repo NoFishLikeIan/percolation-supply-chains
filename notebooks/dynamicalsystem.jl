@@ -61,38 +61,27 @@ begin
 	
 end
 
-# ╔═╡ 7eec1e2e-f469-4437-8c27-1e86bccc3d9e
-begin
-	function plotvectorfield(g::Function, xs, ys, plotargs...; plotkwargs...)
-	  fig = plot(plotargs...;  plotkwargs...)
-	  plotvectorfield!(fig, g, xs, ys)
-	  return fig
+# ╔═╡ 82d52cc7-c6d4-45e5-8eeb-e81fda6317f8
+function makecurvefrompoints(points)
+	T = length(points)
+	C = maximum(length.(points))
+
+	curve = NaN .* zeros(T, C)
+
+	for (t, p) ∈ enumerate(points)
+		for (i, pᵢ) ∈ enumerate(p)
+			curve[t, i] = pᵢ
+		end
 	end
-	
-	function plotvectorfield!(figure, g::Function, xs, ys, plotargs...; plotkwargs...)
-	
-	  N, M = length(xs), length(ys)
-	  Δx = last(extrema(xs)) - first(extrema(xs))
-	
-	  xm, ym = (repeat(xs, outer=length(ys)), repeat(ys, inner=length(xs)))
-	
-	  field = g.(xm, ym)
-	
-	  scale = 3Δx / N
-	  u = @. scale * first(field)
-	  v = @. scale * last(field)
-	
-	  quiver!(
-		  figure, xm, ym, plotargs...;
-		  quiver = (u, v), line_z=repeat(norm.(field), inner=4),
-		  plotkwargs...
-	  )
-	
-	end
+
+	return curve
 end
 
 # ╔═╡ 551ba67b-5317-4dd0-9b9d-126ca8c13eb0
 m = 100; K = 50
+
+# ╔═╡ 077b426a-ac05-4b6d-bcf1-0e379a82ba76
+Norbit, Ttr = 2000, 2000
 
 # ╔═╡ 7bb7dd41-0768-476f-b815-536607ecbdf0
 unit = range(0.01, 0.99; length = 50)
@@ -145,27 +134,11 @@ end
 # ╔═╡ 381fc3b1-55b3-48dc-85cd-1a4efab77d97
 md"## Dynamical System agent"
 
-# ╔═╡ 31979ba6-1714-4ddb-9f27-ce1f450ece70
-
-
-# ╔═╡ 82d52cc7-c6d4-45e5-8eeb-e81fda6317f8
-function makecurvefrompoints(points)
-	T = length(points)
-	C = maximum(length.(points))
-
-	curve = NaN .* zeros(T, C)
-
-	for (t, p) ∈ enumerate(points)
-		for (i, pᵢ) ∈ enumerate(p)
-			curve[t, i] = pᵢ
-		end
-	end
-
-	return curve
-end
-
 # ╔═╡ c28509b7-df3e-44ba-b130-7626590f2f01
 xbasin = ybasin = range(0.01, 0.99; length = 301)
+
+# ╔═╡ 6dcc1295-1fe4-40a5-b691-fc392cf75c41
+rvalues = range(1e-5, 0.5; length = 351)
 
 # ╔═╡ dc3b28b0-def2-4c24-8104-51b9081d51e6
 model = VerticalModel(m, 0.01, 0.1, K)
@@ -213,13 +186,6 @@ begin
 
 end
 
-# ╔═╡ 779daf41-9752-4653-b3f0-9fe7de089396
-function G̃!(dx, x, p, t)
-	m, r = p
-	model = VerticalModel(m, 0.01, r, K)
-	dx .= G̃(x, model)
-end
-
 # ╔═╡ 48b46e7a-5fc1-4b58-a9e8-73c2c532a3f9
 md"
 ## Behaviour on the $\rho = 0$ axis.
@@ -259,8 +225,10 @@ end
 
 # ╔═╡ 23fbfae9-f653-4352-a238-55a27beabe99
 begin
-	g(μ; r) = - r / log(μ)
+	g(μ; r) = -r / log(μ)	
 	g′(μ; r) = r / (μ * log(μ)^2)
+
+	μ̄₀(r) = find_zeros(x -> x * log(x) + r, (0, 1))
 end
 
 # ╔═╡ e93c0097-0291-4c4e-bb3d-949d3e3ea3c6
@@ -288,6 +256,36 @@ begin
 
 end
 
+# ╔═╡ 59aff6b5-e80f-4aa4-99e0-21bc2b111434
+let
+	rbifurcation = range(0, 1, length = 1001)
+	colors = [:darkblue, :darkred]
+	orbitfig = plot(
+		r -> r; linestyle = :dash, c = :black,
+		aspect_ratio = 1, ylims = (-.01, 1.01), xlims = (-.01, 1.01),
+		label = nothing
+	)
+
+	for r ∈ rbifurcation
+		
+		μ̄ᵣ = μ̄₀(r)
+		push!(μ̄ᵣ, 0)
+		stabilitycolors = [colors[μ < r ? 1 : 2] for μ ∈ μ̄ᵣ]
+		
+		scatter!(
+			orbitfig,
+			repeat([r], length(μ̄ᵣ)), μ̄ᵣ;
+			label = nothing, c = stabilitycolors,
+			markersize = 1
+		)
+	end
+
+	orbitfig
+end
+
+# ╔═╡ cfe3f7f5-3ba2-4bfd-b7b7-ff2598bcc310
+μ̄₀(0.9)
+
 # ╔═╡ fc984dae-fa9f-43e1-abf9-9637563941fe
 md"
 ### Basin of attraction
@@ -299,6 +297,13 @@ md"
 ))
 
 "
+
+# ╔═╡ 779daf41-9752-4653-b3f0-9fe7de089396
+function G̃!(dx, x, p, t)
+	m, r = p
+	model = VerticalModel(m, 0.01, r, K)
+	dx .= G̃(x, model)
+end
 
 # ╔═╡ 25c861f8-9103-4e4f-a76f-b1816d842e31
 ds = DiscreteDynamicalSystem(G̃!, [0.01, 0.01], [100, rbasin])
@@ -387,10 +392,7 @@ md"### Bifurcation"
 # ╔═╡ 2d0b4c04-f29c-4fbd-ba29-c9b1a312c0f2
 begin
 	dsbif = DiscreteDynamicalSystem(G̃!, [0.9, 0.1], [100, 0.01])
-	n = 2000
-	Ttr = 2000
-	rvalues = range(0.01, 0.5; length = 351)
-	output = orbitdiagram(dsbif, [1, 2], 2, rvalues; n = n, Ttr = Ttr)
+	output = orbitdiagram(dsbif, [1, 2], 2, rvalues; n = Norbit, Ttr = Ttr)
 end
 
 # ╔═╡ 7cab141b-40cd-4906-91f2-9e33c19b9985
@@ -2324,10 +2326,11 @@ version = "0.9.1+5"
 # ╔═╡ Cell order:
 # ╠═8b32f51d-e1f7-489d-95af-5e25909d709d
 # ╠═963896ed-ae03-4b68-bec2-6b9917093454
-# ╠═c87845ef-2a91-41c8-933a-b6e139739927
-# ╠═edf0c6f6-db46-11ec-19d0-f3a901cbdf5e
-# ╠═7eec1e2e-f469-4437-8c27-1e86bccc3d9e
+# ╟─c87845ef-2a91-41c8-933a-b6e139739927
+# ╟─edf0c6f6-db46-11ec-19d0-f3a901cbdf5e
+# ╟─82d52cc7-c6d4-45e5-8eeb-e81fda6317f8
 # ╠═551ba67b-5317-4dd0-9b9d-126ca8c13eb0
+# ╠═077b426a-ac05-4b6d-bcf1-0e379a82ba76
 # ╠═7bb7dd41-0768-476f-b815-536607ecbdf0
 # ╟─b67eb0ba-6db7-40ba-a0b2-21151c4eb748
 # ╟─49e1c995-831b-472e-b68c-b56a21d1f308
@@ -2335,17 +2338,18 @@ version = "0.9.1+5"
 # ╟─5228005b-19f6-4cab-bd31-31aedb4fcf6c
 # ╟─381fc3b1-55b3-48dc-85cd-1a4efab77d97
 # ╠═9f11ee9e-e89f-41c4-8ef4-d91c7d4e8db3
-# ╠═31979ba6-1714-4ddb-9f27-ce1f450ece70
-# ╟─82d52cc7-c6d4-45e5-8eeb-e81fda6317f8
 # ╠═c28509b7-df3e-44ba-b130-7626590f2f01
+# ╠═6dcc1295-1fe4-40a5-b691-fc392cf75c41
 # ╠═dc3b28b0-def2-4c24-8104-51b9081d51e6
 # ╟─98904f31-4676-40a1-ab7c-da9c0b6911e0
 # ╟─4e34b762-f359-4d5f-b21a-2fd6246b2315
 # ╟─ae7a7c1d-c3b6-4dc8-aeab-ef2af11ac25d
 # ╟─48b46e7a-5fc1-4b58-a9e8-73c2c532a3f9
 # ╟─5a6baa64-9695-46cb-b59b-f289b0872ff7
-# ╟─23fbfae9-f653-4352-a238-55a27beabe99
-# ╟─e93c0097-0291-4c4e-bb3d-949d3e3ea3c6
+# ╠═23fbfae9-f653-4352-a238-55a27beabe99
+# ╠═e93c0097-0291-4c4e-bb3d-949d3e3ea3c6
+# ╠═59aff6b5-e80f-4aa4-99e0-21bc2b111434
+# ╠═cfe3f7f5-3ba2-4bfd-b7b7-ff2598bcc310
 # ╟─fc984dae-fa9f-43e1-abf9-9637563941fe
 # ╟─779daf41-9752-4653-b3f0-9fe7de089396
 # ╟─25c861f8-9103-4e4f-a76f-b1816d842e31
@@ -2354,7 +2358,7 @@ version = "0.9.1+5"
 # ╠═e901e035-1c0f-48ad-aae9-aee946027a04
 # ╟─91b18abe-f770-4613-9c84-8ebe9041ec98
 # ╟─777e44ed-5795-43c9-b90d-4bd1019f46ea
-# ╟─2d0b4c04-f29c-4fbd-ba29-c9b1a312c0f2
+# ╠═2d0b4c04-f29c-4fbd-ba29-c9b1a312c0f2
 # ╟─7cab141b-40cd-4906-91f2-9e33c19b9985
 # ╠═aafa8bcf-0bba-41f9-bbe3-636cd1cfd3f3
 # ╠═b480192d-79ff-494f-b320-fc09436f07d0
