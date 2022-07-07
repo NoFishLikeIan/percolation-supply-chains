@@ -5,7 +5,11 @@ function ∂ₛG₁(x; sₖ)
         ψ₀(sₖ + μ * (1 - ρ) / ρ) -  ψ₀(sₖ + (1 - ρ) / ρ) : 
         log(μ)
 
-    return G₁(x; sₖ) * d
+    if abs(d) < 1e-3
+        return 0
+    else
+        return G₁(x; sₖ) * d
+    end
 end
 
 """

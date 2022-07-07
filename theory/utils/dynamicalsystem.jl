@@ -1,7 +1,7 @@
 """
-Check if x ∈ (0, 1)
+Check if x ∈ (0, 1) with some tolerance ε
 """
-function isinopeninterval(x; ε = 0)
+function isinopeninterval(x; ε = 1e-5)
     ε < x < 1 - ε
 end
 
