@@ -36,12 +36,17 @@
     % Diagrams
     \usepackage{tikz} 
     \usepackage{tikzit}
-    \usetikzlibrary{positioning,fit,calc}
+    \usetikzlibrary{positioning,fit,calc,decorations.pathreplacing,calligraphy}
     \input{../diagrams/percolation.tikzstyles}
     \input{../diagrams/diagram.tikzstyles}
+    \input{../diagrams/custom.tikzstyles}
 
     \newcommand{\inputTikZ}[2]{%  
-      \scalebox{#1}{\input{#2}}  
+        \IfFileExists{#2}{
+          \scalebox{#1}{\input{#2}}  
+      }{
+        \includegraphics[width=0.5\textwidth]{example-image-a}
+      }
     }
     
     % Refs
@@ -127,11 +132,7 @@ Consider a vertical economy producing $K$ goods (as displayed in Figure \ref{fig
 
 \begin{figure}[H]
   \centering
-  \IfFileExists{../diagrams/model-presentation.tikz}{
-    \inputTikZ{0.5}{../diagrams/model-presentation.tikz} 
-  }{
-    \includegraphics[width=0.5\textwidth]{example-image-a}
-  }
+  \inputTikZ{0.5}{../diagrams/model-presentation.tikz} 
   \caption{$K$-layers vertical economy}
   \label{fig:vertical-economy-diagram}
 \end{figure}
@@ -169,11 +170,7 @@ The proof of this lemma {\color{red} is not done yet.} Lemma \ref*{lemma:Ftop} a
 
 \begin{figure}[H]
   \centering
-  \IfFileExists{../diagrams/probability-propagation.tikz}{
-    \inputTikZ{0.7}{../diagrams/probability-propagation.tikz} 
-  }{
-    \includegraphics[width=0.5\textwidth]{example-image-a}
-  }
+  \inputTikZ{0.7}{../diagrams/probability-propagation.tikz} 
   \caption{Diagram of the relation between $F_k$, $p_k$, and $F_{k - 1}$, for sufficiently large $m$.}
   \label{fig:propagation-of-risk}
 \end{figure}
@@ -253,6 +250,52 @@ Hence, using the first order condition we can show that
 
 \begin{equation}
   \tilde{G}_{\mu}(\mu, 0) = -\frac{\kappa / \pi}{\log(\mu)}.
+\end{equation}
+
+\subsection{Social Planner}
+
+The social planner problem consists in, on the one hand, minimising aggregate risk and, on the other, the number of edges. 
+
+The risk faced by a firm depends only on how many firms in the first layer it is connected to, regardless of what path. Namely, if $n$ basal firms are involved in the firms' production, its risk is $1 - \mu^n$. Hence, a natural question is, if the social planner seeks to connect a firm to $n$ basal firms, what is the most edge parsimonious way to do so? 
+
+\begin{definition}
+  Let $\textit{min-max}(n)$ be the network where all firms in layer $1$ have $n$ suppliers and thereafter, each firm, is connect to only one supplier. 
+\end{definition}
+
+\begin{lemma}
+  $\textit{min-max}(n)$ is the network with fewer edges that achieves $\mu^n$ risk.
+\end{lemma}
+
+\begin{proof}
+
+To see this, consider Figure (\ref{fig:planner-n-target}). If the planner wants to achieve risk $\mu^n$ in layer $k$, any branching (right), vis-à-vis the min-max network (left), requires at a list one more edge to close the branching, hence it has as strictly more edges than the min-max network.
+
+\end{proof}
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \inputTikZ{0.5}{../diagrams/min-max-n.tikz} 
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \inputTikZ{0.5}{../diagrams/not-min-max-n.tikz} 
+  \end{subfigure}%
+  \caption{Blabla}
+  \label{fig:planner-n-target}
+\end{figure}
+
+Furthermore, note that if a firm in layer $k$ is connected, the marginal benefit $\pi (1 - \mu^n)$ must be bigger than marginal costs $\kappa$, then it must be profitable to connect a firm in layer $k + 1$, since the marginal benefit would be the same.
+
+Finally, the social planner will be the largest $n$ such that
+
+\begin{equation}
+  n < \frac{\log(\pi / \kappa) - \log(1 - \mu)}{\log(\mu)}.
+\end{equation}
+
+\begin{equation}
+  \tilde{n} = \frac{\log(\kappa / \pi (1 - \mu)) - \log^{(2)}(\mu)}{\log(\mu)}
 \end{equation}
 
 \newpage

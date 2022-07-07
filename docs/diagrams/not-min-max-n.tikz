@@ -1,0 +1,31 @@
+\begin{tikzpicture}
+	\begin{pgfonlayer}{nodelayer}
+		\node [style=Red firm] (0) at (-4, 6) {};
+		\node [style=Red firm] (1) at (-2, 6) {};
+		\node [style=Red firm] (2) at (0, 6) {};
+		\node [style=Red firm] (3) at (2, 6) {};
+		\node [style=Red firm] (4) at (4, 6) {};
+		\node [style=Yellow firm] (7) at (-2, 0) {};
+		\node [style=Blue firm] (10) at (-2, -4) {};
+		\node [style=none] (11) at (-2, -1) {};
+		\node [style=none] (12) at (-2, -3) {};
+		\node [style=none] (13) at (-2, -1) {};
+		\node [style=Yellow firm] (14) at (-4, 0) {};
+		\node [style=Green firm] (15) at (-4, 3) {};
+		\node [style=Green firm] (16) at (-2, 3) {};
+	\end{pgfonlayer}
+	\begin{pgfonlayer}{edgelayer}
+		\draw [style=Supplies] (7) to (13.center);
+		\draw [style=Supplies] (12.center) to (10);
+		\draw [style=Potential supplies] (13.center) to (12.center);
+		\draw [style=Supplies] (1) to (16);
+		\draw [style=Supplies] (2) to (16);
+		\draw [style=Supplies] (0) to (15);
+		\draw [style=Supplies] (15) to (7);
+		\draw [style=Supplies] (16) to (7);
+	\end{pgfonlayer}
+	\begin{pgfonlayer}{edgelayer}
+		\draw[decorate, decoration={brace,amplitude=5pt,raise=10pt}] (7) -- (10) node [black, midway, xshift=55] {\Large $k-2$ edges};
+		\draw[decorate, decoration={brace,amplitude=5pt,raise=10pt, mirror}] (0) -- (15) node [black, midway, xshift=-45] {\Large $n$ edges};
+	\end{pgfonlayer}
+\end{tikzpicture}
