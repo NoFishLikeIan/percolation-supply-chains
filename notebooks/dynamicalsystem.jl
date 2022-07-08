@@ -131,17 +131,26 @@ let
 	plot(g1fig, g2fig; size = (1000, 400), margins = 5Plots.mm)
 end
 
-# ╔═╡ 381fc3b1-55b3-48dc-85cd-1a4efab77d97
-md"## Dynamical System agent"
-
 # ╔═╡ c28509b7-df3e-44ba-b130-7626590f2f01
 xbasin = ybasin = range(0.01, 0.99; length = 301)
 
 # ╔═╡ 6dcc1295-1fe4-40a5-b691-fc392cf75c41
 rvalues = range(1e-5, 0.5; length = 351)
 
+# ╔═╡ 381fc3b1-55b3-48dc-85cd-1a4efab77d97
+md"
+
+## Dynamical System agent
+
+``r`` $(@bind rfield Slider(
+	0:0.001:1, 
+	show_value = true, default = 0.01
+))
+
+"
+
 # ╔═╡ dc3b28b0-def2-4c24-8104-51b9081d51e6
-model = VerticalModel(m, 0.01, 0.1, K)
+model = VerticalModel(m, 0.01, rfield, K)
 
 # ╔═╡ 98904f31-4676-40a1-ab7c-da9c0b6911e0
 md"
@@ -161,6 +170,7 @@ begin
 
 	for k ∈ 2:model.K
 		X[1, k, :] = G̃(X[1, k - 1, :], model)
+		X[2, k, :] = Gₚ(X[2, k - 1, :], m, rfield, μ₀, k)
 	end
 end
 
@@ -171,19 +181,16 @@ begin
 	
 
 	# Competitive
-	plot!(vecfig, X[1, :, 1], X[1, :, 2], c = :darkgreen, label = L"x^{(c)}_k")
-	scatter!(vecfig, [X[1, 1, 1]], [X[1, 1, 2]], c = :darkgreen, label = nothing)
+	plot!(vecfig, X[1, :, 1], X[1, :, 2], c = :red, label = "Agent", marker = :o, markersize = 2) 
+	scatter!(vecfig, [X[1, 1, 1]], [X[1, 1, 2]], c = :red, label = nothing)
 
 	if false
 		# Social planner
-		plot!(vecfig, X[2, :, 1], X[2, :, 2], c = :blue, label = L"x^{(s)}_k", linestyle = :dash)
-		scatter!(vecfig, [X[2, 1, 1]], [X[2, 1, 2]], c = :blue, label = nothing)
+		plot!(vecfig, X[2, :, 1], X[2, :, 2], c = :green, label = "Planner", marker = :o, markersize = 2)
+		scatter!(vecfig, [X[2, 1, 1]], [X[2, 1, 2]], c = :green, label = nothing)
 	end
 
-	
-
 	vecfig
-
 end
 
 # ╔═╡ 48b46e7a-5fc1-4b58-a9e8-73c2c532a3f9
@@ -191,8 +198,8 @@ md"
 ## Behaviour on the $\rho = 0$ axis.
 
 ``r`` $(@bind r0 Slider(
-	0.01:0.005:1, 
-	show_value = true, default = 0.05
+	range(0.35, 0.4, length = 501), 
+	show_value = true, default = 0.36
 ))
 
 "
@@ -242,11 +249,11 @@ begin
 		denseunit, μ -> g(μ; r = r0);
 		xlims = (-0.01, 1.01),  ylims = (-0.01, 1.01),
 		label = L"\tilde{G}_{\mu}(\mu, 0, \tilde{s})",
-		c = :darkgreen
+		c = :black
 	)
 
 	stable = [
-		μ̄ < r0 ? :darkblue : :darkred for μ̄ ∈ steady_states
+		μ̄ ≤ r0 ? :darkblue : :darkred for μ̄ ∈ steady_states
 	]
 	
 	scatter!(
@@ -266,25 +273,34 @@ let
 		label = nothing
 	)
 
+	labels = ["stable" "unstable" "saddle"]
+	
 	for r ∈ rbifurcation
+
 		
 		μ̄ᵣ = μ̄₀(r)
-		push!(μ̄ᵣ, 0)
-		stabilitycolors = [colors[μ < r ? 1 : 2] for μ ∈ μ̄ᵣ]
 		
-		scatter!(
-			orbitfig,
-			repeat([r], length(μ̄ᵣ)), μ̄ᵣ;
-			label = nothing, c = stabilitycolors,
-			markersize = 1
-		)
+		stabilitycolors = [
+			(colors[μ < r ? 1 : 2] for μ ∈ μ̄ᵣ)..., 
+			:darkgreen]
+
+		push!(μ̄ᵣ, 0)
+
+		for (idx, μ) ∈ enumerate(μ̄ᵣ)
+			label = r == 0.2 ? labels[idx] : nothing
+			
+			scatter!(
+				orbitfig,
+				[r], [μ];
+				label = label, 
+				c = stabilitycolors[idx],
+				markersize = 1
+			)
+		end
 	end
 
 	orbitfig
 end
-
-# ╔═╡ cfe3f7f5-3ba2-4bfd-b7b7-ff2598bcc310
-μ̄₀(0.9)
 
 # ╔═╡ fc984dae-fa9f-43e1-abf9-9637563941fe
 md"
@@ -407,7 +423,7 @@ begin
 		push!(ρbars, out[1][2])
 	end
 
-	first_zero = findfirst(μ -> μ ≈ 1 , μbars)
+	first_zero = findfirst(μ -> μ > 1 - 1e-3 , μbars)
 	tipping_point = !isnothing(first_zero) ? first_zero : length(μbars)
 
 	fig = plot(
@@ -449,244 +465,6 @@ begin
 	)
 
 	
-end
-
-# ╔═╡ aafa8bcf-0bba-41f9-bbe3-636cd1cfd3f3
-rvalues[tipping_point:end]
-
-# ╔═╡ b480192d-79ff-494f-b320-fc09436f07d0
-# savefig(fig, joinpath("../docs/plots", "biftipping.png"))
-
-# ╔═╡ 34baaefb-27b2-445e-9f3e-e5d128acd6ef
-begin 
-
-	sagentbif = [
-		agentoptimum(μbars[i], ρbars[i]; m, r)
-		for (i, r) ∈ enumerate(rvalues)
-	]
-	
-
-	sbiffig = plot(
-		rvalues[1:(tipping_point - 1)], 
-		sagentbif[1:(tipping_point - 1)];
-		c = :darkred, legend = nothing,
-		ylabel = L"\tilde{s}_a(f, \rho)",
-		xlabel = L"\kappa / \pi",
-		dpi = 180
-	)
-
-	plot!(sbiffig, rvalues[tipping_point:end], sagentbif[tipping_point:end], c = :darkblue)
-
-	vline!(sbiffig, [rtip], linestyle = :dash)
-	annotate!(
-		sbiffig, rtip + 0.01, 0.3, 
-		text(
-			latexstring("\$\\pi = 3 \\kappa\$"), 
-			:left, 10))
-
-	sbiffig
-	
-end
-
-# ╔═╡ 1c4e601d-2a55-4e5c-a032-4f8e97cd48ee
-# savefig(sbiffig, joinpath("../docs/plots", "choicebiftipping.png"))
-
-# ╔═╡ e5fa7b5e-7d34-46f3-907d-a5462ea1d91e
-md"## Dynamical System planner"
-
-# ╔═╡ 32a7c59c-6005-4a90-b41e-81609a2f7317
-# ╠═╡ disabled = true
-#=╠═╡
-modelbasin = VerticalModel(m, 0.01, rbasin, K)
-  ╠═╡ =#
-
-# ╔═╡ 02680d17-2dad-4a3c-a090-de9c290569c7
-#=╠═╡
-begin
-	solver = plannersymmetricsolution(modelbasin; L = 60)
-	sₗ = (f, ρ, k) -> solver(f, ρ, k)
-end
-  ╠═╡ =#
-
-# ╔═╡ 881c1bf9-4ba3-4361-826a-5442efd99361
-md"
-- ``k``: $(@bind k Slider(1:model.K, default = 1, show_value = true))
-"
-
-# ╔═╡ 91606412-8d8e-4110-bb6d-1b8aae93c746
-# ╠═╡ disabled = true
-#=╠═╡
-let
-	xs = ys = range(0, 1; length = 101)
-
-	Δ(f, ρ) = sₗ(f, ρ, k) - agentoptimum(f, ρ; m = modelbasin.m, r = modelbasin.r) 
-	
-	contourf(xs, ys, Δ; c = :coolwarm)
-
-end
-  ╠═╡ =#
-
-# ╔═╡ 88be829b-d7e0-40e0-85a1-27d7e1cdbcda
-#=╠═╡
-function G̃ₛ!(dx, x, p, k)
-	m, r = p
-	sₖ = sₗ(x[1], [2], k + 1)
-	
-	dx .= G(x; sₖ = sₖ)
-end
-  ╠═╡ =#
-
-# ╔═╡ 77823dc2-14bc-48cf-9a6a-57f802059ab9
-# ╠═╡ show_logs = false
-#=╠═╡
-dsocial = DiscreteDynamicalSystem(G̃ₛ!, [0.9, 0.1], [m, rbasin])
-  ╠═╡ =#
-
-# ╔═╡ 46a5b238-5206-4e59-99eb-16144b463c4e
-# ╠═╡ disabled = true
-#=╠═╡
-begin
-	N, M = length(xbasin), length(ybasin)
-	
-	basinsocial = Matrix{Int64}(undef, N, M)
-	attractorsocial = []
-	
-	for (i, x) ∈ enumerate(xbasin), (j, y) ∈ enumerate(ybasin)
-		
-		dsiter = DiscreteDynamicalSystem(G̃ₛ!, [x, y], [m, rbasin])
-		last = trajectory(dsiter, grid_size)[end]
-
-		if isnan(last[1])
-			basinsocial[i, j] = -1
-
-		else
-			idx = findfirst(t -> t == last, attractorsocial)
-	
-			if isnothing(idx)
-				push!(attractorsocial, last)
-				idx = length(attractorsocial)
-			end
-			
-			basinsocial[i, j] = idx
-		end
-	end
-
-	resattractorsocial = first.(attractorsocial)
-	
-	""
-end
-  ╠═╡ =#
-
-# ╔═╡ 107be6c2-c507-48d0-ba75-a13240668f3c
-#=╠═╡
-begin
-	basindifference = Matrix{Float64}(undef, size(basins))
-
-	for i in 1:length(xbasin), j in 1:length(ybasin)
-		agidx = basins[i, j]
-		ag = get(resattractors, agidx, 0)
-		
-		sidx = basinsocial[i, j]
-		s = get(resattractorsocial, sidx, 0)
-
-		
-		basindifference[i, j] = clamp(s - ag, 0, 1)
-	end
-end
-  ╠═╡ =#
-
-# ╔═╡ 2b0f73a7-0de3-4a92-b034-18831cb2ad23
-#=╠═╡
-let
-	
-	diffbasinfig = contourf(
-		xbasin, ybasin, basindifference'; 
-		aspect_ratio = 1, 
-		xlims = extrema(xbasin), 
-		ylims = extrema(ybasin),
-		dpi = 180,
-		c = :Reds,
-		xlabel = L"f", ylabel = L"\rho",
-		title = latexstring("Gain in resilience from social planner \$\\pi / \\kappa =$rbasin\$"),
-		linewidth = 0
-	)
-
-	savefig(diffbasinfig, joinpath("../docs/plots", "basin_gain_small.png"))
-
-	diffbasinfig
-end
-  ╠═╡ =#
-
-# ╔═╡ 475f959a-8467-4ee1-913f-8aa286d6fb14
-md"### Re-parametrisation"
-
-# ╔═╡ 2ac56369-622f-442e-8ffc-af3df35109b5
-# ╠═╡ disabled = true
-#=╠═╡
-function G̃re!(dx, x, p, t)
-	m, r = p
-	model = VerticalModel(m, 0.01, r, K)
-
- 	f, ρ = αβtofρ(x[1], x[2])
-	f′, ρ′ = G̃([f, ρ], model)
-
-	dx .= fρtoαβ(f′, ρ′) |> collect
-end
-  ╠═╡ =#
-
-# ╔═╡ e34b433d-bfd0-4de0-a9f2-e418438b366f
-#=╠═╡
-dsrep = DiscreteDynamicalSystem(G̃re!, collect(fρtoαβ(0.99, 0.01)), [100, rbasin])
-  ╠═╡ =#
-
-# ╔═╡ 11dba15a-f8ea-46fd-8f71-2012aee09084
-#=╠═╡
-begin
-	remapper = AttractorsViaRecurrences(dsrep, (xbasin, ybasin))
-	rebasins, reattractors = basins_of_attraction(remapper; show_progress = false)
-
-	reresattractors = Dict([k => v[1][1] for (k, v) in reattractors])
-	""
-end
-  ╠═╡ =#
-
-# ╔═╡ a042074e-7393-4822-b15b-dc884cb9acc8
-#=╠═╡
-let
-	pal = palette(:Blues, length(reattractors))
-	conv = (b -> b > 0 ? reresattractors[b] : 0).(rebasins)
-	rebasinfig = contourf(
-		xbasin, ybasin, conv'; 
-		c = pal,
-		aspect_ratio = 1, 
-		xlims = extrema(xbasin), 
-		ylims = extrema(ybasin),
-		dpi = 180, clims = (0, 1),
-		xlabel = L"\alpha", ylabel = L"\beta",
-		# title = latexstring("Basin of attraction with \$\\kappa / \\pi =$rbasin\$"),
-		linewidth = 0
-	)
-
-	for (key, coord) ∈ reattractors
-		x, y = coord |> first
-			scatter!(rebasinfig, [x], [y], 
-			c = :red, markersize = 1.5,
-				label = nothing
-		)
-	end
-	
-	rebasinfig
-end
-  ╠═╡ =#
-
-# ╔═╡ 1512ddae-76c5-4c86-b033-c6e82bd9aca5
-function isstable(x, m, r)
-	A = JG̃(x, m, r)
-	λ, v = eigen(A)
-
-	direction = sign(v[1, 1] * v[2, 1]) > 0 ? 2 : 1
-
-	return real(λ[direction]) > 0 ? 1 : 2
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -2336,49 +2114,28 @@ version = "0.9.1+5"
 # ╟─49e1c995-831b-472e-b68c-b56a21d1f308
 # ╠═e518339b-9781-4f37-895f-19343315c79c
 # ╟─5228005b-19f6-4cab-bd31-31aedb4fcf6c
-# ╟─381fc3b1-55b3-48dc-85cd-1a4efab77d97
-# ╠═9f11ee9e-e89f-41c4-8ef4-d91c7d4e8db3
 # ╠═c28509b7-df3e-44ba-b130-7626590f2f01
 # ╠═6dcc1295-1fe4-40a5-b691-fc392cf75c41
+# ╟─381fc3b1-55b3-48dc-85cd-1a4efab77d97
+# ╠═9f11ee9e-e89f-41c4-8ef4-d91c7d4e8db3
 # ╠═dc3b28b0-def2-4c24-8104-51b9081d51e6
 # ╟─98904f31-4676-40a1-ab7c-da9c0b6911e0
 # ╟─4e34b762-f359-4d5f-b21a-2fd6246b2315
 # ╟─ae7a7c1d-c3b6-4dc8-aeab-ef2af11ac25d
 # ╟─48b46e7a-5fc1-4b58-a9e8-73c2c532a3f9
 # ╟─5a6baa64-9695-46cb-b59b-f289b0872ff7
-# ╠═23fbfae9-f653-4352-a238-55a27beabe99
-# ╠═e93c0097-0291-4c4e-bb3d-949d3e3ea3c6
-# ╠═59aff6b5-e80f-4aa4-99e0-21bc2b111434
-# ╠═cfe3f7f5-3ba2-4bfd-b7b7-ff2598bcc310
+# ╟─23fbfae9-f653-4352-a238-55a27beabe99
+# ╟─e93c0097-0291-4c4e-bb3d-949d3e3ea3c6
+# ╟─59aff6b5-e80f-4aa4-99e0-21bc2b111434
 # ╟─fc984dae-fa9f-43e1-abf9-9637563941fe
 # ╟─779daf41-9752-4653-b3f0-9fe7de089396
-# ╟─25c861f8-9103-4e4f-a76f-b1816d842e31
-# ╟─a20c0d6e-0e25-40d5-90bf-e156c4721b85
+# ╠═25c861f8-9103-4e4f-a76f-b1816d842e31
+# ╠═a20c0d6e-0e25-40d5-90bf-e156c4721b85
 # ╟─d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
 # ╠═e901e035-1c0f-48ad-aae9-aee946027a04
 # ╟─91b18abe-f770-4613-9c84-8ebe9041ec98
 # ╟─777e44ed-5795-43c9-b90d-4bd1019f46ea
 # ╠═2d0b4c04-f29c-4fbd-ba29-c9b1a312c0f2
-# ╟─7cab141b-40cd-4906-91f2-9e33c19b9985
-# ╠═aafa8bcf-0bba-41f9-bbe3-636cd1cfd3f3
-# ╠═b480192d-79ff-494f-b320-fc09436f07d0
-# ╟─34baaefb-27b2-445e-9f3e-e5d128acd6ef
-# ╠═1c4e601d-2a55-4e5c-a032-4f8e97cd48ee
-# ╟─e5fa7b5e-7d34-46f3-907d-a5462ea1d91e
-# ╠═32a7c59c-6005-4a90-b41e-81609a2f7317
-# ╠═02680d17-2dad-4a3c-a090-de9c290569c7
-# ╟─881c1bf9-4ba3-4361-826a-5442efd99361
-# ╠═91606412-8d8e-4110-bb6d-1b8aae93c746
-# ╠═88be829b-d7e0-40e0-85a1-27d7e1cdbcda
-# ╠═77823dc2-14bc-48cf-9a6a-57f802059ab9
-# ╟─46a5b238-5206-4e59-99eb-16144b463c4e
-# ╟─107be6c2-c507-48d0-ba75-a13240668f3c
-# ╠═2b0f73a7-0de3-4a92-b034-18831cb2ad23
-# ╠═475f959a-8467-4ee1-913f-8aa286d6fb14
-# ╠═2ac56369-622f-442e-8ffc-af3df35109b5
-# ╠═e34b433d-bfd0-4de0-a9f2-e418438b366f
-# ╟─11dba15a-f8ea-46fd-8f71-2012aee09084
-# ╟─a042074e-7393-4822-b15b-dc884cb9acc8
-# ╠═1512ddae-76c5-4c86-b033-c6e82bd9aca5
+# ╠═7cab141b-40cd-4906-91f2-9e33c19b9985
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

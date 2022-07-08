@@ -1,10 +1,9 @@
 function G₁(x; sₖ)
     μ, ρ = x
 
-     # In the limit
-    if !isinopeninterval(ρ) || !isinopeninterval(μ)
-        return μ^sₖ
-    end
+    # In the limit
+    if !isinopeninterval(μ) return μ^sₖ end
+    if !isinopeninterval(ρ) return μ end
 
     ρᵣ = (1 - ρ) / ρ
     return beta(μ * ρᵣ + sₖ, (1 - μ) * ρᵣ) / beta(μ * ρᵣ, (1 - μ) * ρᵣ)
