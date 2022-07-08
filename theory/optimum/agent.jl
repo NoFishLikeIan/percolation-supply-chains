@@ -15,33 +15,42 @@ end
 """
 Agent's optimal s given the μ and ρ in previous layer.
 """
-function agentoptimum(μ, ρ; m, r)
+function agentoptimum(μ, ρ; m, r, integer = false)
+
+    type = integer ? Int64 : Float64
 
     foc(s) = ∂ₛG₁([μ, ρ]; sₖ = s) + r
 
-    try
-        if foc(0) > 0 || !isinopeninterval(μ)
-            1e-5
-        elseif foc(m) < 0
-            m
-        else
-            find_zero(foc, (0, m))
-        end
-    catch e
-        println("μ, ρ = $μ, $ρ")
-
-        throw(e)
+    if !isinopeninterval(μ)
+        return convert(type, 1)
     end
+
+    if foc(0) > 0 return integer ? 1 : 1e-5 end
+    if foc(m) < 0 return convert(type, m) end
+
+    s = find_zero(foc, (0, m))
+
+    if integer
+        sᵤ, sₗ = ceil(type, s), floor(type, s)
+
+        πᵤ = G₁([μ, ρ]; sₖ = sᵤ) - r * sᵤ
+        πₗ = G₁([μ, ρ]; sₖ = sₗ) - r * sₗ
+
+        return πᵤ ≥ πₗ ? sᵤ : sₗ
+    else
+        return s
+    end
+
 end
 
 """
 G with agent's sₖ = s̃
 """
-function G̃(x, m::Int64, r::Float64)
-    sₖ = agentoptimum(x[1], x[2]; m, r)
+function G̃(x, m::Int64, r::Float64; optkwargs...)
+    sₖ = agentoptimum(x[1], x[2]; m, r, optkwargs...)
     return G(x; sₖ)
 end
-G̃(x, model::VerticalModel) = G̃(x, model.m, model.r)
+G̃(x, model::VerticalModel; optkwargs...) = G̃(x, model.m, model.r; optkwargs...)
 
 function JG̃(x, m::Int64, r::Float64)
     sₖ = agentoptimum(x[1], x[2]; m, r)

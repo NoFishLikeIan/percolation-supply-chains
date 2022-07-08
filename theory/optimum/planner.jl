@@ -1,8 +1,9 @@
+planneroptimum(model::VerticalModel, k::Int64) = planneroptimum(model.m, model.r, model.μ₀, k)
 function planneroptimum(m::Int64, r::Float64, μ₀::Float64, k::Int64)
-    n = (log(r) - (log ∘ log)(1/μ₀)) / log(μ₀)
+    n = log(-r / log(μ₀)) / log(μ₀)
 
     if n < 0 return 0 end
-    if k > 1 return 1 end
+    if k > 2 return 1 end
 
     return min(n, m)
 end
