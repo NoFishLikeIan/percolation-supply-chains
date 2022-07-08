@@ -23,15 +23,7 @@
     \usepackage{float}
     \usepackage{multirow} 
     \usepackage{hyperref}
-
-    \usepackage{graphicx}
-    \usepackage{wrapfig}
-    \usepackage{relsize}
-    \usepackage{makecell}
-    \usepackage{booktabs}
-    \usepackage[font=footnotesize,labelfont=bf]{caption}
-    \usepackage{float}
-    \usepackage{multirow} 
+    \usepackage{bookmark}
     
     % Diagrams
     \usepackage{tikz} 
@@ -145,7 +137,7 @@ Letting $p_{k, i}$ be the probability of firm $i$ in layer $k$ being functional,
 
 \subsection{Firm Problem}
 
-At this stage it is useful to exploit the symmetry granted to us by firms not observing the sourcing of their potential suppliers: when faced with their supplier decision, it is sufficient for a firm to track the distribution of risk among suppliers and then pick the optimal number of sources at random. Furthermore, this choice will be identical for all firms producing a good, since they are ex-ante equal. Let $s_k$ be the number of suppliers picked by the repesentative firm in layer $k$ and $F_k$ be the distribution of functioning firms producing good $k$. Then, if a firm producing good $k + 1$ were to pick $s_{k + 1}$ suppliers among those producing $k$, the probability that not all of its suppliers are functional, $p_m : [m] \times [m] \to \mathbb{Q} \cap [0, 1]$, is
+We assume here that the firm cannot observe the realisation of supplier relationships. This introduces a symmetric component into the firms' problem, namely, when faced with their supplier decision, it is sufficient for a firm to track the distribution of risk among suppliers and then pick the optimal number of sources at random. Furthermore, this choice will be identical for all firms producing a good, since they are ex-ante equal. Let $s_k$ be the number of suppliers picked by the repesentative firm in layer $k$ and $F_k$ be the distribution of functioning firms producing good $k$. Then, if a firm producing good $k + 1$ were to pick $s_{k + 1}$ suppliers among those producing $k$, the probability that not all of its suppliers are functional, $p_m : [m] \times [m] \to \mathbb{Q} \cap [0, 1]$, is
 
 \begin{equation}
   p_m(s_{k + 1}, F_k) \coloneqq 1 - \overbrace{\binom{m - s_{k+1}}{F_k}}^{\substack{\text{sets of functioning firms such} \\ \text{that none are suppliers}}} \Bigg/ \underbrace{\binom{m}{F_k}}_{\substack{\text{all possible sets} \\ \text{of functioning firms}}}.
@@ -165,7 +157,7 @@ At this stage it is useful to exploit the symmetry granted to us by firms not ob
   If $F_k$ is a r.v. taking values in $[m]$, then \begin{equation*}\lim_{m \rightarrow \infty} p_m(s_{k + 1}, F_k) \eqqcolon p_k \sim \Beta(1 - \mu_{k + 1}, \rho_{k + 1})\end{equation*} for some $\mu_{k + 1}$ and $\rho_{k + 1}$.
 \end{lemma}
 
-The proof of this lemma {\color{red} is not done yet.} Lemma \ref*{lemma:Ftop} and Definition \ref*{definition:ptoF} combine into a powerful result: for large enough $m$ the number of firms that are able to operate at each stage of the production networks, $\{F_k\}$, follow the same distribution and are fully determined by the initial distribution, $F_0$, and the choices of suppliers in each layer, $\{s_k\}$. Furthermore, since the agent tries to maximise its expected payoff, we know that $F_{k - 1}$ will determine $s_k$. As illustrated in Figure \ref*{fig:propagation-of-risk}, this implies that we can simply keep track of evolution of the two parameters $\mu_k$ and $\rho_k$.
+The proof of this lemma {\color{red} is not done yet.} Lemma \ref*{lemma:Ftop} and Definition \ref*{definition:ptoF} combine into a powerful result: for large enough $m$ the number of firms that are able to operate at each stage of the production networks, $\{F_k\}$, follow the same distribution. Such distributions are fully determined by the initial one, $F_0$, and the choices of suppliers in each layer, $\{s_k\}$. Furthermore, for the agent to solve its maximisation problem, hence pick a number of suppliers $s_k$, it is sufficient to infer the distribution of functioning firms among its suppliers, $F_{k - 1}$. As illustrated in Figure \ref*{fig:propagation-of-risk}, this implies that we can simply keep track of evolution of the two parameters $\mu_k$ and $\rho_k$.
 
 
 \begin{figure}[H]
@@ -181,7 +173,7 @@ It is useful at this point to give an interpretation of $\mu$ and $\rho$, in the
 
 \subsubsection{Dynamics of Risk}
 
-Let $G$ be the function mapping the risk and overdispersion between layers. As we have argued above, the downstream risk and overdispersion depend only on the current one and supplier choices,
+Let $G$ be the function mapping the risk and overdispersion between layers. As we have argued above, the downstream risk and overdispersion depend only that of the suppliers' and on the number of suppliers chosen by the representative firm in the current layer,
 
 \begin{equation}
   \begin{pmatrix}
@@ -191,26 +183,44 @@ Let $G$ be the function mapping the risk and overdispersion between layers. As w
   \end{pmatrix} = G(\mu_k, \rho_k; s_{k + 1}).
 \end{equation}
 
-The evolution of risk can be derived analytically\footnote{
-  A small notational remark. I will align here with the combinatorics literature when defining the falling and rising factorial, namely \begin{equation*}
-    (x)_{(n)} \coloneqq \underbrace{x \ (x - 1) \ \ldots \ (x - (n - 1))}_{n \text{ terms}} \text{ and } (x)^{(n)} \coloneqq \underbrace{x \ (x + 1) \ \ldots \ (x + (n - 1))}_{n \text{ terms}}.
-  \end{equation*}
-}
+Deriving the evolution of risk, $\mu$, (see Appendix \ref{appendix:derivations}), if the number of suppliers is restricted to be a positive integer, yields
 
-\begin{equation}
-  G_\mu(\mu, \rho, s) = \frac{B\Big( \mu \frac{1 - \rho}{\rho} + s, (1 - \mu) \  \frac{1 - \rho}{\rho} \Big)}{B\Big( \mu \frac{1 - \rho}{\rho}, (1 - \mu) \ \frac{1 - \rho}{\rho} \Big)} \stackrel{s\in \mathbb{Z}}{=} \frac{\Big( \mu \  \frac{1 - \rho}{\rho} \Big)_{(s)}}{\Big( \frac{1 - \rho}{\rho} \Big)_{(s)}}.
+\begin{equation} \label{eq:G_mu}
+  G_\mu(\mu, \rho, s) = \frac{\left( \mu \  \frac{1 - \rho}{\rho} \right)^{(s)}}{\left( \frac{1 - \rho}{\rho} \right)^{(s)}} = \prod^{s - 1}_{n = 0} \frac{\mu + n \frac{\rho}{1 - \rho}}{1 + n \frac{\rho}{1 - \rho}}
 \end{equation}
 
-Likewise, we can derive the evolution of overdisperion, for sufficiently large $m$. Let $\mu' = G_\mu(\mu, \rho, s)$, then
+where $x^{(s)}$ is the rising factorial $x \ (x + 1) \ \ldots \ (x + s - 1)$. The expansion in equation (\ref{eq:G_mu}), highlights the effect of the suppliers' correlation in risk propagation. Namely, adding the $n$-th supplier reduces risk by a factor of 
 
 \begin{equation}
-  G_\rho(\mu, \rho, s) \coloneqq 1 - \frac{ \mu' - B\left(\frac{1 - \rho}{\rho}, 2s \right) \Big/ B\left(\mu \frac{1 - \rho}{\rho}, 2s \right)}{\mu' (1 - \mu')}.
+  (1 - \mu) \ \frac{1}{1 + n \frac{\rho}{1 - \rho}}.
 \end{equation}
 
-Despite looking complicated, the function $G$ simply attempts to account for the evolution of tail risk arising from suppliers correlation. Furthermore, if in a layer each firm has only one supplier, as expected, the distribution remains constant, $(\mu, \rho) = G(\mu, \rho, 1)$ for all $\mu$ and $\rho$.
+As more suppliers are added, $n$, or correlation increases, $\rho$, the marginal reduction in risk the firm can expect from adding a supplier decreases. This expansion also shows how this dynamical system can be seen as a generalisation of the simpler dynamical system where there is no correlation in the supplier risk, such that
+
+\begin{equation}
+  \lim_{\rho \rightarrow 0} G_\mu(\mu, \rho, s) = \mu^s.
+\end{equation}
+
+Similarly, for sufficiently large $m$, we can derive an analytical expression for the evolution of overdisperion. Letting $\mu' = G_\mu(\mu, \rho, s)$, then
+
+\begin{equation}
+  G_\rho(\mu, \rho, s) = \frac{\left( \mu \  \frac{1 - \rho}{\rho} + s \right)^{(s)} \Big/ \left( \frac{1 - \rho}{\rho} + s \right)^{(s)} - \mu'}{1 - \mu'} = \frac{\prod^{s - 1}_{n = 0} \frac{\mu + (n + s) \frac{\rho}{1 - \rho}}{1 + (n + s) \frac{\rho}{1 - \rho}} - \mu'}{1 - \mu'}
+\end{equation}
+
+
+
+Again, without suppliers' correlation, the dynamical system converges to the simpler binomial case,
+
+\begin{equation}
+  \lim_{\rho \rightarrow 0} G_\rho(\mu, \rho, s) = 0.
+\end{equation}
+
+Another intuitive property of the dynamical system is that the risk and correlation are constant throughout the layers only if the choice of suppliers is $s = 1$. 
 
 \begin{lemma}
-  For $s \neq 1$, $(\mu, \rho) \mapsto G(\mu, \rho, s)$ has no fixed point in $(0, 1)^2$.
+  In $(\mu, \rho) \in (0, 1)^2$, if $s = 1$, every point is a fixed point \begin{equation}
+    (\mu, \rho) = G(\mu, \rho, 1),  
+  \end{equation} and if $s \neq 1$ there are no fixed points.
 \end{lemma}
 
 \subsubsection{Agent's Choice}
@@ -221,7 +231,7 @@ The representative agent in layer $k + 1$ choses the number of suppliers $s_{k+1
   \pi \Big(1 - G_{\mu}(\mu_k, \rho_k, s_{k+1})\Big) - \kappa \  s_{k + 1}.
 \end{equation}
 
-It is instructive to solve the problem for a continuous $s$. Let $\tilde{s}: [0, 1]^2 \to \Re$ be such that $s_{k + 1} = \tilde{s}(\mu_k, \rho_k)$ maximises the firm problem and $\tilde{G}(\mu, \rho) = G\big(\mu, \rho, \tilde{s}(\mu, \rho)\big)$. $\tilde{s}$ needs to satisfy the first order condition
+It is instructive to solve the problem for $s \in \Re_{\geq 0}$, instead of $s \in \mathbb{Z}$. Let $\tilde{s}: [0, 1]^2 \to \Re$ be such that $s_{k + 1} = \tilde{s}(\mu_k, \rho_k)$ maximises the firm problem and $\tilde{G}(\mu, \rho) = G\big(\mu, \rho, \tilde{s}(\mu, \rho)\big)$. $\tilde{s}$ needs to satisfy the first order condition
 
 \begin{equation}
   \begin{split}
@@ -294,13 +304,10 @@ Finally, the social planner will be the largest $n$ such that
   n < \frac{\log(\pi / \kappa) - \log(1 - \mu)}{\log(\mu)}.
 \end{equation}
 
-\begin{equation}
-  \tilde{n} = \frac{\log(\kappa / \pi (1 - \mu)) - \log^{(2)}(\mu)}{\log(\mu)}
-\end{equation}
-
+come stai
 \newpage
 \nocite{*}
-\printbibliography
+% \printbibliography
 
 \pagenumbering{gobble} % stop page numbering
 \newpage
