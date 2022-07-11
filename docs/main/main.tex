@@ -94,6 +94,9 @@
     \newcommand{\Beta}{\text{Beta}}
     \newcommand{\Bin}{\text{Bin}}
 
+    \DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+  \DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
     % Bibliography
 
     \usepackage[bibencoding=utf8, style=apa, backend=biber]{biblatex}
@@ -101,8 +104,7 @@
 
     \newcommand{\citein}[1]{\citeauthor{#1} (\citeyear{#1})}
 
-    \newcommand\notes[1]{\textcolor{teal}{\textbf{#1}}}
-    \newcommand\red[1]{\textcolor{red}{#1}}
+    \newcommand\notes[1]{\textcolor{red}{\textbf{#1}}}
 
     % Make title page
 
@@ -116,7 +118,7 @@
 
 \section{Model}
 
-In this section I will introduce a stylised production game of suppliers' risk diversification, in the spirit of the one developed by \citein{elliott_supply_2022}. The model, despite its simplicity, captures the interactions between firms’ decisions and suppliers’ correlation risks. I show how the correlation in suppliers’ risk, on top of directly introducing substantial tail risk, disincentivises firm risk diversification, even when the firms are risk neutral. Strikingly, the interaction between suppliers’ risk correlation and firms’ decision, can introduce fragility in a production network even if risk is kept constant.
+In this section I will introduce a stylised production game of suppliers' risk diversification, in the spirit of the one developed by \citein{elliott_supply_2022}. The model, despite its simplicity, captures the interactions between firms’ decisions and suppliers’ correlation risks. I show how the correlation in suppliers’ risk, on top of directly introducing substantial tail risk, disincentivises firm risk diversification, even when the firms are risk neutral. Strikingly, the interaction between suppliers’ risk correlation and firms’ decision can introduce fragility in a production network even if risk is kept constant.
 
 \subsection{Setup}
 
@@ -225,13 +227,24 @@ Another intuitive property of the dynamical system is that the risk and correlat
 
 \subsubsection{Agent's Choice}
 
-The representative agent in layer $k + 1$ choses the number of suppliers $s_{k+1}$ to maximise
+The representative agent in layer $k + 1$ choses the number of suppliers to maximise
 
 \begin{equation}
-  \pi \Big(1 - G_{\mu}(\mu_k, \rho_k, s_{k+1})\Big) - \kappa \  s_{k + 1}.
+  s_{k + 1}(\mu_k, \rho_k) = \max_{s \in \mathbb{Z}} \Pi(s) =\max_{s \in \mathbb{Z}} \left\{ \pi \Big(1 - G_{\mu}(\mu_k, \rho_k, s)\Big) - \kappa \  s \right\}.
 \end{equation}
 
-It is instructive to solve the problem for $s \in \Re_{\geq 0}$, instead of $s \in \mathbb{Z}$. Let $\tilde{s}: [0, 1]^2 \to \Re$ be such that $s_{k + 1} = \tilde{s}(\mu_k, \rho_k)$ maximises the firm problem and $\tilde{G}(\mu, \rho) = G\big(\mu, \rho, \tilde{s}(\mu, \rho)\big)$. $\tilde{s}$ needs to satisfy the first order condition
+The function $\Pi(s)$ is strictly concave over $\Re$\footnote{
+  Since, for $x > 0$, $\text{sign}(\psi_{n + 1}(x)) = (-1)^{n + 1}$, implies $\text{sign}\big(\psi_n(x + \varepsilon) - \psi_n(x) \big) = (-1)^n$, we have $\Pi''(s) < 0$.
+}. This simplifies greatly the optimisation problem over $\mathbb{Z}$. In particular, let $\tilde{s}$ be the maximizer over the real numbers $\tilde{s} \coloneqq \max_{s \in \mathbb{R}} \Pi(s)$, and $\bar{s}$ be such that $\Pi(\bar{s}) = \Pi(\bar{s} + 1)$\footnote{This is guaranteed to exist and be unique by strict concavity of $\Pi$.}. Then we know that the maximum over $\mathbb{Z}$ will be distant at most $1$ from $\tilde{s}$ and contained between $\bar{s}$ and $\bar{s} + 1$. This allows us to identify it and study its properties starting from $\tilde{s}$.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width = 0.7\linewidth]{../plots/convex-integer-optimization.png}
+  \caption{Relationship between $s_{k + 1}, \tilde{s}$, and $\bar{s}$. Plot with $\mu_k = 0.115$ and $\rho_k = 0.06$.}
+  \label{fig:convex-integer-optimization}
+\end{figure}
+
+The first order condition yields
 
 \begin{equation}
   \begin{split}
@@ -243,6 +256,8 @@ It is instructive to solve the problem for $s \in \Re_{\geq 0}$, instead of $s \
 where $\psi_0$ is the digamma function.
 
 \subsubsection{A Special Case: No Correlation Risk}
+
+\notes{Note: I thought it would be good to analyse the one dimensional system first to build intuition.}
 
 As correlation disappears, the function $G$ converges to its familiar binomial counterpart,
 
@@ -262,11 +277,18 @@ Hence, using the first order condition we can show that
   \tilde{G}_{\mu}(\mu, 0) = -\frac{\kappa / \pi}{\log(\mu)}.
 \end{equation}
 
+A fixed point $\bar{\mu}$ of this system is stable if the ``value at risk'' is smaller than the marginal cost, namely $\mu \pi < \kappa$.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width = 0.7\linewidth]{../plots/one-dim-bif.png}
+  \caption{Bifurcation diagram of the limit system $\mu_{k + 1} = \tilde{G}_{\mu}(\mu_k, 0)$. The diagonal represents the stability condition.}
+  \label{fig:one-dimensional-bifurcation}
+\end{figure}
+
 \subsection{Social Planner}
 
-The social planner problem consists in, on the one hand, minimising aggregate risk and, on the other, the number of edges. 
-
-The risk faced by a firm depends only on how many firms in the first layer it is connected to, regardless of what path. Namely, if $n$ basal firms are involved in the firms' production, its risk is $1 - \mu^n$. Hence, a natural question is, if the social planner seeks to connect a firm to $n$ basal firms, what is the most edge parsimonious way to do so? 
+The social planner problem consists in, on the one hand, minimising aggregate risk and, on the other, the number of edges. The risk faced by a firm depends only on how many firms in the first layer it is connected to, regardless of what path. Namely, if $n$ basal firms are involved in the firms' production, its risk is $1 - \mu^n$. Hence, a natural question is, if the social planner seeks to connect a firm to $n$ basal firms, what is the most edge parsimonious way to do so? 
 
 \begin{definition}
   Let $\textit{min-max}(n)$ be the network where all firms in layer $1$ have $n$ suppliers and thereafter, each firm, is connect to only one supplier. 
@@ -292,19 +314,16 @@ To see this, consider Figure (\ref{fig:planner-n-target}). If the planner wants 
     \centering
     \inputTikZ{0.5}{../diagrams/not-min-max-n.tikz} 
   \end{subfigure}%
-  \caption{Blabla}
+  \caption{On the left the min-max$(n)$ network and on the right a deviation that achieves $\mu^n$.}
   \label{fig:planner-n-target}
 \end{figure}
 
-Furthermore, note that if a firm in layer $k$ is connected, the marginal benefit $\pi (1 - \mu^n)$ must be bigger than marginal costs $\kappa$, then it must be profitable to connect a firm in layer $k + 1$, since the marginal benefit would be the same.
-
-Finally, the social planner will be the largest $n$ such that
+Furthermore, note that if a firm in layer $k$ is connected, the marginal benefit $\pi (1 - \mu^n)$ must be bigger than marginal costs $\kappa$, then it must be profitable to connect a firm in layer $k + 1$, since the marginal benefit would be the same. Now that we know that min-max$(n)$ is the optimal graph to achieve $\mu^n$, we can look for the optimum $\mu^n$. Particularly, the planner will pick the largest $n$ such that
 
 \begin{equation}
   n < \frac{\log(\pi / \kappa) - \log(1 - \mu)}{\log(\mu)}.
 \end{equation}
 
-come stai
 \newpage
 \nocite{*}
 % \printbibliography

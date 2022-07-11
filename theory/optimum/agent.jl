@@ -33,8 +33,8 @@ function agentoptimum(μ, ρ; m, r, integer = false)
     if integer
         sᵤ, sₗ = ceil(type, s), floor(type, s)
 
-        πᵤ = G₁([μ, ρ]; sₖ = sᵤ) - r * sᵤ
-        πₗ = G₁([μ, ρ]; sₖ = sₗ) - r * sₗ
+        πᵤ = (1 - G₁([μ, ρ]; sₖ = sᵤ)) - r * sᵤ
+        πₗ = (1 - G₁([μ, ρ]; sₖ = sₗ)) - r * sₗ
 
         return πᵤ ≥ πₗ ? sᵤ : sₗ
     else
