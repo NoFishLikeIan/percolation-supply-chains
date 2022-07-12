@@ -230,12 +230,12 @@ Another intuitive property of the dynamical system is that the risk and correlat
 The representative agent in layer $k + 1$ choses the number of suppliers to maximise
 
 \begin{equation}
-  s_{k + 1}(\mu_k, \rho_k) = \max_{s \in \mathbb{Z}} \Pi(s) =\max_{s \in \mathbb{Z}} \left\{ \pi \Big(1 - G_{\mu}(\mu_k, \rho_k, s)\Big) - \kappa \  s \right\}.
+  s_{k + 1}(\mu_k, \rho_k) = \max_{s \in \mathbb{N}_0} \Pi(s) =\max_{s \in \mathbb{N}_0} \left\{ \pi \Big(1 - G_{\mu}(\mu_k, \rho_k, s)\Big) - \kappa \  s \right\}.
 \end{equation}
 
 The function $\Pi(s)$ is strictly concave over $\Re$\footnote{
   Since, for $x > 0$, $\text{sign}(\psi_{n + 1}(x)) = (-1)^{n + 1}$, implies $\text{sign}\big(\psi_n(x + \varepsilon) - \psi_n(x) \big) = (-1)^n$, we have $\Pi''(s) < 0$.
-}. This simplifies greatly the optimisation problem over $\mathbb{Z}$. In particular, let $\tilde{s}$ be the maximizer over the real numbers $\tilde{s} \coloneqq \max_{s \in \mathbb{R}} \Pi(s)$, and $\bar{s}$ be such that $\Pi(\bar{s}) = \Pi(\bar{s} + 1)$\footnote{This is guaranteed to exist and be unique by strict concavity of $\Pi$.}. Then we know that the maximum over $\mathbb{Z}$ will be distant at most $1$ from $\tilde{s}$ and contained between $\bar{s}$ and $\bar{s} + 1$. This allows us to identify it and study its properties starting from $\tilde{s}$.
+}. This simplifies greatly the optimisation problem over $\mathbb{N}_0$. In particular, let $\tilde{s}$ be the maximizer over the real numbers $\tilde{s} \coloneqq \max_{s \in \mathbb{R}} \Pi(s)$, and $\bar{s}$ be such that $\Pi(\bar{s}) = \Pi(\bar{s} + 1)$\footnote{This is guaranteed to exist and be unique by strict concavity of $\Pi$.}. Then we know that the maximum over $\mathbb{N}_0$ will be distant at most $1$ from $\tilde{s}$ and contained between $\bar{s}$ and $\bar{s} + 1$. This allows us to identify it and study its properties starting from $\tilde{s}$.
 
 \begin{figure}[H]
   \centering
@@ -244,7 +244,41 @@ The function $\Pi(s)$ is strictly concave over $\Re$\footnote{
   \label{fig:convex-integer-optimization}
 \end{figure}
 
-The first order condition yields
+\subsubsection{A Special Case: No Correlation Risk}
+
+\notes{Note: I thought it would be good to analyse the one dimensional system first to build intuition.}
+
+It is instructive to first consider the dynamics of risk in the case where there is no correlation among suppliers. That is, when the function $G$ converges to its familiar binomial counterpart,
+
+\begin{equation}
+   \lim_{\rho \rightarrow 0} \tilde{G}(\mu, \rho) = \begin{pmatrix} \mu^{\tilde{s}(\mu, 0)} \\ 0 \end{pmatrix}.
+\end{equation}
+
+Letting $\tilde{g}$ be the one dimensional mapping from $\mu_{k}$ to $\mu_{k + 1}$, it is easy to see that the first order condition implies\footnote{
+  Things work out nicely
+\begin{equation}
+  \lim_{\rho \rightarrow 0} \frac{\partial G_\mu}{\partial s} = \lim_{\rho \rightarrow 0} G_\mu \times \left(\psi_0\left(s + \mu \frac{1 - \rho}{\rho} \right) - \psi_0\left(s + \frac{1 - \rho}{\rho} \right) \right) = \mu^{s} \log(\mu) = \frac{\partial \lim_{\rho \rightarrow 0} G_{\mu}}{\partial s}
+\end{equation}
+}
+
+\begin{equation}
+  \tilde{g}(\mu) \coloneqq \lim_{\rho \rightarrow 0}\tilde{G}_\mu(\mu, \rho) = -\frac{\kappa / \pi}{\log(\mu)}.
+\end{equation}
+
+The first interesting result of the system $\mu_{k + 1} = \tilde{g}(\mu_k)$ is that a fixed point $\bar{\mu}$ is stable if the ``value at risk'' is smaller than the marginal cost, namely $\mu \pi < \kappa$. Furthermore, the system exhibists a condition of criticality. 
+
+\notes{How to say: a small shock to $\mu_0$ can bring the system from $\mu_{K} < 1$ to $\mu_K = 1$?}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width = 0.85\linewidth]{../plots/one-dim-bif.png}
+  \caption{Bifurcation diagram of the limit system $\mu_{k + 1} = \tilde{G}_{\mu}(\mu_k, 0)$. The diagonal represents the stability condition.}
+  \label{fig:one-dimensional-bifurcation}
+\end{figure}
+
+\subsubsection{Introducing correlation risk}
+
+The first order condition gives us an implicit definition of $\tilde{s}$ 
 
 \begin{equation}
   \begin{split}
@@ -253,38 +287,34 @@ The first order condition yields
   \end{split}
 \end{equation}
 
-where $\psi_0$ is the digamma function.
-
-\subsubsection{A Special Case: No Correlation Risk}
-
-\notes{Note: I thought it would be good to analyse the one dimensional system first to build intuition.}
-
-As correlation disappears, the function $G$ converges to its familiar binomial counterpart,
+where $\psi_0$ is the digamma function. Remember that the states $(\bar{\mu}, \bar{\rho})$ for which the risk is constant are such that $\tilde{s}(\bar{\mu}, \bar{\rho})= 1$.
 
 \begin{equation}
-  \tilde{G}(\mu, 0) \coloneqq \lim_{\rho \rightarrow 0} \tilde{G}(\mu, \rho) = \begin{pmatrix} \mu^{\tilde{s}(\mu, 0)} \\ 0 \end{pmatrix}.
+  \begin{split}
+    \psi_0\left(\frac{1}{\textcolor{blue}{\bar{\rho}}} \right) - \psi_0\left(1 - \textcolor{red}{\bar{\mu}} + \frac{ \textcolor{red}{\bar{\mu}} }{\textcolor{blue}{\bar{\rho}}} \right) &= \frac{\kappa}{\pi \textcolor{red}{\bar{\mu}}}
+  \end{split}
 \end{equation}
 
-Taking the limit of the derivative yields
+which can be approximated, for small $\rho$, as
 
 \begin{equation}
-  \lim_{\rho \rightarrow 0}\tilde{G}_\mu(\mu, \rho) \left(\psi_0\left(\tilde{s} + \mu \frac{1 - \rho}{\rho} \right) - \psi_0\left(\tilde{s} + \frac{1 - \rho}{\rho} \right) \right) = \mu^{\tilde{s}} \log(\mu) = \frac{\partial \tilde{G}_{\mu}(\mu, 0)}{\partial s}.
+   - \textcolor{red}{\bar{\mu}}\log(\textcolor{red}{\bar{\mu}}) + \underbrace{\textcolor{blue}{\bar{\rho}} \ \left(\textcolor{red}{\bar{\mu}}^2 - \frac{1}{2}\textcolor{red}{\bar{\mu}} + \frac{1}{2}\right)}_{\text{local effect of overdispersion}} = \frac{\kappa}{\pi}.
 \end{equation}
-
-Hence, using the first order condition we can show that
-
-\begin{equation}
-  \tilde{G}_{\mu}(\mu, 0) = -\frac{\kappa / \pi}{\log(\mu)}.
-\end{equation}
-
-A fixed point $\bar{\mu}$ of this system is stable if the ``value at risk'' is smaller than the marginal cost, namely $\mu \pi < \kappa$.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width = 0.7\linewidth]{../plots/one-dim-bif.png}
-  \caption{Bifurcation diagram of the limit system $\mu_{k + 1} = \tilde{G}_{\mu}(\mu_k, 0)$. The diagonal represents the stability condition.}
-  \label{fig:one-dimensional-bifurcation}
+  \includegraphics[width = 0.85\linewidth]{../plots/agents.png}
+  \caption{Contour plot of $\tilde{s}(\mu, \rho)$ and $\kappa / \pi = 1 / 8$. Highlighted the steady states $(\mu, \rho): \tilde{s}(\mu, \rho) = 1$.}
+  \label{fig:agents-optimum}
 \end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width = 0.85\linewidth]{../plots/basin_small.png}
+  \caption{Basin of attraction of $\tilde{G}$ with $\kappa / \pi = 1 / 8$. The color of a point indicates the value $1 - \bar{\mu}$ of the attractor of that point.}
+  \label{fig:basin-plot}
+\end{figure}
+
 
 \subsection{Social Planner}
 

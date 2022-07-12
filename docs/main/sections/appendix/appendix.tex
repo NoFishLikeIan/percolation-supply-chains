@@ -1,11 +1,13 @@
 \documentclass[../../main.tex]{subfiles}
 \begin{document}
 
-\section{Derivations}\label{appendix:derivations}
+\section{Appendix}
+
+\subsection{Derivations}\label{appendix:derivations}
 
 \notes{put stuff from inner-problem.tex here}
 
-\section[Limits of Shift]{Limits of $G$}
+\subsection[Limits of Shift]{Limits of $G$}
 
 Other limits of $G$ are
 
@@ -16,5 +18,25 @@ Other limits of $G$ are
         \lim_{\mu \rightarrow 1} G(\mu, \rho, s) = (1, 1)
     \end{split}
 \end{equation}
+
+\subsection{Derivation of one dimensional system}
+
+The agents' first order condition implies that
+
+\begin{equation}
+    \mu^{\tilde{s}} \log(\mu) = \kappa / \pi.
+\end{equation}
+
+This immediately allows to see that $\tilde{g}(\mu) = -\frac{\kappa / \pi}{\log(\mu)}$. The stability of a steady state $\bar{\mu}$ can be derived by
+
+\begin{equation}
+    \begin{split}
+        1 &> \left.\frac{\partial \tilde{g}}{\partial \mu}\right\rvert_{\bar{\mu}} \\
+        &> \frac{\kappa / \pi}{\log(\bar{\mu})^2 \bar{\mu}} \\
+        &> \frac{\kappa / \pi}{\bar{\mu}}, \text{ by using } \bar{\mu} \log(\bar{\mu}) = -\frac{\kappa}{\pi}, \\
+        \bar{\mu} \pi &> \kappa
+    \end{split}
+\end{equation}
+
 
 \end{document}

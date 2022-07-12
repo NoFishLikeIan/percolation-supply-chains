@@ -132,7 +132,7 @@ let
 end
 
 # ╔═╡ c28509b7-df3e-44ba-b130-7626590f2f01
-xbasin = ybasin = range(0.01, 0.99; length = 301)
+xbasin = ybasin = range(0.01, 0.99; length = 351)
 
 # ╔═╡ 6dcc1295-1fe4-40a5-b691-fc392cf75c41
 rvalues = range(1e-5, 0.5; length = 351)
@@ -198,8 +198,13 @@ md"
 ## Behaviour on the $\rho = 0$ axis.
 
 ``r`` $(@bind r0 Slider(
-	range(0.35, 0.4, length = 501), 
-	show_value = true, default = 0.36
+	range(1 / ℯ - 0.3, 1 / ℯ + 0.3, length = 501), 
+	show_value = true, default = 1 / ℯ
+))
+
+``\mu_0`` $(@bind initμ Slider(
+	range(0, 1, length = 1001), 
+	show_value = true, default = 0.05
 ))
 
 "
@@ -228,11 +233,38 @@ begin
 		catch end
 		
 	end
+
+	# Cobweb plot
+	"""
+	Overlay the cobweb dynamics on function plot
+	"""
+	function cobwebplot(xs, fn::Function, x₀, T::Int, args...; kwargs...)
+		figure = plot()
+		cobwebplot!(figure, xs, fn, x₀, T, args...; kwargs...)
+		return figure
+	end
+	function cobwebplot!(figure, xs, fn::Function, x₀, T::Int, args...; kwargs...)
+		
+		plotevolution!(figure, xs, fn; label = get(kwargs, :label, L"f_a(x)"), xlabel = L"x_t", ylabel = L"x_{t+1}", kwargs...)
+		
+		x, y = x₀, fn(x₀)
+		scatter!([x], [y], label = nothing, color = :black)
+		for t in 2:T
+			plot!(figure, [x, y], [y, y], color = :black, label = nothing)
+			plot!(figure, [y, y], [y, fn(y)], color = :black, label = nothing)
+			x, y = y, fn(y)
+		end
+	end
+	
 end
 
 # ╔═╡ 23fbfae9-f653-4352-a238-55a27beabe99
 begin
-	g(μ; r) = -r / log(μ)	
+	sint(μ; r) = max(0, floor((log(r) - log(log(1 / μ))) / log(μ)))
+	
+	g(μ; r) = μ > 0 ? -r / log(μ) : 0
+	gint(μ; r) = μ^sint(μ; r)
+	
 	g′(μ; r) = r / (μ * log(μ)^2)
 
 	μ̄₀(r) = find_zeros(x -> x * log(x) + r, (0, 1))
@@ -242,14 +274,19 @@ end
 begin
 	denseunit = range(0, 1; length = 501)
 	steady_states = find_zeros(x -> x * log(x) + r0, (0, 1))
-
-	push!(steady_states, 0)
 	
-	evolfig = plotevolution(
-		denseunit, μ -> g(μ; r = r0);
+	evolfig = cobwebplot(
+		denseunit, μ -> g(μ; r = r0), initμ, K;
 		xlims = (-0.01, 1.01),  ylims = (-0.01, 1.01),
-		label = L"\tilde{G}_{\mu}(\mu, 0, \tilde{s})",
-		c = :black
+		label = L"\tilde{g}(\mu)",
+		c = :black, legend = :bottomright,
+		xlabel = L"\mu_k", ylabel = L"\mu_{k + 1}",
+		xticks = 0:0.1:1, yticks = 0:0.1:1
+	)
+
+	plot!(
+		evolfig, denseunit, μ -> gint(μ; r = r0), c = :darkgreen, 
+		label = L"G_{\mu}(\mu, 0, s_{k+1})"
 	)
 
 	stable = [
@@ -261,6 +298,8 @@ begin
 		label = nothing, c = stable
 	)
 
+	evolfig
+
 end
 
 # ╔═╡ 59aff6b5-e80f-4aa4-99e0-21bc2b111434
@@ -270,11 +309,24 @@ begin
 	orbitfig = plot(
 		r -> r; linestyle = :dash, c = :black,
 		aspect_ratio = 1, ylims = (-.01, 1.01), xlims = (-.01, 1.01),
-		label = nothing, xlabel = L"\pi / \kappa", ylabel = "Equilibria",
-		dpi = 180
+		label = nothing, xlabel = L"\kappa / \pi", ylabel = "Equilibria",
+		dpi = 180, legend = :bottomright
 	)
 
-	labels = ["stable" "unstable" latexstring("limit \$\\mu = 0\$")]
+	annotate!(
+		orbitfig, 
+		0.6, 0.63, text(L"\mu \pi = \kappa", :black, 10, rotation = 45)
+	)
+	
+	labels = ["stable" "unstable" latexstring("limit \$\\mu \\rightarrow 0\$")]
+
+	vline!(
+		orbitfig, [1 / ℯ], c = :black, alpha = 0.5, label = nothing
+	)
+	annotate!(
+		orbitfig, 
+		1/ℯ - 0.02, 0.1, text(L"1 / e", :black, 10, rotation = 90)
+	)
 	
 	for r ∈ rbifurcation
 
@@ -304,19 +356,34 @@ begin
 end
 
 # ╔═╡ 2fc1f58d-bf22-497b-ab3f-4c28d95b5bf9
-savefig(orbitfig, joinpath("../docs/plots", "one-dim-bif.png"))
+# savefig(orbitfig, joinpath("../docs/plots", "one-dim-bif.png"))
+
+# ╔═╡ 5021c671-3515-4c94-96e1-797f287ce2f5
+md"## Properties of the stable interior
+
+``\rho`` $(@bind ρ̄ Slider(
+	range(1e-3, 0.3; length = 101), 
+	show_value = true, default = 1e-2
+))
+"
+
+# ╔═╡ fc09995e-e8ca-47dc-a290-ef29390107ee
+ρ̄ratio = (1 - ρ̄) / ρ̄
+
+# ╔═╡ 06943ab9-186e-48bf-8f1e-f803a1df833d
+foc(μ) = μ * (ψ₀(ρ̄ratio) - ψ₀(μ * ρ̄ratio) + (1 - μ) / ρ̄ratio)
+
+# ╔═╡ b53ae8ed-f0c1-4e51-8ae5-44f755afaf6a
+approximatefoc(μ) = ρ̄ * (μ^2 - μ/2 + 1/2) - μ * log(μ) 
 
 # ╔═╡ fc984dae-fa9f-43e1-abf9-9637563941fe
 md"
 ### Basin of attraction
 
-
-``r`` $(@bind rbasin Slider(
-	0.01:0.005:0.2, 
-	show_value = true, default = 0.05
-))
-
 "
+
+# ╔═╡ 64ae50a7-00af-4c09-b363-7ac686096a50
+rbasin = 1 / 8
 
 # ╔═╡ 779daf41-9752-4653-b3f0-9fe7de089396
 function G̃!(dx, x, p, t)
@@ -337,68 +404,98 @@ begin
 	""
 end
 
+# ╔═╡ b5255c42-96a8-4c46-877c-18babf4e414a
+begin
+	foc(μ, ρ) = μ * (ψ₀(1 / ρ) - ψ₀(1 - μ + μ / ρ)) - rbasin
+	interior_boundaries = find_zeros(μ -> μ * log(μ) + rbasin, (0.01, 0.99))
+
+	boundary(μ) = find_zero(ρ -> foc(μ, ρ), μ)
+end
+
+# ╔═╡ 8125c155-1f02-4d25-9411-81e9cbb3a34e
+let
+	focfig = plot(unit, foc; xlabel = L"\mu", label = "Exact", title = "LHS first order condition")	
+	
+	plot!(focfig, unit, approximatefoc, label = "Linear approximation")
+end
+
 # ╔═╡ d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
 begin
-	pal = palette(:Blues, length(attractors))
-	conv = (b -> b > 0 ? resattractors[b] : 1).(basins)
+	conv = (b -> b > 0 ? 1 - resattractors[b] : 0).(basins)
+
+	
 	basinfig = contourf(
 		xbasin, ybasin, conv'; 
-		c = pal,
-		aspect_ratio = 1, 
-		xlims = extrema(xbasin), 
-		ylims = extrema(ybasin),
-		dpi = 180, clims = (0, 1),
-		xlabel = L"\mu", ylabel = L"\rho",
-		title = latexstring("Basin of attraction with \$\\kappa / \\pi =$rbasin\$"),
-		linewidth = 0
+		c = :viridis,
+		aspect_ratio = 1, linewidth = 0, dpi = 180, 
+		xticks = 0:0.1:1, yticks = 0:0.1:1,
+		xlims = extrema(xbasin), ylims = extrema(ybasin),
+		xlabel = L"\mu", ylabel = L"\rho", 
+		levels = 0:0.01:1
 	)
 
-
-
-	stablecolors = [:darkred, :blue]
-		
-	for (j, pair) ∈ enumerate(attractors)
-		key, coord = pair
-		x, y = coord |> first
-		scatter!(basinfig, [x], [y], 
-			c = :darkgreen, markersize = 1.5,
-			label = nothing
+	annotate!(basinfig,
+		1.17, 0.5, 
+		text(
+			latexstring("Attractors' resilience, \$1 - \\mu\$"), 
+			:black, 9, rotation = -90
 		)
-	end
+	)
+
+	plot!(
+		basinfig,
+		range(interior_boundaries..., length = 501), boundary;
+		c = :white, linewidth = 3, label = nothing
+	)
 	
 	basinfig
 end
 
 # ╔═╡ e901e035-1c0f-48ad-aae9-aee946027a04
-# ╠═╡ disabled = true
-#=╠═╡
 savefig(basinfig, joinpath("../docs/plots", "basin_small.png"))
-  ╠═╡ =#
 
 # ╔═╡ 91b18abe-f770-4613-9c84-8ebe9041ec98
 begin
 
-	rlow = rbasin
-	clims = (0, 3.5)
+	rschoice = 1 / 8
 
-	agentsfig = contourf(
-		unit, unit,
-		(f, ρ) -> agentoptimum(f, ρ; m, r = rlow),
-		c = :Blues, linewidth = 0,
-		clims = clims,
-		dpi = 180, 
-		xlims = (0, 1), ylims = (0, 1),
-		xlabel = L"\mu", ylabel = L"\rho",
-		title = latexstring("\$\\tilde{s}_a(f, \\rho)\$ with \$\\kappa / \\pi = $rlow\$"),
+	S̃space = ((t) -> agentoptimum(t[1], t[2]; m, r = rschoice)).(
+		product(unit, unit)
 	)
 
-	for (key, coord) ∈ attractors
-		x, y = coord |> first
-			scatter!(agentsfig, [x], [y], 
-			c = :red, markersize = 1.5,
-				label = nothing
+	extremaS = (0, ceil(maximum(S̃space)))
+	
+	agentsfig = contourf(
+		unit, unit, S̃space',
+		c = :viridis, linewidth = 0,
+		clims = extremaS,
+		levels = range(extremaS..., step = 0.1),
+		dpi = 180,
+		xlims = extrema(unit), ylims = extrema(unit),
+		xlabel = L"\mu", ylabel = L"\rho",
+		xticks = 0:0.1:1, yticks = 0:0.1:1,
+		aspect_ratio = 1
+	)
+
+	contour!(
+		agentsfig, unit, unit, 
+		(f, ρ) -> agentoptimum(f, ρ; m, r = rschoice),
+		linewidth = 3,
+		levels = [1], c = :white
+	)
+
+	annotate!(
+		agentsfig, 
+		0.45, 0.75, text(L"\tilde{s} = 1", :white, 13)
+	)
+
+	annotate!(agentsfig,
+		1.17, 0.5, 
+		text(
+			L"\tilde{s} \ (\mu, \rho)", 
+			:black, 9, rotation = -90
 		)
-	end
+	)
 
 	
 	savefig(agentsfig, joinpath("../docs/plots", "agents.png"))
@@ -411,7 +508,7 @@ md"### Bifurcation"
 
 # ╔═╡ 2d0b4c04-f29c-4fbd-ba29-c9b1a312c0f2
 begin
-	dsbif = DiscreteDynamicalSystem(G̃!, [0.9, 0.1], [100, 0.01])
+	dsbif = DiscreteDynamicalSystem(G̃!, [0.4, 0.1], [100, 0.2])
 	output = orbitdiagram(dsbif, [1, 2], 2, rvalues; n = Norbit, Ttr = Ttr)
 end
 
@@ -446,7 +543,7 @@ begin
 		c = :darkblue
 	)
 
-	rtip = rvalues[tipping_point] 
+	rtip = 1 / ℯ #rvalues[tipping_point] 
 
 	vline!(fig, [rtip], linestyle = :dash)
 	annotate!(
@@ -2130,17 +2227,24 @@ version = "0.9.1+5"
 # ╟─5a6baa64-9695-46cb-b59b-f289b0872ff7
 # ╟─23fbfae9-f653-4352-a238-55a27beabe99
 # ╟─e93c0097-0291-4c4e-bb3d-949d3e3ea3c6
-# ╠═59aff6b5-e80f-4aa4-99e0-21bc2b111434
+# ╟─59aff6b5-e80f-4aa4-99e0-21bc2b111434
 # ╠═2fc1f58d-bf22-497b-ab3f-4c28d95b5bf9
-# ╟─fc984dae-fa9f-43e1-abf9-9637563941fe
+# ╟─5021c671-3515-4c94-96e1-797f287ce2f5
+# ╠═fc09995e-e8ca-47dc-a290-ef29390107ee
+# ╠═06943ab9-186e-48bf-8f1e-f803a1df833d
+# ╠═b53ae8ed-f0c1-4e51-8ae5-44f755afaf6a
+# ╠═8125c155-1f02-4d25-9411-81e9cbb3a34e
+# ╠═fc984dae-fa9f-43e1-abf9-9637563941fe
+# ╠═64ae50a7-00af-4c09-b363-7ac686096a50
 # ╟─779daf41-9752-4653-b3f0-9fe7de089396
-# ╠═25c861f8-9103-4e4f-a76f-b1816d842e31
+# ╟─25c861f8-9103-4e4f-a76f-b1816d842e31
 # ╠═a20c0d6e-0e25-40d5-90bf-e156c4721b85
+# ╠═b5255c42-96a8-4c46-877c-18babf4e414a
 # ╟─d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
 # ╠═e901e035-1c0f-48ad-aae9-aee946027a04
 # ╟─91b18abe-f770-4613-9c84-8ebe9041ec98
 # ╟─777e44ed-5795-43c9-b90d-4bd1019f46ea
 # ╠═2d0b4c04-f29c-4fbd-ba29-c9b1a312c0f2
-# ╠═7cab141b-40cd-4906-91f2-9e33c19b9985
+# ╟─7cab141b-40cd-4906-91f2-9e33c19b9985
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
