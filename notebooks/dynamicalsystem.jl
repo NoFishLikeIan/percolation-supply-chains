@@ -21,7 +21,7 @@ using PlutoUI
 # ╠═╡ show_logs = false
 begin
 	using Plots, LaTeXStrings, Colors
-    theme(:dao); default(size = 500 .* (√2, 1), legend = :topright)
+    theme(:dao); default(size = 650 .* (√2, 1), legend = :topright, dpi = 300, fmt = :eps)
 end
 
 # ╔═╡ edf0c6f6-db46-11ec-19d0-f3a901cbdf5e
@@ -61,6 +61,18 @@ begin
 	
 end
 
+# ╔═╡ d3add18c-4845-4683-a82a-cbbe16f32b6f
+html"""
+<style>
+	main {
+		margin: 0 auto;
+		max-width: 2000px;
+    	padding-left: max(160px, 10%);
+    	padding-right: max(160px, 10%);
+	}
+</style>
+"""
+
 # ╔═╡ 82d52cc7-c6d4-45e5-8eeb-e81fda6317f8
 function makecurvefrompoints(points)
 	T = length(points)
@@ -85,6 +97,122 @@ Norbit, Ttr = 2000, 2000
 
 # ╔═╡ 7bb7dd41-0768-476f-b815-536607ecbdf0
 unit = range(0.01, 0.99; length = 50)
+
+# ╔═╡ 7253f132-6b20-43aa-8df8-fd8ef15cbcf5
+md"
+## Interpretation of Beta distribution
+"
+
+# ╔═╡ a0ff3a4e-c189-4459-b610-1a7109ffbcbc
+begin
+
+	function betacdf(μ, ρ)
+		α, β = fρtoαβ(1 - μ, ρ)
+		d = Beta(α, β)
+
+		return x -> cdf(d, x)
+	end
+
+	function betabinpdf(μ, ρ)
+		α, β = fρtoαβ(1 - μ, ρ)
+		d = BetaBinomial(1_000, α, β)
+
+		return x -> pdf(d, x)
+	end
+end
+
+# ╔═╡ ab5e7adf-8acc-4fff-92f5-c5d66d23f7f7
+begin
+	betadomain = 0:0.001:1
+	μfig = 0.5
+	ρs = [0.001, 0.1, 0.5] 
+
+	intensity_colors = [:darkred, :darkorange, :darkblue]
+	
+	betafig = plot(
+		xlabel = L"p", ylabel = latexstring("Cumulative density, \$\\mathbb{P} (P \\leq p)\$"),
+		margins = 5Plots.mm, legend = :topleft, legendtitle = L"\rho"
+	)
+
+	for (i, ρ) ∈ ρs |> enumerate
+		plot!(betafig,
+			betadomain, betacdf(μfig, ρ); 
+			c = intensity_colors[i], label = latexstring("\$$(ρ)\$")
+		)
+	end
+
+	vline!(
+		betafig, [1 - μfig],
+		linestyle = :dashdotdot, c = :black, alpha = 0.5, label = nothing
+	)
+
+	annotate!(
+		betafig, 
+		1 - μfig, 0.1, text(L"\ \mathbb{E}[P] = 1 - \mu", :black, 10, :left)
+	)
+	
+
+	
+
+	betafig
+
+end
+
+# ╔═╡ 7c2dafe1-13ce-4c57-8c83-ef0d4b235302
+begin
+	binomialdomain = 0:1:1_000
+	
+	binomialfig = plot(
+		;
+		xlabel = L"n", ylabel = latexstring("Probability density, \$\\mathbb{P} (F = n)\$"),
+		margins = 5Plots.mm, legend = :topleft, legendtitle = L"\rho", label = L"0"
+	)
+
+	for (i, ρ) ∈ ρs |> enumerate
+		plot!(binomialfig,
+			binomialdomain, betabinpdf(μfig, ρ); 
+			c = intensity_colors[i], label = latexstring("\$$(ρ)\$")
+		)
+	end
+	
+	binomialfig
+
+end
+
+# ╔═╡ e8397cfc-407a-451d-b571-d95dd66c8c33
+savefig(betafig, joinpath("../docs/plots", "beta-cdf")); savefig(binomialfig, joinpath("../docs/plots", "betabin-pdf"))
+
+# ╔═╡ 15f7b2fb-f98c-464d-9055-59bb796adb7b
+md"
+## Size of dumpening
+"
+
+# ╔═╡ 1e41fda9-6e2e-4402-b685-72d49e6caf9a
+begin
+	dumpfig = plot(
+		xlabel = L"n", ylabel = "Risk dumpening factor",
+		margins = 4Plots.mm, legend = :bottomleft,
+		legendtitle = L"\rho"
+	)
+
+	for (i, ρ) ∈ enumerate(ρs)
+		
+		plot!(dumpfig,
+			0:1:20,
+			marker = :o,
+			n -> inv(1 + n * ρ / (1 - ρ)),
+			label = latexstring("\$$(ρ)\$"),
+			c = intensity_colors[i]
+		)
+
+	end
+
+
+	dumpfig
+end
+
+# ╔═╡ 5c1f36ac-2d44-4011-af8c-7634473ffc54
+savefig(dumpfig, joinpath("../docs/plots", "risk-dumpening"))
 
 # ╔═╡ b67eb0ba-6db7-40ba-a0b2-21151c4eb748
 md"
@@ -307,17 +435,12 @@ begin
 	rbifurcation = range(0, 1, length = 501)
 	colors = [:darkblue, :darkred]
 	orbitfig = plot(
-		r -> r; linestyle = :dash, c = :black,
+		; linestyle = :dash, c = :black,
 		aspect_ratio = 1, ylims = (-.01, 1.01), xlims = (-.01, 1.01),
 		label = nothing, xlabel = L"\kappa / \pi", ylabel = "Equilibria",
 		dpi = 180, legend = :bottomright
 	)
 
-	annotate!(
-		orbitfig, 
-		0.6, 0.63, text(L"\mu \pi = \kappa", :black, 10, rotation = 45)
-	)
-	
 	labels = ["stable" "unstable" latexstring("limit \$\\mu \\rightarrow 0\$")]
 
 	vline!(
@@ -356,7 +479,7 @@ begin
 end
 
 # ╔═╡ 2fc1f58d-bf22-497b-ab3f-4c28d95b5bf9
-# savefig(orbitfig, joinpath("../docs/plots", "one-dim-bif.png"))
+savefig(orbitfig, joinpath("../docs/plots", "one-dim-bif"))
 
 # ╔═╡ 5021c671-3515-4c94-96e1-797f287ce2f5
 md"## Properties of the stable interior
@@ -452,7 +575,7 @@ begin
 end
 
 # ╔═╡ e901e035-1c0f-48ad-aae9-aee946027a04
-savefig(basinfig, joinpath("../docs/plots", "basin_small.png"))
+savefig(basinfig, joinpath("../docs/plots", "basin_small"))
 
 # ╔═╡ 91b18abe-f770-4613-9c84-8ebe9041ec98
 begin
@@ -498,10 +621,11 @@ begin
 	)
 
 	
-	savefig(agentsfig, joinpath("../docs/plots", "agents.png"))
-	
 	agentsfig
 end
+
+# ╔═╡ c2057c0c-b8f6-4741-bbf9-a22267e1c645
+savefig(agentsfig, joinpath("../docs/plots", "agents"))
 
 # ╔═╡ 777e44ed-5795-43c9-b90d-4bd1019f46ea
 md"### Bifurcation"
@@ -2203,6 +2327,7 @@ version = "0.9.1+5"
 """
 
 # ╔═╡ Cell order:
+# ╟─d3add18c-4845-4683-a82a-cbbe16f32b6f
 # ╠═8b32f51d-e1f7-489d-95af-5e25909d709d
 # ╠═963896ed-ae03-4b68-bec2-6b9917093454
 # ╟─c87845ef-2a91-41c8-933a-b6e139739927
@@ -2211,6 +2336,14 @@ version = "0.9.1+5"
 # ╠═551ba67b-5317-4dd0-9b9d-126ca8c13eb0
 # ╠═077b426a-ac05-4b6d-bcf1-0e379a82ba76
 # ╠═7bb7dd41-0768-476f-b815-536607ecbdf0
+# ╟─7253f132-6b20-43aa-8df8-fd8ef15cbcf5
+# ╠═a0ff3a4e-c189-4459-b610-1a7109ffbcbc
+# ╟─ab5e7adf-8acc-4fff-92f5-c5d66d23f7f7
+# ╠═7c2dafe1-13ce-4c57-8c83-ef0d4b235302
+# ╠═e8397cfc-407a-451d-b571-d95dd66c8c33
+# ╟─15f7b2fb-f98c-464d-9055-59bb796adb7b
+# ╟─1e41fda9-6e2e-4402-b685-72d49e6caf9a
+# ╠═5c1f36ac-2d44-4011-af8c-7634473ffc54
 # ╟─b67eb0ba-6db7-40ba-a0b2-21151c4eb748
 # ╟─49e1c995-831b-472e-b68c-b56a21d1f308
 # ╠═e518339b-9781-4f37-895f-19343315c79c
@@ -2242,7 +2375,8 @@ version = "0.9.1+5"
 # ╠═b5255c42-96a8-4c46-877c-18babf4e414a
 # ╟─d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
 # ╠═e901e035-1c0f-48ad-aae9-aee946027a04
-# ╟─91b18abe-f770-4613-9c84-8ebe9041ec98
+# ╠═91b18abe-f770-4613-9c84-8ebe9041ec98
+# ╠═c2057c0c-b8f6-4741-bbf9-a22267e1c645
 # ╟─777e44ed-5795-43c9-b90d-4bd1019f46ea
 # ╠═2d0b4c04-f29c-4fbd-ba29-c9b1a312c0f2
 # ╟─7cab141b-40cd-4906-91f2-9e33c19b9985

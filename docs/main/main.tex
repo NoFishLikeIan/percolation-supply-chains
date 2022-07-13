@@ -1,4 +1,4 @@
-\documentclass[american, abstract=on]{scrartcl}
+\documentclass[draft, american, abstract=on]{scrartcl}
 
     \newcommand{\lang}{en}
 
@@ -6,6 +6,8 @@
     \usepackage[utf8]{inputenc}
 
     \usepackage{csquotes}
+
+    \usepackage{ifdraft}
 
     \usepackage{amsmath, amssymb, mathtools, bbm}
     \usepackage{amsthm}
@@ -34,10 +36,11 @@
     \input{../diagrams/custom.tikzstyles}
 
     \newcommand{\inputTikZ}[2]{%  
-        \IfFileExists{#2}{
-          \scalebox{#1}{\input{#2}}  
-      }{
+
+      \ifdraft{
         \includegraphics[width=0.5\textwidth]{example-image-a}
+      }{
+        \IfFileExists{#2}{\scalebox{#1}{\input{#2}}}{\includegraphics[width=0.5\textwidth]{example-image-a}}
       }
     }
     
@@ -57,6 +60,7 @@
     \theoremstyle{plain}
     \newtheorem{lemma}{Lemma}
     \newtheorem{definition}{Definition}
+    \newtheorem{statement}{Statement}
     \newtheorem{theorem}{Theorem}
 
     % Paths
@@ -104,7 +108,7 @@
 
     \newcommand{\citein}[1]{\citeauthor{#1} (\citeyear{#1})}
 
-    \newcommand\notes[1]{\textcolor{red}{\textbf{#1}}}
+    \newcommand\notes[1]{\textcolor{teal}{\footnotesize \textbf{#1}}}
 
     % Make title page
 
@@ -116,13 +120,25 @@
 \maketitle
 \section{Introduction}
 
+\notes{
+  \begin{enumerate}
+    \item Research question
+    \item Contribution to the literature
+    \item Why do we care?
+  \end{enumerate}
+}
+
+
+\newpage
 \section{Model}
 
 In this section I will introduce a stylised production game of suppliers' risk diversification, in the spirit of the one developed by \citein{elliott_supply_2022}. The model, despite its simplicity, captures the interactions between firms’ decisions and suppliers’ correlation risks. I show how the correlation in suppliers’ risk, on top of directly introducing substantial tail risk, disincentivises firm risk diversification, even when the firms are risk neutral. Strikingly, the interaction between suppliers’ risk correlation and firms’ decision can introduce fragility in a production network even if risk is kept constant.
 
 \subsection{Setup}
 
-Consider a vertical economy producing $K$ goods (as displayed in Figure \ref{fig:vertical-economy-diagram}). Each firm produces a single good and each good is produced by $m$ firms. The good produced in layer $k$ requires only the good produced in layer $k - 1$ as input. Each firm picks a set of suppliers in the previous layer to source from. Establishing a relation with a supplier has a fixed cost $\kappa$. If no firm, among its suppliers, is able to deliver the input good then the firm is not ``functional'' and hence not able to deliver downstream. I assume that being functional yields an exogenous payoff $\pi$. This assumption will be relaxed later by introducing market structure to endogenise $\pi$, but this does not change the main model mechanics. Finally, we assume that firms know the structure of the economy but do not observe the realised supplier relationship in upstream layers. The only source of risk in the model is a idiosyncratic probability $\mu$ that firms in layer $0$, which require no inputs, are not able to carry on production.
+Consider a vertical economy producing $K + 1$ goods (as displayed in Figure \ref{fig:vertical-economy-diagram}), indexed by $k \in [K]$\footnote{
+  Here I let \begin{equation}[n] \coloneqq \{0, 1, 2, \ldots n \}\end{equation}
+}. Each firm produces a single good and each good is produced by $m$ firms. Good $k$ requires only good $k - 1$ as input, hence I will refer to them as good or layers interchangible \notes{(be more clear)}. Each firm picks a set of suppliers in the previous layer to source from. Establishing a relation with a supplier has a fixed cost $\kappa$. If no supplier is able to deliver the input good then the firm is not ``functional'' and hence not able to deliver downstream. I assume that being functional yields an exogenous payoff $\pi$. This assumption will be relaxed later by introducing market structure to endogenise $\pi$, but this does not change the main model mechanics. Finally, we assume that firms know the structure of the economy but do not observe the realised supplier relationship in upstream layers. The only source of risk in the model is an idiosyncratic probability $\mu$ that firms in layer $0$, which require no inputs, are not able to carry on production.
 
 \begin{figure}[H]
   \centering
@@ -131,61 +147,106 @@ Consider a vertical economy producing $K$ goods (as displayed in Figure \ref{fig
   \label{fig:vertical-economy-diagram}
 \end{figure}
 
-Letting $p_{k, i}$ be the probability of firm $i$ in layer $k$ being functional, the expected payoff for each firm is then
+A firm is identified by a tuple $(k, i)$, where $i \in [m]$ is an index and $k \in [K]$ is its layer. Then, let $\mathcal{F}_k$ be the set of functioning firms in layer $k$ and $\mathcal{S}_{k, i}$ the set of suppliers of firm $i$. Then, the probability that firm $i$ is functioning is
 
-\begin{equation}
-  \pi \times p_{k, i}(\text{suppliers of }i) - \kappa \times \text{number of suppliers of }i.
+\begin{equation} \label{eq:functional_probability}
+  p_{k, i} \coloneqq \P\big( i \in \mathcal{F}_k \big) = 1 - \P\big( {F}_{k - 1} \cap \mathcal{S}_{k, i} = \emptyset \big),
 \end{equation}
+
+since ${F}_{k - 1} \cap \mathcal{S}_{k, i} = \emptyset$ implies that no suppliers of firm $i$ are functional.
 
 \subsection{Firm Problem}
 
-We assume here that the firm cannot observe the realisation of supplier relationships. This introduces a symmetric component into the firms' problem, namely, when faced with their supplier decision, it is sufficient for a firm to track the distribution of risk among suppliers and then pick the optimal number of sources at random. Furthermore, this choice will be identical for all firms producing a good, since they are ex-ante equal. Let $s_k$ be the number of suppliers picked by the repesentative firm in layer $k$ and $F_k$ be the distribution of functioning firms producing good $k$. Then, if a firm producing good $k + 1$ were to pick $s_{k + 1}$ suppliers among those producing $k$, the probability that not all of its suppliers are functional, $p_m : [m] \times [m] \to \mathbb{Q} \cap [0, 1]$, is
+Using equation (\ref{eq:functional_probability}), we can write the problem of the firm as 
 
 \begin{equation}
-  p_m(s_{k + 1}, F_k) \coloneqq 1 - \overbrace{\binom{m - s_{k+1}}{F_k}}^{\substack{\text{sets of functioning firms such} \\ \text{that none are suppliers}}} \Bigg/ \underbrace{\binom{m}{F_k}}_{\substack{\text{all possible sets} \\ \text{of functioning firms}}}.
+  \max_{
+    \mathcal{S}_{k, i} \subseteq [m]
+  } \pi \left(1 - \P\big( {F}_{k - 1} \cap \mathcal{S}_{k, i}\big) = \emptyset \right) - \kappa \abs{\mathcal{S}_{k, i} }.
 \end{equation}
 
-\begin{definition} \label{definition:ptoF}
-  If $p_k \sim \Beta(1 - \mu_k, \rho_k)$ then $F_k \coloneqq \Bin\big(m, p_k \big)$ follows a $\Beta\Bin(m, 1 - \mu_k, \rho_k)$, with,
 
-  \begin{equation} \label{eq:moments_of_F}
-    \E \big[F_k\big] = m \ \E \big[p\big] = m \ (1 - \mu_k) \text{ and } \V \big[F_k\big] = m \ \mu_k \ (1 - \mu_k) \big(1 + (m - 1) \ \rho_k\big)
-  \end{equation}
+To model supply chain uncertainty, we assume that a firm cannot observe, before making its supplier decision, the supplier decisions of the firms producing the necessary input good. This implies that a rational firm producing good $k$ will \notes{(will or can?)} infer the distribution of the number of functioning firms in the previous layer, $F_{k - 1} \coloneqq \abs{\mathcal{F}_{k - 1}}$, based on this, select the optimal number of firms from which to supply, $s_{k, i} = \abs{\mathcal{S}_{k, i}}$, and then pick its suppliers at random. The mixed strategy arises since all potential suppliers producing good $k - 1$ are ex-ante equal. This implies that each firm in layer $k$ might pick a different set of suppliers, but they will all pick the same number of suppliers:
 
-  Notice that $F_k$ inherits its parameters from $p_k$.
-\end{definition}
+\begin{equation}
+  \mathcal{S}_{k, i} \not\equiv \mathcal{S}_{k, j} \text{ but } s_{k, i} = s_{k, j} \eqqcolon s_k.
+\end{equation}
+
+Hence, the probability of being functional of firm $i$, $p_{k, i}$, will not necessarily equal that of firm $j$, $p_{j, i}$ but they will be sampled from the same distribution. We can characterise this distribution by looking at the number of possible ways in which, given two random sets $\mathcal{S}_{k, i}$ and $\mathcal{F}_{k - 1}$, the overlap between them will be empty. This quantity will only depend on the sizes of the two sets $s_k$ and $F_{k-1}$. Let $P_m: [m]\times[m]\to[0, 1]$ be such that $1 - P_m(s_k, F_{k - 1})$ is the probability of the two sets not overlapping (i.e. of a firm in $k$ not functioning). This can be written as 
+
+\begin{equation}
+  P_m(s_k, F_{k-1}) \coloneqq 1 - \overbrace{\binom{m - s_k}{F_{k-1}}}^{\substack{\text{non-overlapping} \\ \text{configurations}}} \Bigg/ \underbrace{\binom{m}{F_{k-1}}}_{\substack{\text{all possible} \\ \text{configurations}}}.
+\end{equation}
+
+Given that the both $\mathcal{S}_{k, i}$ and $\mathcal{F}_{k - 1}$ are random sets, $P_m(s_k, F_{k-1})$ is a random variable and, for all firms $i$ in layer $k$,
+
+\begin{equation}
+  p_{k, i} \text{ draw from } P_m(s_k, F_{k-1}).
+\end{equation}
+
+We can now make a claim regarding the distribution of $P_m$ and its relationship with that of $F_{k - 1}$. We will see that two distributions will play a key role: the Beta$(\alpha, \beta)$ and the BetaBin($m, \alpha, \beta$). It is more intuitive, in the context of this model, to use an alternative parametrisation of the two distributions. I will hence write $\Beta(1 - \mu, \rho)$ and $\Beta\Bin(m, 1 - \mu, \rho)$ where $\mu = \frac{\beta}{\alpha + \beta}$ and $\rho = \frac{1}{\alpha + \beta + 1}$.
 
 \begin{lemma} \label{lemma:Ftop}
-  If $F_k$ is a r.v. taking values in $[m]$, then \begin{equation*}\lim_{m \rightarrow \infty} p_m(s_{k + 1}, F_k) \eqqcolon p_k \sim \Beta(1 - \mu_{k + 1}, \rho_{k + 1})\end{equation*} for some $\mu_{k + 1}$ and $\rho_{k + 1}$.
+  If $F_k$ is any r.v. taking values in $[m]$, then \begin{equation*}P(s_k, F_{k - 1}) \coloneqq \lim_{m \rightarrow \infty} P_m(s_k, F_{k - 1}) \sim \Beta(1 - \mu_k, \rho_k).\end{equation*} for some $\mu_k$ and $\rho_k$.
 \end{lemma}
 
-The proof of this lemma {\color{red} is not done yet.} Lemma \ref*{lemma:Ftop} and Definition \ref*{definition:ptoF} combine into a powerful result: for large enough $m$ the number of firms that are able to operate at each stage of the production networks, $\{F_k\}$, follow the same distribution. Such distributions are fully determined by the initial one, $F_0$, and the choices of suppliers in each layer, $\{s_k\}$. Furthermore, for the agent to solve its maximisation problem, hence pick a number of suppliers $s_k$, it is sufficient to infer the distribution of functioning firms among its suppliers, $F_{k - 1}$. As illustrated in Figure \ref*{fig:propagation-of-risk}, this implies that we can simply keep track of evolution of the two parameters $\mu_k$ and $\rho_k$.
+
+
+\begin{statement} \label{statement:ptoF}
+  If $P \sim \Beta(1 - \mu_k, \rho_k)$ and $F_k \sim \Bin\big(m, P \big)$, then by definition $F_k \sim \Beta\Bin(m, 1 - \mu_k, \rho_k)$, with,
+
+  \begin{equation} \label{eq:mean_of_F}
+    \E \big[F_k\big] = m \E \big[P_k\big] = m (1 - \mu_k)
+  \end{equation}
+
+  and 
+
+  \begin{equation} \label{eq:var_of_F}
+    \V \big[F_k\big] = m \mu_k (1 - \mu_k) \big(1 + (m - 1) \rho_k\big),
+  \end{equation}
+
+  such that $F_k$ ``inherits'' its parameters from $P$.
+\end{statement}
+
+
+Lemma \ref*{lemma:Ftop} and Statement \ref*{statement:ptoF} combine into a powerful result: for large enough $m$ the number of firms that are able to operate at each stage of the production network, $\{F_k\}^{K}_{k = 0}$, follow the same distribution. Such distributions are fully determined by the initial one, $F_0$, and the supplier choice in each layer, $\{s_k\}^{K}_{k = 0}$. Furthermore, for the agent to solve its maximisation problem, hence pick a number of suppliers $s_k$, it is sufficient to infer the distributioon over the number of functioning firms among its potential suppliers, $F_{k - 1}$. Hence, to track the propagation of risk throughout the supply chain, we can simply look at the of evolution of the two parameters $\mu_k$ and $\rho_k$ through the economy.
+
+\subsubsection{Interpretation of the Parameters}
+
+\notes{TODO: Introduce relationship with Bayesian statistics}
+
+It is useful at this point to give an interpretation of $\mu$ and $\rho$, in the context of our model. Looking back at the relationship between the moments of $F$ and these parameters (equations \ref{eq:mean_of_F} and \ref{eq:var_of_F}), we can see that $\mu$ is the fraction of firms that are expected to not deliver. Herafter, I will hence refer to $\mu$ as \textit{risk}. A more subtle role is played by $\rho$. Particularly, this parameter tracks the degree of correlation in the risk of the firms operating in layer $k$. If $\rho 
+\to 0$, then firms' risk is independent, $P$ concentrates at $1 - \mu$, and $F$ degenerates into a binomial distribution. On the contrary, if $\rho \rightarrow 1$ then firms' risk is perfectly correlated, $P$ will concentrate at $0$ or $1$, and $F$ will be either 0, with probability $\mu$ and $m$ with probability $1 - \mu$.
+
 
 
 \begin{figure}[H]
   \centering
-  \inputTikZ{0.7}{../diagrams/probability-propagation.tikz} 
-  \caption{Diagram of the relation between $F_k$, $p_k$, and $F_{k - 1}$, for sufficiently large $m$.}
-  \label{fig:propagation-of-risk}
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width = \linewidth]{../plots/beta-cdf.png}
+    \caption{C.d.f. of $P$ for different values of $\rho$}
+    \label{fig:distribution-illustration:beta}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width = \linewidth]{../plots/betabin-pdf.png} 
+    \caption{P.m.f. of $F$ for different values of $\rho$}
+    \label{fig:distribution-illustration:beta-binomial}
+  \end{subfigure}%
+  \caption{The two figures show the effect of increasing $\rho$ on the distribution of $P$ and hence of $F$.}
+  \label{fig:distribution-illustration}
 \end{figure}
-
-\subsubsection{Interpretation of the Parameters}
-
-It is useful at this point to give an interpretation of $\mu$ and $\rho$, in the context of our model. Looking back at the relationship between the moments of $F_k$ and these parameters (Equation \ref{eq:moments_of_F}), we can see that $\mu_k$ is the fraction of firms that are expected to not deliver in layer $k$. A more subtle role is played by $\rho_k$. If $\rho_k = 0$, then there is no dispersion on the probability of failure and $F_k$ follows a binomial distribution. In this sense, we can use $\rho_k$ as a measure of suppliers' correlation in the system: if all firms have different suppliers, then $\rho_k = 0$ and the probability of failure is constant for all firms producing a given good, hence, the number of firms failing follows a binomial distribution. Hereafter, I will refer to $\mu_k$ as \textit{risk} and $\rho_k$ as \textit{overdispersion}.
 
 \subsubsection{Dynamics of Risk}
 
-Let $G$ be the function mapping the risk and overdispersion between layers. As we have argued above, the downstream risk and overdispersion depend only that of the suppliers' and on the number of suppliers chosen by the representative firm in the current layer,
+As argued above. We are interested in the evolution of $\mu_k$ and $\rho_k$ across layers. Let $G: [0, 1]^2 \times [m] \to [0, 1]^2$ be such that
 
 \begin{equation}
-  \begin{pmatrix}
-    \mu_{k + 1} \\ \rho_{k + 1}
-  \end{pmatrix} =  \begin{pmatrix}
-    G_{\mu}(\mu_k, \rho_k; s_{k + 1}) \\ G_{\rho}(\mu_k, \rho_k; s_{k + 1})
-  \end{pmatrix} = G(\mu_k, \rho_k; s_{k + 1}).
+  (\mu_k, \rho_k) = G(\mu_{k - 1}, \rho_{k - 1}; \ s_k).
 \end{equation}
 
-Deriving the evolution of risk, $\mu$, (see Appendix \ref{appendix:derivations}), if the number of suppliers is restricted to be a positive integer, yields
+For convenience, let $G_{\mu}$ and $G_{\rho}$ be the first and second component of $G$ respectively. Then we can write (see Appendix \ref{appendix:derivations} for derivation) the evolution of risk as
 
 \begin{equation} \label{eq:G_mu}
   G_\mu(\mu, \rho, s) = \frac{\left( \mu \  \frac{1 - \rho}{\rho} \right)^{(s)}}{\left( \frac{1 - \rho}{\rho} \right)^{(s)}} = \prod^{s - 1}_{n = 0} \frac{\mu + n \frac{\rho}{1 - \rho}}{1 + n \frac{\rho}{1 - \rho}}
@@ -194,10 +255,17 @@ Deriving the evolution of risk, $\mu$, (see Appendix \ref{appendix:derivations})
 where $x^{(s)}$ is the rising factorial $x \ (x + 1) \ \ldots \ (x + s - 1)$. The expansion in equation (\ref{eq:G_mu}), highlights the effect of the suppliers' correlation in risk propagation. Namely, adding the $n$-th supplier reduces risk by a factor of 
 
 \begin{equation}
-  (1 - \mu) \ \frac{1}{1 + n \frac{\rho}{1 - \rho}}.
+  (1 - \mu) \ \frac{1}{1 + n \frac{\rho}{1 - \rho}}
 \end{equation}
 
-As more suppliers are added, $n$, or correlation increases, $\rho$, the marginal reduction in risk the firm can expect from adding a supplier decreases. This expansion also shows how this dynamical system can be seen as a generalisation of the simpler dynamical system where there is no correlation in the supplier risk, such that
+\begin{figure}[H]
+  \centering
+  \includegraphics[width = 0.7\linewidth]{../plots/risk-dumpening.png}
+  \caption{Risk dumbening factor $\frac{1}{1 + n \frac{\rho}{1 - \rho}}$}
+  \label{fig:risk-dumpening}
+\end{figure}
+
+As correlation increases, the marginal reduction in risk the firm can expect from adding a supplier decreases (Figure \ref{fig:risk-dumpening}). This expansion also shows how this dynamical system can be seen as a generalisation of the simpler dynamical system where there is no correlation in the supplier risk, such that
 
 \begin{equation}
   \lim_{\rho \rightarrow 0} G_\mu(\mu, \rho, s) = \mu^s.
@@ -221,8 +289,12 @@ Another intuitive property of the dynamical system is that the risk and correlat
 
 \begin{lemma}
   In $(\mu, \rho) \in (0, 1)^2$, if $s = 1$, every point is a fixed point \begin{equation}
-    (\mu, \rho) = G(\mu, \rho, 1),  
-  \end{equation} and if $s \neq 1$ there are no fixed points.
+    (\mu, \rho) = G(\mu, \rho, 1). 
+  \end{equation}
+\end{lemma}
+
+\begin{lemma}
+  If $s \neq 1$, the only fixed points are the points $(\mu, \rho)$ equal to $(0, 0)$  or $(0, 1)$.
 \end{lemma}
 
 \subsubsection{Agent's Choice}
@@ -246,7 +318,7 @@ The function $\Pi(s)$ is strictly concave over $\Re$\footnote{
 
 \subsubsection{A Special Case: No Correlation Risk}
 
-\notes{Note: I thought it would be good to analyse the one dimensional system first to build intuition.}
+\notes{I thought it would be good to analyse the one dimensional system first to build intuition.}
 
 It is instructive to first consider the dynamics of risk in the case where there is no correlation among suppliers. That is, when the function $G$ converges to its familiar binomial counterpart,
 
