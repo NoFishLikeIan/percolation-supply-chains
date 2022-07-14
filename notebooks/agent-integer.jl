@@ -68,9 +68,9 @@ end
 md"
 # Integer problem
 
-``\mu``: $(@bind μdef Slider(0:0.001:0.2, default = 0.01, show_value = true))
+``\mu``: $(@bind μdef Slider(0:0.001:0.2, default = 0.115, show_value = true))
 
-``\rho``: $(@bind ρdef Slider(unit, default = 0.01, show_value = true))
+``\rho``: $(@bind ρdef Slider(unit, default = 0.06, show_value = true))
 
 "
 
@@ -86,19 +86,30 @@ begin
 		sspace, πdef;
 		ylims = (60, 100), xlims = extrema(sspace),
 		c = :darkred, ylabel = L"\Pi(s)", xlabel = L"s", 
-		label = nothing,
+		label = L"\Pi(s)",
 		xticks = 0:1:maximum(sspace),
-		dpi = 180
+		dpi = 180, legendfontsize = 2
 	)
 
 
 	s̃ = agentoptimum(μdef, ρdef; m, r, integer = false)
 	s̃int = agentoptimum(μdef, ρdef; m, r, integer = true)
 
-	scatter!(sfig, [s̃], [πdef(s̃)]; c = :black, label = L"\tilde{s}")
+	scatter!(sfig, [s̃], [πdef(s̃)]; c = :black, label = nothing)
+	
+	annotate!(
+		s̃, 90, 
+		text(
+			L"\tilde{s}_{k + 1}", 
+			:black, 12
+		)
+	)
 
 	sboundary = find_zero(s -> πdef(s) - πdef(s + 1), s̃)
-	scatter!(sfig, [sboundary, sboundary + 1], πdef; c = :darkgreen, label = L"\bar{s}")
+	scatter!(sfig, [sboundary, sboundary + 1], πdef; c = :darkgreen, label = nothing)
+	annotate!(sboundary, 89, text(L"\bar{s}", :black, 12))
+	annotate!(sboundary + 1, 89, text(L"\bar{s} + 1", :black, 12))
+
 
 	plot!(sfig, 
 		range(sboundary,  sboundary + 1, length = 101),
@@ -1372,7 +1383,7 @@ version = "0.9.1+5"
 # ╠═05c4c281-3dcb-4887-a5a4-f7b0f4ef9b0d
 # ╟─501dd3ef-d16e-423c-aa84-2afcfbc025cc
 # ╠═e65f5631-af1a-4968-adc6-f61a1434e8f7
-# ╠═9315408b-d551-44a2-a174-c6711ee4c0f4
+# ╟─9315408b-d551-44a2-a174-c6711ee4c0f4
 # ╠═343fd456-79a3-4395-88f5-0833b9cc700e
 # ╠═498f2a65-1e46-423e-82ab-0a37d494eacb
 # ╠═937381f1-0631-4baf-a253-c2c5bc0b638e

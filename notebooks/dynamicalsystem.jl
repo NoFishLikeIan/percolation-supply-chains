@@ -190,7 +190,8 @@ md"
 # ╔═╡ 1e41fda9-6e2e-4402-b685-72d49e6caf9a
 begin
 	dumpfig = plot(
-		xlabel = L"n", ylabel = "Risk dumpening factor",
+		xlabel = latexstring("\$n\$-th additional supplier"), 
+		ylabel = "Risk dumpening factor",
 		margins = 4Plots.mm, legend = :bottomleft,
 		legendtitle = L"\rho"
 	)
@@ -272,7 +273,7 @@ md"
 
 ``r`` $(@bind rfield Slider(
 	0:0.001:1, 
-	show_value = true, default = 0.01
+	show_value = true, default = 1/8
 ))
 
 "
@@ -326,7 +327,7 @@ md"
 ## Behaviour on the $\rho = 0$ axis.
 
 ``r`` $(@bind r0 Slider(
-	range(1 / ℯ - 0.3, 1 / ℯ + 0.3, length = 501), 
+	range(0, 1 / ℯ + 0.3, length = 501), 
 	show_value = true, default = 1 / ℯ
 ))
 
@@ -388,7 +389,7 @@ end
 
 # ╔═╡ 23fbfae9-f653-4352-a238-55a27beabe99
 begin
-	sint(μ; r) = max(0, floor((log(r) - log(log(1 / μ))) / log(μ)))
+	sint(μ; r) = floor((log(r) - log(-log(μ))) / log(μ))
 	
 	g(μ; r) = μ > 0 ? -r / log(μ) : 0
 	gint(μ; r) = μ^sint(μ; r)
@@ -412,10 +413,12 @@ begin
 		xticks = 0:0.1:1, yticks = 0:0.1:1
 	)
 
-	plot!(
-		evolfig, denseunit, μ -> gint(μ; r = r0), c = :darkgreen, 
-		label = L"G_{\mu}(\mu, 0, s_{k+1})"
-	)
+	if false
+		plot!(
+			evolfig, denseunit, μ -> gint(μ; r = r0), c = :darkgreen, 
+			label = L"G_{\mu}(\mu, 0, s_{k+1})"
+		)
+	end
 
 	stable = [
 		μ̄ ≤ r0 ? :darkblue : :darkred for μ̄ ∈ steady_states
@@ -434,21 +437,23 @@ end
 begin
 	rbifurcation = range(0, 1, length = 501)
 	colors = [:darkblue, :darkred]
-	orbitfig = plot(
-		; linestyle = :dash, c = :black,
-		aspect_ratio = 1, ylims = (-.01, 1.01), xlims = (-.01, 1.01),
+	orbitfig = vline(
+		[1 / ℯ]; 
+		linestyle = :dash, c = :black,
+		aspect_ratio = 1 / 2, ylims = (-.01, 1.01), xlims = (-.01, 0.5),
 		label = nothing, xlabel = L"\kappa / \pi", ylabel = "Equilibria",
-		dpi = 180, legend = :bottomright
+		dpi = 180, legend = :topright
 	)
 
-	labels = ["stable" "unstable" latexstring("limit \$\\mu \\rightarrow 0\$")]
+	labels = ["stable" "unstable"]
 
-	vline!(
-		orbitfig, [1 / ℯ], c = :black, alpha = 0.5, label = nothing
-	)
+
 	annotate!(
 		orbitfig, 
-		1/ℯ - 0.02, 0.1, text(L"1 / e", :black, 10, rotation = 90)
+		1/ℯ + 1e-2, 0.11, 
+		text(
+			latexstring("\$\\pi = e \\times \\kappa\$"), :black, 15, :left
+		)
 	)
 	
 	for r ∈ rbifurcation
@@ -456,11 +461,7 @@ begin
 		
 		μ̄ᵣ = μ̄₀(r)
 		
-		stabilitycolors = [
-			(colors[μ < r ? 1 : 2] for μ ∈ μ̄ᵣ)..., 
-			:darkgreen]
-
-		push!(μ̄ᵣ, 0)
+		stabilitycolors = [colors[μ < r ? 1 : 2] for μ ∈ μ̄ᵣ]
 
 		for (idx, μ) ∈ enumerate(μ̄ᵣ)
 			label = r == 0.2 ? labels[idx] : nothing
@@ -554,7 +555,7 @@ begin
 		xticks = 0:0.1:1, yticks = 0:0.1:1,
 		xlims = extrema(xbasin), ylims = extrema(ybasin),
 		xlabel = L"\mu", ylabel = L"\rho", 
-		levels = 0:0.01:1
+		levels = 0:0.01:1, clims = (0, 1)
 	)
 
 	annotate!(basinfig,
@@ -632,8 +633,11 @@ md"### Bifurcation"
 
 # ╔═╡ 2d0b4c04-f29c-4fbd-ba29-c9b1a312c0f2
 begin
+	Nbif = 501
+	paramspace = range(1 / 2ℯ, 1.2 / ℯ; length = Nbif)
+	
 	dsbif = DiscreteDynamicalSystem(G̃!, [0.4, 0.1], [100, 0.2])
-	output = orbitdiagram(dsbif, [1, 2], 2, rvalues; n = Norbit, Ttr = Ttr)
+	output = orbitdiagram(dsbif, [1, 2], 2, paramspace; n = Norbit, Ttr = Ttr)
 end
 
 # ╔═╡ 7cab141b-40cd-4906-91f2-9e33c19b9985
@@ -652,45 +656,44 @@ begin
 	tipping_point = !isnothing(first_zero) ? first_zero : length(μbars)
 
 	fig = plot(
-		rvalues[1:(tipping_point - 1)], μbars[1:(tipping_point - 1)];
+		paramspace[1:(tipping_point - 1)], μbars[1:(tipping_point - 1)];
 		c = :darkblue,
 		ylabel = L"\mu",
 		yguidefontcolor = :darkblue,
 		xlabel = L"\kappa / \pi",
 		legend = false, rightmargin = 20Plots.mm,
-		alpha = 0.8, dpi = 180,
-		ylims = (-0.01, 1.01)
+		alpha = 0.8, dpi = 300,
+		ylims = (-0.01, 1.01),
+		margins = 5Plots.mm
 	)
 
 	plot!(
-		fig, rvalues[tipping_point:end], μbars[tipping_point:end],
+		fig, paramspace[tipping_point:end], μbars[tipping_point:end],
 		c = :darkblue
 	)
 
-	rtip = 1 / ℯ #rvalues[tipping_point] 
+	rtip = paramspace[tipping_point] 
 
 	vline!(fig, [rtip], linestyle = :dash)
-	annotate!(
-		fig, rtip + 0.01, 0.3, 
-		text(
-			latexstring("\$\\pi = 3 \\kappa\$"), 
-			:left, 10))
 
 	plot!(
 		twinx(fig), 
-		rvalues[1:(tipping_point - 1)], ρbars[1:(tipping_point - 1)];
+		paramspace[1:(tipping_point - 1)], ρbars[1:(tipping_point - 1)];
 		ylabel = L"\rho",
 		legend = false, c = :darkred,
 		alpha = 0.8,
 		yguidefontcolor = :darkred)
 
 	plot!(
-		fig, rvalues[tipping_point:end], ρbars[tipping_point:end],
+		fig, paramspace[tipping_point:end], ρbars[tipping_point:end],
 		c = :darkred
 	)
 
 	
 end
+
+# ╔═╡ 33a48a25-d7b7-4947-bf31-0403e5b781f4
+# savefig(fig, joinpath("../docs/plots", "bifurcation"))
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2327,7 +2330,7 @@ version = "0.9.1+5"
 """
 
 # ╔═╡ Cell order:
-# ╟─d3add18c-4845-4683-a82a-cbbe16f32b6f
+# ╠═d3add18c-4845-4683-a82a-cbbe16f32b6f
 # ╠═8b32f51d-e1f7-489d-95af-5e25909d709d
 # ╠═963896ed-ae03-4b68-bec2-6b9917093454
 # ╟─c87845ef-2a91-41c8-933a-b6e139739927
@@ -2342,7 +2345,7 @@ version = "0.9.1+5"
 # ╠═7c2dafe1-13ce-4c57-8c83-ef0d4b235302
 # ╠═e8397cfc-407a-451d-b571-d95dd66c8c33
 # ╟─15f7b2fb-f98c-464d-9055-59bb796adb7b
-# ╟─1e41fda9-6e2e-4402-b685-72d49e6caf9a
+# ╠═1e41fda9-6e2e-4402-b685-72d49e6caf9a
 # ╠═5c1f36ac-2d44-4011-af8c-7634473ffc54
 # ╟─b67eb0ba-6db7-40ba-a0b2-21151c4eb748
 # ╟─49e1c995-831b-472e-b68c-b56a21d1f308
@@ -2354,8 +2357,8 @@ version = "0.9.1+5"
 # ╠═9f11ee9e-e89f-41c4-8ef4-d91c7d4e8db3
 # ╠═dc3b28b0-def2-4c24-8104-51b9081d51e6
 # ╟─98904f31-4676-40a1-ab7c-da9c0b6911e0
-# ╟─4e34b762-f359-4d5f-b21a-2fd6246b2315
-# ╟─ae7a7c1d-c3b6-4dc8-aeab-ef2af11ac25d
+# ╠═4e34b762-f359-4d5f-b21a-2fd6246b2315
+# ╠═ae7a7c1d-c3b6-4dc8-aeab-ef2af11ac25d
 # ╟─48b46e7a-5fc1-4b58-a9e8-73c2c532a3f9
 # ╟─5a6baa64-9695-46cb-b59b-f289b0872ff7
 # ╟─23fbfae9-f653-4352-a238-55a27beabe99
@@ -2379,6 +2382,7 @@ version = "0.9.1+5"
 # ╠═c2057c0c-b8f6-4741-bbf9-a22267e1c645
 # ╟─777e44ed-5795-43c9-b90d-4bd1019f46ea
 # ╠═2d0b4c04-f29c-4fbd-ba29-c9b1a312c0f2
-# ╟─7cab141b-40cd-4906-91f2-9e33c19b9985
+# ╠═7cab141b-40cd-4906-91f2-9e33c19b9985
+# ╠═33a48a25-d7b7-4947-bf31-0403e5b781f4
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
