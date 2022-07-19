@@ -38,8 +38,8 @@ function plotvectorfield!(figure, xs, ys, g::Function, plotargs...; rescale = 1,
 
 end
 
-function agentvectorfieldplot(m, r; L = 20, rescale = 2)
-    Φ(μ, ρ) = G̃([μ, ρ], m, r) .- [μ, ρ]
+function agentvectorfieldplot(m, r; integer = false, L = 20, rescale = 2, kwargs...)
+    Φ(μ, ρ) = G̃([μ, ρ], m, r; integer = integer) .- [μ, ρ]
     μspace = range(0, 1; length = L)
     ρspace = range(0, 1 - 1e-3; length = L)
 
@@ -47,7 +47,8 @@ function agentvectorfieldplot(m, r; L = 20, rescale = 2)
     fig = plotvectorfield(
         μspace, ρspace, Φ; 
         xlabel = L"\mu", ylabel = L"\rho", 
-        title = latexstring("Vector field \$ \\tilde{G}(x) - x \$, with \$\\kappa / \\pi = $(r)\$"), rescale = rescale
+        title = latexstring("Vector field \$ \\tilde{G}(x) - x \$, with \$\\kappa / \\pi = $(r)\$"), rescale = rescale,
+        kwargs...
     )
 
     plot!(fig,

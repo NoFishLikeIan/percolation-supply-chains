@@ -73,6 +73,9 @@ html"""
 </style>
 """
 
+# ╔═╡ 1a39488c-43c8-47e3-a760-913962cb3703
+SAVE = false
+
 # ╔═╡ 82d52cc7-c6d4-45e5-8eeb-e81fda6317f8
 function makecurvefrompoints(points)
 	T = length(points)
@@ -180,7 +183,10 @@ begin
 end
 
 # ╔═╡ e8397cfc-407a-451d-b571-d95dd66c8c33
-savefig(betafig, joinpath("../docs/plots", "beta-cdf")); savefig(binomialfig, joinpath("../docs/plots", "betabin-pdf"))
+if SAVE 
+	savefig(betafig, joinpath("../docs/plots", "beta-cdf"))
+	savefig(binomialfig, joinpath("../docs/plots", "betabin-pdf"))
+end
 
 # ╔═╡ 15f7b2fb-f98c-464d-9055-59bb796adb7b
 md"
@@ -213,7 +219,7 @@ begin
 end
 
 # ╔═╡ 5c1f36ac-2d44-4011-af8c-7634473ffc54
-savefig(dumpfig, joinpath("../docs/plots", "risk-dumpening"))
+if SAVE savefig(dumpfig, joinpath("../docs/plots", "risk-dumpening")) end
 
 # ╔═╡ b67eb0ba-6db7-40ba-a0b2-21151c4eb748
 md"
@@ -292,21 +298,18 @@ md"
 ))
 "
 
-# ╔═╡ 4e34b762-f359-4d5f-b21a-2fd6246b2315
-begin
+# ╔═╡ ae7a7c1d-c3b6-4dc8-aeab-ef2af11ac25d
+begin	
+
 	X = Array{Float64}(undef, 2, model.K, 2) # (comp, soc), k, (f, ρ)
 	X[1, 1, :] = X[2, 1, :] = [μ₀, ρ₀] 
 
 	for k ∈ 2:model.K
-		X[1, k, :] = G̃(X[1, k - 1, :], model)
+		X[1, k, :] = G̃(X[1, k - 1, :], model; integer = false)
 		X[2, k, :] = Gₚ(X[2, k - 1, :], m, rfield, μ₀, k)
 	end
-end
 
-# ╔═╡ ae7a7c1d-c3b6-4dc8-aeab-ef2af11ac25d
-begin	
-
-	vecfig = agentvectorfieldplot(model.m, model.r; L= 10, rescale = 4)
+	vecfig = agentvectorfieldplot(model.m, model.r; L= 10, rescale = 4, integer = false)
 	
 
 	# Competitive
@@ -480,7 +483,7 @@ begin
 end
 
 # ╔═╡ 2fc1f58d-bf22-497b-ab3f-4c28d95b5bf9
-savefig(orbitfig, joinpath("../docs/plots", "one-dim-bif"))
+if SAVE savefig(orbitfig, joinpath("../docs/plots", "one-dim-bif")) end
 
 # ╔═╡ 5021c671-3515-4c94-96e1-797f287ce2f5
 md"## Properties of the stable interior
@@ -576,7 +579,7 @@ begin
 end
 
 # ╔═╡ e901e035-1c0f-48ad-aae9-aee946027a04
-savefig(basinfig, joinpath("../docs/plots", "basin_small"))
+if SAVE savefig(basinfig, joinpath("../docs/plots", "basin_small")) end
 
 # ╔═╡ 91b18abe-f770-4613-9c84-8ebe9041ec98
 begin
@@ -626,7 +629,7 @@ begin
 end
 
 # ╔═╡ c2057c0c-b8f6-4741-bbf9-a22267e1c645
-savefig(agentsfig, joinpath("../docs/plots", "agents"))
+if SAVE savefig(agentsfig, joinpath("../docs/plots", "agents")) end
 
 # ╔═╡ 777e44ed-5795-43c9-b90d-4bd1019f46ea
 md"### Bifurcation"
@@ -693,7 +696,7 @@ begin
 end
 
 # ╔═╡ 33a48a25-d7b7-4947-bf31-0403e5b781f4
-# savefig(fig, joinpath("../docs/plots", "bifurcation"))
+if SAVE savefig(fig, joinpath("../docs/plots", "bifurcation")) end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2333,6 +2336,7 @@ version = "0.9.1+5"
 # ╠═d3add18c-4845-4683-a82a-cbbe16f32b6f
 # ╠═8b32f51d-e1f7-489d-95af-5e25909d709d
 # ╠═963896ed-ae03-4b68-bec2-6b9917093454
+# ╠═1a39488c-43c8-47e3-a760-913962cb3703
 # ╟─c87845ef-2a91-41c8-933a-b6e139739927
 # ╟─edf0c6f6-db46-11ec-19d0-f3a901cbdf5e
 # ╟─82d52cc7-c6d4-45e5-8eeb-e81fda6317f8
@@ -2357,8 +2361,7 @@ version = "0.9.1+5"
 # ╠═9f11ee9e-e89f-41c4-8ef4-d91c7d4e8db3
 # ╠═dc3b28b0-def2-4c24-8104-51b9081d51e6
 # ╟─98904f31-4676-40a1-ab7c-da9c0b6911e0
-# ╠═4e34b762-f359-4d5f-b21a-2fd6246b2315
-# ╠═ae7a7c1d-c3b6-4dc8-aeab-ef2af11ac25d
+# ╟─ae7a7c1d-c3b6-4dc8-aeab-ef2af11ac25d
 # ╟─48b46e7a-5fc1-4b58-a9e8-73c2c532a3f9
 # ╟─5a6baa64-9695-46cb-b59b-f289b0872ff7
 # ╟─23fbfae9-f653-4352-a238-55a27beabe99
@@ -2370,15 +2373,15 @@ version = "0.9.1+5"
 # ╠═06943ab9-186e-48bf-8f1e-f803a1df833d
 # ╠═b53ae8ed-f0c1-4e51-8ae5-44f755afaf6a
 # ╠═8125c155-1f02-4d25-9411-81e9cbb3a34e
-# ╠═fc984dae-fa9f-43e1-abf9-9637563941fe
+# ╟─fc984dae-fa9f-43e1-abf9-9637563941fe
 # ╠═64ae50a7-00af-4c09-b363-7ac686096a50
-# ╟─779daf41-9752-4653-b3f0-9fe7de089396
+# ╠═779daf41-9752-4653-b3f0-9fe7de089396
 # ╟─25c861f8-9103-4e4f-a76f-b1816d842e31
 # ╠═a20c0d6e-0e25-40d5-90bf-e156c4721b85
-# ╠═b5255c42-96a8-4c46-877c-18babf4e414a
+# ╟─b5255c42-96a8-4c46-877c-18babf4e414a
 # ╟─d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
 # ╠═e901e035-1c0f-48ad-aae9-aee946027a04
-# ╠═91b18abe-f770-4613-9c84-8ebe9041ec98
+# ╟─91b18abe-f770-4613-9c84-8ebe9041ec98
 # ╠═c2057c0c-b8f6-4741-bbf9-a22267e1c645
 # ╟─777e44ed-5795-43c9-b90d-4bd1019f46ea
 # ╠═2d0b4c04-f29c-4fbd-ba29-c9b1a312c0f2
