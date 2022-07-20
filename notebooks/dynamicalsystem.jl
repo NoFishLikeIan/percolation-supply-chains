@@ -21,7 +21,16 @@ using PlutoUI
 # ╠═╡ show_logs = false
 begin
 	using Plots, LaTeXStrings, Colors
-    theme(:dao); default(size = 650 .* (√2, 1), legend = :topright, dpi = 300, fmt = :eps)
+    theme(:dao)
+		
+	default(
+		size = 650 .* (√2, 1),
+		legend = :topright, dpi = 300, fmt = :eps,
+		legendfontsize = 18, legendtitlefontsize = 18,
+		xtickfontsize = 18, ytickfontsize = 18,
+		xguidefontsize = 18, yguidefontsize = 18,
+		linewidth = 2.5
+	)
 end
 
 # ╔═╡ edf0c6f6-db46-11ec-19d0-f3a901cbdf5e
@@ -74,7 +83,7 @@ html"""
 """
 
 # ╔═╡ 1a39488c-43c8-47e3-a760-913962cb3703
-SAVE = false
+SAVE = true
 
 # ╔═╡ 82d52cc7-c6d4-45e5-8eeb-e81fda6317f8
 function makecurvefrompoints(points)
@@ -146,12 +155,12 @@ begin
 
 	vline!(
 		betafig, [1 - μfig],
-		linestyle = :dashdotdot, c = :black, alpha = 0.5, label = nothing
+		linestyle = :dash, c = :black, label = nothing
 	)
 
 	annotate!(
 		betafig, 
-		1 - μfig, 0.1, text(L"\ \mathbb{E}[P] = 1 - \mu", :black, 10, :left)
+		1 - μfig, 0.1, text(L"\ \mathbb{E}[P] = 1 - \mu", :black, 18, :left)
 	)
 	
 
@@ -198,7 +207,7 @@ begin
 	dumpfig = plot(
 		xlabel = latexstring("\$n\$-th additional supplier"), 
 		ylabel = "Risk dumpening factor",
-		margins = 4Plots.mm, legend = :bottomleft,
+		margins = 4Plots.mm, legend = :right,
 		legendtitle = L"\rho"
 	)
 
@@ -562,10 +571,10 @@ begin
 	)
 
 	annotate!(basinfig,
-		1.17, 0.5, 
+		1.2, 0.5, 
 		text(
 			latexstring("Attractors' resilience, \$1 - \\mu\$"), 
-			:black, 9, rotation = -90
+			:black, 18, rotation = -90
 		)
 	)
 
@@ -617,10 +626,10 @@ begin
 	)
 
 	annotate!(agentsfig,
-		1.17, 0.5, 
+		1.2, 0.5, 
 		text(
 			L"\tilde{s} \ (\mu, \rho)", 
-			:black, 9, rotation = -90
+			:black, 18, rotation = -90
 		)
 	)
 
@@ -664,7 +673,7 @@ begin
 		ylabel = L"\mu",
 		yguidefontcolor = :darkblue,
 		xlabel = L"\kappa / \pi",
-		legend = false, rightmargin = 20Plots.mm,
+		legend = false, rightmargin = 25Plots.mm,
 		alpha = 0.8, dpi = 300,
 		ylims = (-0.01, 1.01),
 		margins = 5Plots.mm
@@ -2346,7 +2355,7 @@ version = "0.9.1+5"
 # ╟─7253f132-6b20-43aa-8df8-fd8ef15cbcf5
 # ╠═a0ff3a4e-c189-4459-b610-1a7109ffbcbc
 # ╟─ab5e7adf-8acc-4fff-92f5-c5d66d23f7f7
-# ╠═7c2dafe1-13ce-4c57-8c83-ef0d4b235302
+# ╟─7c2dafe1-13ce-4c57-8c83-ef0d4b235302
 # ╠═e8397cfc-407a-451d-b571-d95dd66c8c33
 # ╟─15f7b2fb-f98c-464d-9055-59bb796adb7b
 # ╠═1e41fda9-6e2e-4402-b685-72d49e6caf9a
@@ -2379,13 +2388,13 @@ version = "0.9.1+5"
 # ╟─25c861f8-9103-4e4f-a76f-b1816d842e31
 # ╠═a20c0d6e-0e25-40d5-90bf-e156c4721b85
 # ╟─b5255c42-96a8-4c46-877c-18babf4e414a
-# ╟─d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
+# ╠═d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
 # ╠═e901e035-1c0f-48ad-aae9-aee946027a04
 # ╟─91b18abe-f770-4613-9c84-8ebe9041ec98
 # ╠═c2057c0c-b8f6-4741-bbf9-a22267e1c645
 # ╟─777e44ed-5795-43c9-b90d-4bd1019f46ea
 # ╠═2d0b4c04-f29c-4fbd-ba29-c9b1a312c0f2
-# ╠═7cab141b-40cd-4906-91f2-9e33c19b9985
+# ╟─7cab141b-40cd-4906-91f2-9e33c19b9985
 # ╠═33a48a25-d7b7-4947-bf31-0403e5b781f4
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
