@@ -83,7 +83,7 @@ html"""
 """
 
 # ╔═╡ 1a39488c-43c8-47e3-a760-913962cb3703
-SAVE = true
+SAVE = false
 
 # ╔═╡ 82d52cc7-c6d4-45e5-8eeb-e81fda6317f8
 function makecurvefrompoints(points)
@@ -422,7 +422,8 @@ begin
 		label = L"\tilde{g}(\mu)",
 		c = :black, legend = :bottomright,
 		xlabel = L"\mu_k", ylabel = L"\mu_{k + 1}",
-		xticks = 0:0.1:1, yticks = 0:0.1:1
+		xticks = 0:0.2:1, yticks = 0:0.2:1,
+		margins = 5Plots.mm
 	)
 
 	if false
@@ -438,12 +439,15 @@ begin
 	
 	scatter!(
 		evolfig, steady_states, steady_states; 
-		label = nothing, c = stable
+		label = nothing, c = stable, markersize = 5
 	)
 
 	evolfig
 
 end
+
+# ╔═╡ 4180def5-0459-461a-ad4b-ca3466c7e7ce
+g(0.001; r = r0)
 
 # ╔═╡ 59aff6b5-e80f-4aa4-99e0-21bc2b111434
 begin
@@ -454,7 +458,7 @@ begin
 		linestyle = :dash, c = :black,
 		aspect_ratio = 1 / 2, ylims = (-.01, 1.01), xlims = (-.01, 0.5),
 		label = nothing, xlabel = L"\kappa / \pi", ylabel = "Equilibria",
-		dpi = 180, legend = :topright
+		dpi = 180, legend = :topright, margins = 5Plots.mm
 	)
 
 	labels = ["stable" "unstable"]
@@ -464,7 +468,7 @@ begin
 		orbitfig, 
 		1/ℯ + 1e-2, 0.11, 
 		text(
-			latexstring("\$\\pi = e \\times \\kappa\$"), :black, 15, :left
+			latexstring("\$\\pi = e \\times \\kappa\$"), :black, 18, :left
 		)
 	)
 	
@@ -2374,7 +2378,8 @@ version = "0.9.1+5"
 # ╟─48b46e7a-5fc1-4b58-a9e8-73c2c532a3f9
 # ╟─5a6baa64-9695-46cb-b59b-f289b0872ff7
 # ╟─23fbfae9-f653-4352-a238-55a27beabe99
-# ╟─e93c0097-0291-4c4e-bb3d-949d3e3ea3c6
+# ╠═e93c0097-0291-4c4e-bb3d-949d3e3ea3c6
+# ╠═4180def5-0459-461a-ad4b-ca3466c7e7ce
 # ╟─59aff6b5-e80f-4aa4-99e0-21bc2b111434
 # ╠═2fc1f58d-bf22-497b-ab3f-4c28d95b5bf9
 # ╟─5021c671-3515-4c94-96e1-797f287ce2f5
