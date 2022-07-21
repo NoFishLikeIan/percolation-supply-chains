@@ -65,6 +65,7 @@ begin
 	include("../theory/utils/distcompound.jl")
 	include("../theory/utils/lawofmotion.jl")
 	include("../theory/utils/plotting.jl")
+	include("../theory/utils/diagnostic.jl")
 	
 	include("../theory/optimum/planner.jl")
 	include("../theory/optimum/agent.jl")
@@ -774,6 +775,33 @@ end
 
 # ╔═╡ d85e6321-7afa-49aa-9cce-cd87f7db7960
 plot(0:0.01:1, μ -> ρmanifold(μ; r = 1 / 8))
+
+# ╔═╡ ee127449-b7b3-4538-8db9-8c8bbafa4f38
+md"
+## Welfare analysis
+
+``r`` $(@bind rwelfare Slider(
+	range(0, 1 / ℯ + 0.3, length = 501), 
+	show_value = true, default = 1 / (ℯ + 0.01)
+))
+
+``q`` $(@bind q Slider(
+	range(0, 1; length = 101), 
+	show_value = true, default = 0.01
+))
+
+"
+
+# ╔═╡ 30239771-7353-4352-aa93-45fea4e31b2b
+begin
+	modelwelfare = VerticalModel(100, 0.01, rwelfare, 100)
+	
+	contourf(
+		denseunit, denseunit,
+		(μ, ρ) -> W̃(1, μ, ρ; model = modelwelfare)
+	)
+	
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2410,11 +2438,11 @@ version = "0.9.1+5"
 """
 
 # ╔═╡ Cell order:
-# ╠═d3add18c-4845-4683-a82a-cbbe16f32b6f
+# ╟─d3add18c-4845-4683-a82a-cbbe16f32b6f
 # ╠═8b32f51d-e1f7-489d-95af-5e25909d709d
 # ╠═963896ed-ae03-4b68-bec2-6b9917093454
 # ╠═1a39488c-43c8-47e3-a760-913962cb3703
-# ╟─c87845ef-2a91-41c8-933a-b6e139739927
+# ╠═c87845ef-2a91-41c8-933a-b6e139739927
 # ╟─edf0c6f6-db46-11ec-19d0-f3a901cbdf5e
 # ╟─82d52cc7-c6d4-45e5-8eeb-e81fda6317f8
 # ╠═551ba67b-5317-4dd0-9b9d-126ca8c13eb0
@@ -2469,5 +2497,7 @@ version = "0.9.1+5"
 # ╠═8125c155-1f02-4d25-9411-81e9cbb3a34e
 # ╠═8dddad86-fe0d-4421-b625-cfd1c7e8385c
 # ╠═d85e6321-7afa-49aa-9cce-cd87f7db7960
+# ╟─ee127449-b7b3-4538-8db9-8c8bbafa4f38
+# ╠═30239771-7353-4352-aa93-45fea4e31b2b
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

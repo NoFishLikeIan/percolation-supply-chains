@@ -35,6 +35,7 @@ include("utils/dynamicalsystem.jl")
 include("utils/distcompound.jl")
 include("utils/lawofmotion.jl")
 include("utils/plotting.jl")
+include("utils/diagnostic.jl")
 
 include("optimum/planner.jl")
 include("optimum/agent.jl")
@@ -52,32 +53,11 @@ r = costs / profit # cost / profit ratio
 
 model = VerticalModel(m, μ₀, r, K)
 
-X = zeros(2, model.K, 3) # (comp, soc), k, (f, ρ, s)
+unit = range(1e-3, 1 - 1e-3; length = 101)
 
-X[1, 1, [1, 2]] = X[2, 1, [1, 2]] = [model.μ₀, 1e-10] 
-
-for k ∈ 2:model.K
-    sagent = agentoptimum(
-        X[1, k - 1, 1], X[1, k - 1, 2]; 
-        m = model.m, r = model.r
-    )
-    splanner = planneroptimum(model, k) 
-
-
-    X[1, k, [1, 2]] = G(X[1, k - 1, :]; sₖ = sagent)
-    X[1, k - 1, 3] = sagent
-
-    X[2, k, [1, 2]] = G(X[2, k - 1, :]; sₖ = splanner)
-    X[2, k - 1, 3] = splanner
-
-end
-
-μs = X[:, :, 1]'
-suppliers = X[:, :, 3]'
-
-profits = profit * sum(1 .- μs, dims = 1) .- costs * sum(suppliers, dims = 1)
-
-
-unit = range(0, 1; length = 101)
-
-heatmap(unit, unit, (μ, ρ) -> agentoptimum(μ, ρ; m, r, integer = true), levels = 0:100)
+contourf(
+    unit, unit, 
+    (μ, ρ) -> W̃(μ, ρ; model);
+    levels = 0:0.01:1, linewidth = 0,
+    c = :viridis
+)
