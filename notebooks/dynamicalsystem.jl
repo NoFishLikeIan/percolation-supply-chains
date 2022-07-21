@@ -22,13 +22,15 @@ using PlutoUI
 begin
 	using Plots, LaTeXStrings, Colors
     theme(:dao)
+
+	FONT_SIZE = 14
 		
 	default(
 		size = 650 .* (√2, 1),
 		legend = :topright, dpi = 300, fmt = :eps,
-		legendfontsize = 18, legendtitlefontsize = 18,
-		xtickfontsize = 18, ytickfontsize = 18,
-		xguidefontsize = 18, yguidefontsize = 18,
+		legendfontsize = FONT_SIZE, legendtitlefontsize = FONT_SIZE,
+		xtickfontsize = FONT_SIZE, ytickfontsize = FONT_SIZE,
+		xguidefontsize = FONT_SIZE, yguidefontsize = FONT_SIZE,
 		linewidth = 2.5
 	)
 end
@@ -340,12 +342,12 @@ md"
 
 ``r`` $(@bind r0 Slider(
 	range(0, 1 / ℯ + 0.3, length = 501), 
-	show_value = true, default = 1 / ℯ
+	show_value = true, default = 1 / (ℯ + 0.01)
 ))
 
 ``\mu_0`` $(@bind initμ Slider(
 	range(0, 1, length = 1001), 
-	show_value = true, default = 0.05
+	show_value = true, default = 0
 ))
 
 "
@@ -403,7 +405,16 @@ end
 begin
 	sint(μ; r) = floor((log(r) - log(-log(μ))) / log(μ))
 	
-	g(μ; r) = μ > 0 ? -r / log(μ) : 0
+	function g(μ; r)
+		if μ ≈ 0 return 0. end
+		if μ ≈ 1. return 1. end
+
+		μ′ = -r/log(μ)
+		
+		return μ′ > 1 - 1e-3 ? 1. : μ′
+	end
+
+	
 	gint(μ; r) = μ^sint(μ; r)
 	
 	g′(μ; r) = r / (μ * log(μ)^2)
@@ -413,41 +424,78 @@ end
 
 # ╔═╡ e93c0097-0291-4c4e-bb3d-949d3e3ea3c6
 begin
+	εmargin = 0.01
+	
 	denseunit = range(0, 1; length = 501)
 	steady_states = find_zeros(x -> x * log(x) + r0, (0, 1))
+	rl = 1 / (ℯ - 0.1)
+
+	gstable(μ) = g(μ; r = r0)
+	gunstable(μ) = g(μ; r = rl)
+	lowlabel = latexstring("\$ \\pi \\approx $(round(inv(rl), digits = 2)) \\kappa \$")
+	highlabel = latexstring("\$ \\pi \\approx $(round(inv(r0), digits = 2)) \\kappa \$")
 	
 	evolfig = cobwebplot(
-		denseunit, μ -> g(μ; r = r0), initμ, K;
-		xlims = (-0.01, 1.01),  ylims = (-0.01, 1.01),
-		label = L"\tilde{g}(\mu)",
-		c = :black, legend = :bottomright,
-		xlabel = L"\mu_k", ylabel = L"\mu_{k + 1}",
-		xticks = 0:0.2:1, yticks = 0:0.2:1,
-		margins = 5Plots.mm
+		denseunit, gstable, initμ, K;
+		label = highlabel,
+		c = :darkgreen, legend = :bottomright,
 	)
-
-	if false
-		plot!(
-			evolfig, denseunit, μ -> gint(μ; r = r0), c = :darkgreen, 
-			label = L"G_{\mu}(\mu, 0, s_{k+1})"
-		)
-	end
 
 	stable = [
 		μ̄ ≤ r0 ? :darkblue : :darkred for μ̄ ∈ steady_states
 	]
-	
-	scatter!(
+
+
+	cobwebplot!(
+		evolfig, denseunit, gunstable, initμ, K;
+		label = lowlabel,
+		c = :darkorange,
+		xlabel = L"\mu_k", ylabel = L"\mu_{k + 1}",
+		margins = 5Plots.mm, xlims = (-εmargin, 1 + εmargin),  ylims = (-εmargin, 1 + εmargin),
+
+	)
+
+		scatter!(
 		evolfig, steady_states, steady_states; 
 		label = nothing, c = stable, markersize = 5
 	)
+
+
 
 	evolfig
 
 end
 
-# ╔═╡ 4180def5-0459-461a-ad4b-ca3466c7e7ce
-g(0.001; r = r0)
+# ╔═╡ 0b6a227a-d904-4519-b61d-683b92ecccfa
+if SAVE savefig(evolfig, joinpath("../docs/plots", "one-dim-cobweb")) end
+
+# ╔═╡ fcac7287-a664-4c44-aba4-cb3ba607a558
+begin
+	K₀ = 25
+	X₀ = Matrix{Float64}(undef, (K₀, 2))
+	X₀[1, :] .= 0.2
+	
+	for k ∈ 2:K₀
+		X₀[k, 1] = gstable(X₀[k - 1, 1])
+		X₀[k, 2] = gunstable(X₀[k - 1, 2])
+	end
+
+	onedimtraj = plot(
+		xlabel = latexstring("Layer, \$k\$"),
+		ylabel = L"\mu_k", margins = 5Plots.mm, legend = :topleft,
+		ylims = (0, 1 + εmargin),
+		xticks = 0:(K₀ - 1)
+	)
+
+	layers = 0:(K₀ - 1)
+	plot!(onedimtraj, layers, k -> X₀[k + 1, 1]; marker = :o, c = :darkgreen, label = highlabel)
+	plot!(onedimtraj, layers, k -> X₀[k + 1, 2]; marker = :o, c = :darkorange, label = lowlabel)
+
+	if SAVE savefig(onedimtraj, joinpath("../docs/plots", "one-dim-trajectory")) end
+
+	onedimtraj
+
+end
 
 # ╔═╡ 59aff6b5-e80f-4aa4-99e0-21bc2b111434
 begin
@@ -498,24 +546,6 @@ end
 # ╔═╡ 2fc1f58d-bf22-497b-ab3f-4c28d95b5bf9
 if SAVE savefig(orbitfig, joinpath("../docs/plots", "one-dim-bif")) end
 
-# ╔═╡ 5021c671-3515-4c94-96e1-797f287ce2f5
-md"## Properties of the stable interior
-
-``\rho`` $(@bind ρ̄ Slider(
-	range(1e-3, 0.3; length = 101), 
-	show_value = true, default = 1e-2
-))
-"
-
-# ╔═╡ fc09995e-e8ca-47dc-a290-ef29390107ee
-ρ̄ratio = (1 - ρ̄) / ρ̄
-
-# ╔═╡ 06943ab9-186e-48bf-8f1e-f803a1df833d
-foc(μ) = μ * (ψ₀(ρ̄ratio) - ψ₀(μ * ρ̄ratio) + (1 - μ) / ρ̄ratio)
-
-# ╔═╡ b53ae8ed-f0c1-4e51-8ae5-44f755afaf6a
-approximatefoc(μ) = ρ̄ * (μ^2 - μ/2 + 1/2) - μ * log(μ) 
-
 # ╔═╡ fc984dae-fa9f-43e1-abf9-9637563941fe
 md"
 ### Basin of attraction
@@ -550,13 +580,6 @@ begin
 	interior_boundaries = find_zeros(μ -> μ * log(μ) + rbasin, (0.01, 0.99))
 
 	boundary(μ) = find_zero(ρ -> foc(μ, ρ), μ)
-end
-
-# ╔═╡ 8125c155-1f02-4d25-9411-81e9cbb3a34e
-let
-	focfig = plot(unit, foc; xlabel = L"\mu", label = "Exact", title = "LHS first order condition")	
-	
-	plot!(focfig, unit, approximatefoc, label = "Linear approximation")
 end
 
 # ╔═╡ d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
@@ -626,7 +649,7 @@ begin
 
 	annotate!(
 		agentsfig, 
-		0.45, 0.75, text(L"\tilde{s} = 1", :white, 13)
+		0.45, 0.75, text(L"\tilde{s} = 1", :white, FONT_SIZE)
 	)
 
 	annotate!(agentsfig,
@@ -710,6 +733,47 @@ end
 
 # ╔═╡ 33a48a25-d7b7-4947-bf31-0403e5b781f4
 if SAVE savefig(fig, joinpath("../docs/plots", "bifurcation")) end
+
+# ╔═╡ 782b9bd9-f78a-41f3-ad89-8fd222cfcac2
+md"## Stable manifold for small $\rho$"
+
+# ╔═╡ 5021c671-3515-4c94-96e1-797f287ce2f5
+md"## Properties of the stable interior
+
+``\rho`` $(@bind ρ̄ Slider(
+	range(1e-3, 0.3; length = 101), 
+	show_value = true, default = 1e-2
+))
+"
+
+# ╔═╡ fc09995e-e8ca-47dc-a290-ef29390107ee
+ρ̄ratio = (1 - ρ̄) / ρ̄
+
+# ╔═╡ 06943ab9-186e-48bf-8f1e-f803a1df833d
+foc(μ) = μ * (ψ₀(ρ̄ratio) - ψ₀(μ * ρ̄ratio) + (1 - μ) / ρ̄ratio)
+
+# ╔═╡ b53ae8ed-f0c1-4e51-8ae5-44f755afaf6a
+approximatefoc(μ) = ρ̄ * (μ^2 - μ/2 + 1/2) - μ * log(μ) 
+
+# ╔═╡ 8125c155-1f02-4d25-9411-81e9cbb3a34e
+let
+	focfig = plot(unit, foc; xlabel = L"\mu", label = "Exact", title = "LHS first order condition")	
+	
+	plot!(focfig, unit, approximatefoc, label = "Linear approximation")
+end
+
+# ╔═╡ 8dddad86-fe0d-4421-b625-cfd1c7e8385c
+function ρmanifold(μ; r)
+
+	num = r - μ * log(1/μ)
+	den = r - μ^2 + (μ/2) - μ * log(1/μ) - 1
+
+	return num / den
+	
+end
+
+# ╔═╡ d85e6321-7afa-49aa-9cce-cd87f7db7960
+plot(0:0.01:1, μ -> ρmanifold(μ; r = 1 / 8))
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2379,21 +2443,17 @@ version = "0.9.1+5"
 # ╟─5a6baa64-9695-46cb-b59b-f289b0872ff7
 # ╟─23fbfae9-f653-4352-a238-55a27beabe99
 # ╠═e93c0097-0291-4c4e-bb3d-949d3e3ea3c6
-# ╠═4180def5-0459-461a-ad4b-ca3466c7e7ce
+# ╠═0b6a227a-d904-4519-b61d-683b92ecccfa
+# ╠═fcac7287-a664-4c44-aba4-cb3ba607a558
 # ╟─59aff6b5-e80f-4aa4-99e0-21bc2b111434
 # ╠═2fc1f58d-bf22-497b-ab3f-4c28d95b5bf9
-# ╟─5021c671-3515-4c94-96e1-797f287ce2f5
-# ╠═fc09995e-e8ca-47dc-a290-ef29390107ee
-# ╠═06943ab9-186e-48bf-8f1e-f803a1df833d
-# ╠═b53ae8ed-f0c1-4e51-8ae5-44f755afaf6a
-# ╠═8125c155-1f02-4d25-9411-81e9cbb3a34e
 # ╟─fc984dae-fa9f-43e1-abf9-9637563941fe
 # ╠═64ae50a7-00af-4c09-b363-7ac686096a50
 # ╠═779daf41-9752-4653-b3f0-9fe7de089396
 # ╟─25c861f8-9103-4e4f-a76f-b1816d842e31
 # ╠═a20c0d6e-0e25-40d5-90bf-e156c4721b85
 # ╟─b5255c42-96a8-4c46-877c-18babf4e414a
-# ╠═d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
+# ╟─d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
 # ╠═e901e035-1c0f-48ad-aae9-aee946027a04
 # ╟─91b18abe-f770-4613-9c84-8ebe9041ec98
 # ╠═c2057c0c-b8f6-4741-bbf9-a22267e1c645
@@ -2401,5 +2461,13 @@ version = "0.9.1+5"
 # ╠═2d0b4c04-f29c-4fbd-ba29-c9b1a312c0f2
 # ╟─7cab141b-40cd-4906-91f2-9e33c19b9985
 # ╠═33a48a25-d7b7-4947-bf31-0403e5b781f4
+# ╟─782b9bd9-f78a-41f3-ad89-8fd222cfcac2
+# ╟─5021c671-3515-4c94-96e1-797f287ce2f5
+# ╠═fc09995e-e8ca-47dc-a290-ef29390107ee
+# ╠═06943ab9-186e-48bf-8f1e-f803a1df833d
+# ╠═b53ae8ed-f0c1-4e51-8ae5-44f755afaf6a
+# ╠═8125c155-1f02-4d25-9411-81e9cbb3a34e
+# ╠═8dddad86-fe0d-4421-b625-cfd1c7e8385c
+# ╠═d85e6321-7afa-49aa-9cce-cd87f7db7960
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
