@@ -1,0 +1,330 @@
+\documentclass[../../main.tex]{subfiles}
+\begin{document}
+
+
+\section{Firm Problem}
+
+Using equation (\ref{eq:functional_probability}), the problem of the firm boils down to maximising, with respect to $\mathcal{S}_{k, i} \subseteq \{(k-1, 0), (k-1, 1), \ldots (k-1, m)\}$, \notes{find a better way to write this}
+
+\begin{equation}
+  \Big(1 - \P\big( \mathcal{F}_{k - 1} \cap \mathcal{S}_{k, i} = \emptyset \big) \Big) \ \pi  - \kappa \abs{\mathcal{S}_{k, i} }.
+\end{equation}
+
+
+To model supply chain uncertainty, we assume that a firm cannot observe, before making its supplier decision, the supplier decisions of the firms producing the necessary input good. This implies that a rational firm producing good $k$ can, first, infer the distribution of the number, $F^{(m)}_{k - 1} \coloneqq \abs{\mathcal{F}_{k - 1}}$, of functioning firms in the previous layer, second, based on this, select the optimal number, $s_{k, i} = \abs{\mathcal{S}_{k, i}}$, of firms from which to supply, and then, third, pick $s_{k, i}$ suppliers with equal probability. The randomness of the firms' choices arises since all potential suppliers producing good $k - 1$ are ex-ante equal. Hence, each firm in layer $k$ might pick a different set of suppliers, that is, $\mathcal{S}_{k, i}$ is not necessarily equal to $\mathcal{S}_{k, j}$ for some $i$ and $j$, but they will all pick the same number, $s_k$, of suppliers:
+
+\begin{equation}
+  s_{k, i} = s_k \text{ for all } i.
+\end{equation}
+
+If two firms $(k, i)$ and $(k, j)$, pick two random sets of suppliers $\mathcal{S}_{k, i}$ and $\mathcal{S}_{k, j}$ with the same size $s_k$, the probability that each of them is functional, $p_{k, i}$ and $p_{k, j}$, will be a realization drawn from the same distribution. We can characterise this distribution by looking at the number of possible configurations in which, given a random set $\mathcal{S}_{k, i}$ of suppliers and a random set of functioning firms $\mathcal{F}_{k - 1}$, the overlap between them will be empty. This quantity will only depend on the sizes of the two sets, $s_k$ and $F^{(m)}_{k-1}$. Let $p_{k, i} = P_m(s_k, F^{(m)}_{k - 1})$ be the probability of the two sets overlapping (i.e. of a firm $(k, i)$ functioning). This can be written as 
+
+\begin{equation}
+  P_m(s_k, F_{k-1}) = 1 - \P\big( \mathcal{S}_{k, i} \cap \mathcal{F}_{k - 1} = \emptyset \big) =  1 - \overbrace{\binom{m - s_k}{F_{k-1}}}^{\substack{\text{non-overlapping} \\ \text{configurations}}} \Bigg/ \underbrace{\binom{m}{F_{k-1}}}_{\substack{\text{all possible} \\ \text{configurations}}}. 
+\end{equation}
+
+This function depends on $m$ directly and indirectly, via the support of $F^{(m)}_{k-1}$. Furthermore, $F^{(m)}_{k - 1}$ is a random variable, which implies that $P_m(s_k, F_{k-1})$ too is a random variable. 
+
+We can now make a claim regarding the distribution of $P_m$ and its relationship with that of $F^{(m)}_{k - 1}$. 
+
+\notes{FIXME: Rewrite this paragraph}
+We will see that two distributions play a key role: the Beta$(\alpha, \beta)$ and the BetaBin($m, \alpha, \beta$). It is more intuitive, in the context of this model, to use an alternative parametrisation of the two distributions. I will henceforth write $\Beta(1 - \mu, \rho)$ and $\Beta\Bin(m, 1 - \mu, \rho)$ where $\mu = \frac{\beta}{\alpha + \beta}$ and $\rho = \frac{1}{\alpha + \beta + 1}$.
+
+\begin{lemma} \label{lemma:Ftop}
+  If $F^{(m)}_k$ is any r.v. taking values in $[m]$, then \begin{equation*}P(s_k, F^{(m)}_{k - 1}) \coloneqq \lim_{m \rightarrow \infty} P_m(s_k, F^{(m)}_{k - 1}) \sim \Beta(1 - \mu_k, \rho_k).\end{equation*} for some parameters $\mu_k$ and $\rho_k$.
+\end{lemma}
+
+
+
+\begin{theorem} \label{theorem:ptoF}
+  Consider a random variable $P \sim \Beta(1 - \mu_k, \rho_k)$, for some parameters $(\mu_k, \rho_k)$ and a random variable, defined conditionally on a realisation $p$ of $P$, 
+  
+  \begin{equation}
+    F^{(m)}_k \vert P = p \sim \Bin(m, p).
+  \end{equation}
+
+  Then, the unconditional distribution of $F^{(m)}_k$ is 
+
+  \begin{equation}
+    F^{(m)}_k \sim \Beta\Bin(m, 1 - \mu_k, \rho_k)
+  \end{equation}
+
+  with
+
+  \begin{equation} \label{eq:mean_of_F}
+    \E \big[F^{(m)}_k\big] = m \E \big[P_k\big] = m (1 - \mu_k)
+  \end{equation}
+
+  and 
+
+  \begin{equation} \label{eq:var_of_F}
+    \V \big[F^{(m)}_k\big] = m \mu_k (1 - \mu_k) \big(1 + (m - 1) \rho_k\big),
+  \end{equation}
+
+  such that $F^{(m)}_k$ ``inherits'' its parameters from $P$.
+\end{theorem}
+
+\notes{Write $F^{(m)} \to F$}
+
+Lemma \ref*{lemma:Ftop} and Theorem \ref*{theorem:ptoF} combine into a powerful result: for large enough $m$, the number of firms that are able to operate at each stage of the production network, $\{F_k\}^{K}_{k = 0}$, all follow a BetaBin distribution, each with different parameters $(\mu_k, \rho_k)$. These distributions are fully determined by the initial one, $F_0$, and the supplier choice in each layer, $\{s_k\}^{K}_{k = 0}$. Notice that the initial distribution of functioning firms $F_0$ can be modeled in the same way by simply setting 
+
+\begin{equation}
+  F_0 \sim \Beta\Bin(m, 1 - \mu_0, \rho_0).
+\end{equation}
+
+
+For agents in downstream layers to solve their maximisation problem, that is, pick a number of suppliers $s_k$, it is sufficient to infer the distribution over the number of functioning firms among their potential suppliers, $F_{k - 1}$. Hence, to track the propagation of risk throughout the supply chain, we can simply look at the of evolution of the two parameters $\mu_k$ and $\rho_k$ through the economy.
+
+\subsection{Interpretation of the Parameters}
+
+\notes{TODO: Introduce relationship with Bayesian statistics}
+
+It is useful at this point to give an interpretation of $\mu_k$ and $\rho_k$, in the context of our model. Looking back at the relationship between the moments of $F_k$ and these parameters (equations \ref{eq:mean_of_F} and \ref{eq:var_of_F}), we can see that $\mu_k$ is the fraction of firms that are expected to not deliver. Herafter, I will hence refer to $\mu_k$ as \textit{risk}. The parameter $\rho_k$ tracks the degree of correlation in the risk of the firms operating in layer $k$. If $\rho_k \to 0$, then firms' risk is independent, $P$ concentrates at $1 - \mu_k$, and $F_k$ degenerates into a binomial distribution. On the contrary, if $\rho_k \rightarrow 1$ then firms' risk is perfectly correlated, $P$ will concentrate at $0$ and $1$, and $F_k$ will be either 0, with probability $\mu_k$, or $m$, with probability $1 - \mu_k$.
+
+
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width = \linewidth]{../plots/beta-cdf.png}
+    \caption{C.d.f. of $P$ for different values of $\rho$}
+    \label{fig:distribution-illustration:beta}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width = \linewidth]{../plots/betabin-pdf.png} 
+    \caption{P.m.f. of $F$ for different values of $\rho$}
+    \label{fig:distribution-illustration:beta-binomial}
+  \end{subfigure}%
+  \caption{The two figures show the effect of increasing $\rho$ on the distribution of $P$ (left) and $F$ (right).}
+  \label{fig:distribution-illustration}
+\end{figure}
+
+\subsection{Dynamics of Risk}
+
+\notes{Find a better introduction of $G$}
+
+As argued above, the system is fully described by the evolution of $F_k$ through the layers, and these are determined by the evolution of parameters $\mu_k$ and $\rho_k$. Let $G: [0, 1]^2 \times [m] \to [0, 1]^2$ be such that
+
+\begin{equation}
+  (\mu_k, \rho_k) = G(\mu_{k - 1}, \rho_{k - 1}; \ s_k).
+\end{equation}
+
+For convenience, let $G_1$ and $G_2$ be the first and second component of $G$ respectively. Then we can write (see Appendix \ref{appendix:derivations} for derivation) the evolution of risk as
+
+\begin{equation} \label{eq:G_mu}
+  G_1(\mu, \rho, s) = \left( \mu \  \frac{1 - \rho}{\rho} \right)^{(s)} \Big/ \left(\frac{1 - \rho}{\rho} \right)^{(s)} = \prod^{s - 1}_{n = 0} \frac{\mu + n \frac{\rho}{1 - \rho}}{1 + n \frac{\rho}{1 - \rho}},
+\end{equation}
+
+where $x^{(s)}$ is the rising factorial $x \ (x + 1) \ \ldots \ (x + s - 1)$. The expansion in equation (\ref{eq:G_mu}), highlights the effect of the suppliers' correlation in risk propagation. Namely, adding the $n$-th supplier reduces the relative risk by
+
+\begin{equation}
+  \frac{G_1(\mu, \rho, n - 1) - G_1(\mu, \rho, n)}{G_1(\mu, \rho, n - 1)} = 1 - \frac{\mu + n \frac{\rho}{1 - \rho}}{1 + n \frac{\rho}{1 - \rho}} = \frac{1 - \mu}{1 + n \frac{\rho}{1 - \rho}}.
+\end{equation}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width = 0.7\linewidth]{../plots/risk-dumpening.png}
+  \caption{Risk dumpening factor $\left(1 + n \frac{\rho}{1 - \rho}\right)^{-1}$}
+  \label{fig:risk-dumpening}
+\end{figure}
+
+As correlation increases, the marginal reduction in risk the firm can expect from adding a supplier decreases (Figure \ref{fig:risk-dumpening}). Furthermore, without correlation, each new supplier reduces risk by exactly $(1-\mu)$, such that the dynamical systems converges to the binomial counterpart,
+
+\begin{equation}
+  \lim_{\rho \rightarrow 0} G_1(\mu, \rho, s) = \mu^s.
+\end{equation}
+
+Similarly, for sufficiently large $m$, we can derive an analytical expression for the evolution of overdispersion, $\rho$. Letting $\mu' \coloneqq G_1(\mu, \rho, s)$, then
+
+\begin{equation}
+  G_2(\mu, \rho, s) = \frac{\left( \mu \  \frac{1 - \rho}{\rho} + s \right)^{(s)} \Big/ \left( \frac{1 - \rho}{\rho} + s \right)^{(s)} - \mu'}{1 - \mu'} = \frac{\prod^{s - 1}_{n = 0} \frac{\mu + (n + s) \frac{\rho}{1 - \rho}}{1 + (n + s) \frac{\rho}{1 - \rho}} - \mu'}{1 - \mu'}.
+\end{equation}
+
+
+
+Again, without suppliers' correlation, the dynamical system converges to the simpler binomial case,
+
+\begin{equation}
+  \lim_{\rho \rightarrow 0} G_2(\mu, \rho, s) = 0.
+\end{equation}
+
+Another intuitive property of the dynamical system is that risk and correlation are constant throughout the layers only if the choice firms have a single supplier, $s = 1$, or if the system degenerates, $\mu \in \{0, 1\}$. \notes{Elaborate on the relevance of this}
+
+\begin{lemma} \label{lemma:interior_fixed_points}
+  In $\mu, \rho \in (0, 1)$, if $s = 1$, every point is a fixed point \begin{equation}
+    (\mu, \rho) = G(\mu, \rho, 1). 
+  \end{equation}
+\end{lemma}
+
+\begin{lemma} \label{lemma:exterior_fixed_points}
+  If $s \neq 1$, the only fixed points are the points $(\mu, \rho)$ equal to $(0, 0)$  or $(0, 1)$.
+\end{lemma}
+
+\subsection{Firms' Optimal Diversification}
+
+A firm in layer $k + 1$ choses the number of suppliers, $s_{k + 1}$, to maximise its profits, 
+
+\begin{equation} \label{eq:firm_problem}
+  s(\mu_k, \rho_k) = \arg\max_{s \in \mathbb{N}_0} \Pi(s) = \arg\max_{s \in \mathbb{N}_0} \left\{ \pi \Big(1 - G_1(\mu_k, \rho_k, s)\Big) - \kappa \  s \right\}.
+\end{equation}
+
+The function $\Pi(s)$ is strictly concave\footnote{
+  For $x > 0$, $\text{sign}(\psi_{n + 1}(x)) = (-1)^{n + 1}$, implies $\text{sign}\big(\psi_n(x + \varepsilon) - \psi_n(x) \big) = (-1)^n$ and $\Pi''(s) < 0$.
+} over $\Re$. This simplifies greatly the optimisation problem over the non-negative integers, $\mathbb{N}_0$. In particular, let
+
+\begin{equation}
+  \tilde{s}(\mu_k, \rho_k) \coloneqq \arg\max_{s \in \mathbb{R}_{\geq 0}} \Pi(s)
+\end{equation}
+
+
+Furthermore, $\bar{s}$ be such that\footnote{Since $\Pi$ admits a maximum and is strictly concave, $\bar{s}$ is guaranteed to exist and be unique.} $\Pi(\bar{s}) = \Pi(\bar{s} + 1)$. Then we know that 
+
+\begin{equation}
+  s_{k + 1} \in \big\{ \ceil{\bar{s}}, \floor{\bar{s} - 1} \big\} \cap \big\{ \ceil{\tilde{s}}, \floor{\tilde{s}} \big\}
+\end{equation}
+
+This condition implies that $\abs{s(\mu_k, \rho_k) - \tilde{s}(\mu_k, \rho_k)} < 1$. Given the smoothness of $s \mapsto G(\mu, \rho, s)$, the qualitative properties of the dynamical systems
+
+\begin{equation*}
+    G(\mu_k, \rho_k, s_{k + 1}(\mu_k, \rho_k)) \text{ and } G(\mu_k, \rho_k, \tilde{s}_{k + 1}(\mu_k, \rho_k))
+\end{equation*}
+
+will be similar.
+
+\notes{Yet another completly unmotivated claim! Try and use the shadowing lemma. For an initial condition $x_0$, there exist an orbit of $\tilde{G}$ arbitraily ($\delta$-$\epsilon$) close to that of $G$.}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width = 0.7\linewidth]{../plots/convex-integer-optimization.png}
+  \caption{Relationship between $s_{k + 1}, \tilde{s}$, and $\bar{s}$. Plot with $\mu_k = 0.115$ and $\rho_k = 0.06$.}
+  \label{fig:convex-integer-optimization}
+\end{figure}
+
+Hereafter, I will hence focus on the properties of the map
+
+\begin{equation}
+  \tilde{G}(\mu, \rho) \coloneqq G(\mu, \rho, \tilde{s}(\mu, \rho))
+\end{equation}
+
+\subsection{A Special Case: No Correlation Risk}
+
+It is instructive to first consider the dynamics of risk in the case where there is no correlation among suppliers. That is, when the function $G$ converges to its familiar binomial counterpart,
+
+\begin{equation}
+   \lim_{\rho \rightarrow 0} \tilde{G}(\mu, \rho) = \begin{pmatrix} \mu^{\tilde{s}(\mu, 0)} \\ 0 \end{pmatrix} 
+\end{equation}
+
+First, the degenerate dynamical system characterised by the map $\tilde{g} \coloneqq \lim_{\rho \to 0} \tilde{G}_1$ allows us derive stronger analytical results and properties that can be later generalised to the map $\tilde{G}$ with $\rho > 0$. Second, it links our model to the case of simple goods studied by \citein{elliott_supply_2022}. Despite studying conceptually different problems (their model deals with edge percolation and investment in relationship), both model admit parameter regions with similar interpretations and cascading failures.
+
+In this case, the first order condition on the firms' optimisation problem\footnote{
+  The first order condition remains valid in the limit, given the property
+  \begin{equation}
+    \lim_{\rho \rightarrow 0} \frac{\partial}{\partial s}G_1 = \lim_{\rho \rightarrow 0} G_1 \times \left(\psi_0\left(s + \mu \frac{1 - \rho}{\rho} \right) - \psi_0\left(s + \frac{1 - \rho}{\rho} \right) \right) = \mu^{s} \log(\mu) = \frac{\partial}{\partial s} \lim_{\rho \rightarrow 0} G_1
+  \end{equation}
+} is
+
+\begin{equation} \label{eq:one-dimension:foc}
+  \mu^{\tilde{s}(\mu, 0)} \log(\mu) = -\frac{\kappa}{\pi}.
+\end{equation} which yields
+
+\begin{equation}
+  \mu_{k+1} = \tilde{g}(\mu_k) = -\frac{\kappa / \pi}{\log(\mu_k)}.
+\end{equation}
+
+Plotting the function $\tilde{g}$ (Figure \ref{fig:one-dimensional:cobweb}) we can immediately see that if profits $\pi$ are sufficiently large, relative to the pairing costs $\kappa$, most levels of basal risk $\mu_0$ are diversified away by downstream firms and there are no cascading failures, $\mu_k < 1$ for all $k$ and the system has two steady states, a low risk stable steady state (blue) and a high risk unstable steady state (red). The stability condition of the fixed points,
+
+\begin{equation}
+  \mu \pi < \kappa,
+\end{equation}
+
+immediately highlights the qualitative difference between them. At the stable fixed point the ``value at risk'', $\mu \pi$, is smaller than the marginal diversification cost. Hence, it is optimal for the firms to respond to an increase in risk, $\mu$, by diversifying. On the other hand, at the unstable fixed point, the optimal response to an increase in risk is to cease production.
+
+As seen in (Figure \ref{fig:one-dimensional:trajectory}), there is a level of relative costs $\kappa / \pi$ at which, no matter the initial level of risk, firms do not diversify it. In basal industries this effect might appear negligible but risk compounds quickly and and arbitrary small increase in diversification costs $\kappa$ can lead to downstream cascading failures.
+
+
+\begin{figure}[H]
+  \begin{subfigure}{0.45\textwidth}
+    \centering
+    \includegraphics[width = 0.8\linewidth]{../plots/one-dim-cobweb.png}
+    \caption{The function $\tilde{g}$ for low (orange) and high (green) profits.}
+    \label{fig:one-dimensional:cobweb}
+  \end{subfigure} \hfill
+  \begin{subfigure}{0.45\textwidth}
+    \centering
+    \includegraphics[width = 0.8\linewidth]{../plots/one-dim-trajectory.png}
+    \caption{The propagation of risk $\mu_k$. A small decrease in relative profits can lead to cascading failures. }
+    \label{fig:one-dimensional:trajectory}
+  \end{subfigure}
+  \caption{Dynamics of risk as $\rho \rightarrow 0$}
+  \label{fig:one-dimensional}
+\end{figure}
+
+A natural question is, at what level of $\kappa / \pi$ do we observe such bifurcation (as seen in Figure \ref{fig:one-dimensional-bifurcation})? It is not hard to see that this occurs if 
+
+\begin{equation}
+  \pi < e \ \kappa.
+\end{equation}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width = 0.85\linewidth]{../plots/one-dim-bif.png}
+  \caption{Bifurcation diagram of the limit system $\mu_{k + 1} = \tilde{g}(\mu_k)$.}
+  \label{fig:one-dimensional-bifurcation}
+\end{figure}
+
+\subsection{Introducing correlation risk}
+
+Having studied the properties of $\lim_{\rho \rightarrow 0 } \tilde{G}$, we can now look at the dynamical system where we introduce positive correlation risk, $\rho_0 > 0$. The first order condition on the optimisation problem of the firm (\ref{eq:firm_problem}) gives us an implicit definition of the optimal number of suppliers, $\tilde{s}(\mu, \rho)$,
+
+\begin{equation}
+  \begin{split}
+    -\frac{\kappa}{\pi} &= \left. \frac{\partial G_1}{\partial s} \right\vert_{(\mu, \rho, \tilde{s})}  \\
+    &= \tilde{G}_1(\mu, \rho) \left(\psi_0\left(\tilde{s}(\mu, \rho) + \mu \frac{1 - \rho}{\rho} \right) - \psi_0\left(\tilde{s}(\mu, \rho) + \frac{1 - \rho}{\rho} \right)  \right),
+  \end{split}
+\end{equation}
+
+where $\psi_0$ is the digamma function\footnote{
+  Defined as $\psi_0(x) = \frac{\text{d}}{\text{d}x} \log \Gamma(x)$.
+}. As proven in Lemmas (\ref{lemma:interior_fixed_points}) and (\ref{lemma:exterior_fixed_points}), the only fixed points, $(\bar{\mu}, \bar{\rho})$, of $\tilde{G}$ need to satisfy $\tilde{s}(\bar{\mu}, \bar{\rho})= 1$. This, combined with the first order condition, allows us to write them implicitly as
+
+\begin{equation} \label{eq:exact-foc}
+  -\frac{\kappa}{\pi} = \left( \psi_0\left(1 - \bar{\mu} + \frac{ \bar{\mu} }{\bar{\rho}} \right) - \psi_0\left(\frac{1}{\bar{\rho}} \right) \right) \bar{\mu},
+\end{equation}
+
+which can be approximated\footnote{The used approximation is $\psi_0(x) \approx \log x - \frac{1}{2x}$ for large $x$.}, for small $\rho$, as
+
+\begin{equation}
+  -\frac{\kappa}{\pi} = \bar{\mu}\log(\bar{\mu}) + \bar{\rho} \left( \bar{\mu}^2 - \frac{1}{2} \bar{\mu} + \frac{1}{2} \right)
+\end{equation}
+
+Notice that, if $\rho = 0$, the approximation is consistent with the one dimensional case of equation (\ref{eq:one-dimension:foc}).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width = 0.85\linewidth]{../plots/agents.png}
+  \caption{Contour plot of $\tilde{s}(\mu, \rho)$ and $\kappa / \pi = 1 / 8$. Highlighted the steady state manifold, $(\bar{\mu}, \bar{\rho})$, $\tilde{s}(\bar{\mu}, \bar{\rho}) = 1$.}
+  \label{fig:agents-optimum}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width = 0.85\linewidth]{../plots/agents.png}
+    \caption{Contour plot of $\tilde{s}(\mu, \rho)$ and $\kappa / \pi = 1 / 8$. Highlighted the steady state manifold, $(\bar{\mu}, \bar{\rho})$, $\tilde{s}(\bar{\mu}, \bar{\rho}) = 1$.}
+    \label{fig:two-dimensional:agent-optimum}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width = 0.85\linewidth]{../plots/basin_small.png}
+    \caption{Basin of attraction of $\tilde{G}$ with $\kappa / \pi = 1 / 8$. The color of a point indicates the value $1 - \bar{\mu}$ of the attractor of that point.}
+    \label{fig:two-dimensional:basin}
+  \end{subfigure}%
+  \caption{Two dimensional system}
+  \label{fig:two-dimensional}
+\end{figure}
+
+
+\end{document}

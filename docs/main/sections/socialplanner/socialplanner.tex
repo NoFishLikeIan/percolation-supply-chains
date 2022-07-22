@@ -1,0 +1,43 @@
+\documentclass[../../main.tex]{subfiles}
+\begin{document}
+
+
+\section{Social Planner}
+
+The social planner problem consists in, on the one hand, minimising aggregate risk and, on the other, the number of edges. The risk faced by a firm depends only on how many firms in the first layer it is connected to, regardless of what path. Namely, if $n$ basal firms are involved in the firms' production, its risk is $1 - \mu^n$. Hence, a natural question is, if the social planner seeks to connect a firm to $n$ basal firms, what is the most edge parsimonious way to do so? 
+
+\begin{definition}
+  Let $\textit{min-max}(n)$ be the network where all firms in layer $1$ have $n$ suppliers and thereafter, each firm, is connect to only one supplier. 
+\end{definition}
+
+\begin{lemma}
+  $\textit{min-max}(n)$ is the network with fewest edges that achieves $\mu^n$ risk.
+\end{lemma}
+
+\begin{proof}
+
+To see this, consider Figure (\ref{fig:planner-n-target}). If the planner wants to achieve risk $\mu^n$ in layer $k$, any branching (right), vis-à-vis the min-max network (left), requires at a list one more edge to close the branching, hence it has as strictly more edges than the min-max network.
+
+\end{proof}
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \inputTikZ{0.5}{../diagrams/min-max-n.tikz} 
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \inputTikZ{0.5}{../diagrams/not-min-max-n.tikz} 
+  \end{subfigure}%
+  \caption{On the left the min-max$(n)$ network and on the right a deviation that achieves $\mu^n$.}
+  \label{fig:planner-n-target}
+\end{figure}
+
+Furthermore, note that if a firm in layer $k$ is connected, the marginal benefit $\pi (1 - \mu^n)$ must be bigger than marginal costs $\kappa$, then it must be profitable to connect a firm in layer $k + 1$, since the marginal benefit would be the same. Now that we know that min-max$(n)$ is the optimal graph to achieve $\mu^n$, we can look for the optimum $\mu^n$. Particularly, the planner will pick the largest $n$ such that
+
+\begin{equation}
+  n < \frac{\log(\pi / \kappa) - \log(1 - \mu)}{\log(\mu)}.
+\end{equation}
+
+\end{document}

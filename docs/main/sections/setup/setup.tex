@@ -1,0 +1,23 @@
+\documentclass[../../main.tex]{subfiles}
+\begin{document}
+
+\section{Setup}
+
+Consider a vertical economy producing $K + 1$ goods (as displayed in Figure \ref{fig:vertical-economy-diagram}), indexed by $k \in [K] \coloneqq \{ 0, 1, 2, \ldots K \}$. Each firm produces a single good and each good is produced by $m$ firms. Good $k$ requires only good $k - 1$ as input, hence I will refer to them as good or layers interchangibly. Each firm picks a set of suppliers in the previous layer to source from. Establishing a relation with a supplier has a fixed cost $\kappa$. If no supplier is able to deliver the input good then the firm is not ``functional'' and hence not able to deliver downstream. I assume that being functional yields an exogenous payoff $\pi$. This assumption will be relaxed later by introducing market structure to endogenise $\pi$, but this does not change the main model mechanics. Finally, we assume that firms know the structure of the economy but do not observe the realised supplier relationship in upstream layers. The only source of risk in the model is an idiosyncratic probability $\mu_0$ that firms in layer $0$, which require no inputs, are not able to carry on production.
+
+\begin{figure}[H]
+  \centering
+  \inputTikZ{0.5}{../diagrams/model-presentation.tikz} 
+  \caption{$K$-layers vertical economy}
+  \label{fig:vertical-economy-diagram}
+\end{figure}
+
+A firm is identified by a tuple $(k, i)$, where $i \in [m]$ is an index and $k \in [K]$ is its layer. Letting $\mathcal{F}_k$ be the set of functioning firms in layer $k$ and $\mathcal{S}_{k, i}$ the set of suppliers of firm $(k, i)$, the probability that such firm is functioning is
+
+\begin{equation} \label{eq:functional_probability}
+  p_{k, i} \coloneqq \P\big( i \in \mathcal{F}_k \big) = 1 - \P\big( \mathcal{F}_{k - 1} \cap \mathcal{S}_{k, i} = \emptyset \big),
+\end{equation}
+
+since $\mathcal{F}_{k - 1} \cap \mathcal{S}_{k, i} = \emptyset$ implies that no suppliers of firm $i$ are functional.
+
+\end{document}
