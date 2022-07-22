@@ -241,7 +241,7 @@ md"
 # ╔═╡ 49e1c995-831b-472e-b68c-b56a21d1f308
 md"
 ``s`` $(@bind sₖ Slider(
-	0.5:0.01:4, show_value = true, default = 1.
+	0.5:0.01:4, show_value = true, default = 1.3
 ))
 "
 
@@ -766,15 +766,20 @@ end
 # ╔═╡ 8dddad86-fe0d-4421-b625-cfd1c7e8385c
 function ρmanifold(μ; r)
 
-	num = r - μ * log(1/μ)
-	den = r - μ^2 + (μ/2) - μ * log(1/μ) - 1
+	x = - (r + μ * log(μ)) / (μ^2 - μ/2 + 1/2)
 
-	return num / den
+	return x / (1 + x)
 	
 end
 
 # ╔═╡ d85e6321-7afa-49aa-9cce-cd87f7db7960
-plot(0:0.01:1, μ -> ρmanifold(μ; r = 1 / 8))
+begin
+	rmanifoldplot = 1/3
+	
+	
+	plot(0:0.01:1, μ -> ρmanifold(μ; r = rmanifoldplot), ylims = (0, 1))
+
+end
 
 # ╔═╡ ee127449-b7b3-4538-8db9-8c8bbafa4f38
 md"
@@ -793,12 +798,14 @@ md"
 "
 
 # ╔═╡ 30239771-7353-4352-aa93-45fea4e31b2b
-begin
+let
+	N = 301
 	modelwelfare = VerticalModel(100, 0.01, rwelfare, 100)
 	
 	contourf(
-		denseunit, denseunit,
-		(μ, ρ) -> W̃(1, μ, ρ; model = modelwelfare)
+		range(0.01, 0.99; length = N), range(0.01, 0.99; length = N),
+		(μ, ρ) -> W̃(q, μ, ρ; model = modelwelfare),
+		linewidth = 0, clims = (0, 1)
 	)
 	
 end
@@ -2457,7 +2464,7 @@ version = "0.9.1+5"
 # ╠═1e41fda9-6e2e-4402-b685-72d49e6caf9a
 # ╠═5c1f36ac-2d44-4011-af8c-7634473ffc54
 # ╟─b67eb0ba-6db7-40ba-a0b2-21151c4eb748
-# ╟─49e1c995-831b-472e-b68c-b56a21d1f308
+# ╠═49e1c995-831b-472e-b68c-b56a21d1f308
 # ╠═e518339b-9781-4f37-895f-19343315c79c
 # ╟─5228005b-19f6-4cab-bd31-31aedb4fcf6c
 # ╠═c28509b7-df3e-44ba-b130-7626590f2f01
@@ -2483,7 +2490,7 @@ version = "0.9.1+5"
 # ╟─b5255c42-96a8-4c46-877c-18babf4e414a
 # ╟─d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
 # ╠═e901e035-1c0f-48ad-aae9-aee946027a04
-# ╟─91b18abe-f770-4613-9c84-8ebe9041ec98
+# ╠═91b18abe-f770-4613-9c84-8ebe9041ec98
 # ╠═c2057c0c-b8f6-4741-bbf9-a22267e1c645
 # ╟─777e44ed-5795-43c9-b90d-4bd1019f46ea
 # ╠═2d0b4c04-f29c-4fbd-ba29-c9b1a312c0f2
@@ -2494,7 +2501,7 @@ version = "0.9.1+5"
 # ╠═fc09995e-e8ca-47dc-a290-ef29390107ee
 # ╠═06943ab9-186e-48bf-8f1e-f803a1df833d
 # ╠═b53ae8ed-f0c1-4e51-8ae5-44f755afaf6a
-# ╠═8125c155-1f02-4d25-9411-81e9cbb3a34e
+# ╟─8125c155-1f02-4d25-9411-81e9cbb3a34e
 # ╠═8dddad86-fe0d-4421-b625-cfd1c7e8385c
 # ╠═d85e6321-7afa-49aa-9cce-cd87f7db7960
 # ╟─ee127449-b7b3-4538-8db9-8c8bbafa4f38

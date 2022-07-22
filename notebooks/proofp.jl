@@ -101,6 +101,37 @@ let
 	histogram(p̂)
 end
 
+# ╔═╡ 7ba20d74-8ab7-4169-ae7c-ff85a5cc76dc
+md"
+## Powers of a Beta distribution
+
+``s_{\beta}``: $(@bind sβ Slider(range(0.01, 10., length = 101), default = 1, show_value = true))
+"
+
+# ╔═╡ 59aa7a12-b6fa-4194-9ffb-7863128347af
+function betapower(s, α, β; N = 100_000)
+	R = Beta(α, β)
+	R̂ = rand(R, N)
+
+	return R̂ .^s
+end
+
+# ╔═╡ 54d74dbf-12c5-420d-8f95-5d8c071c936d
+begin
+	Rsim = betapower(sβ, α, β)
+	Rpower = fit(Beta, Rsim)
+	
+	plot(xs, x -> ecdf(Rsim)(x); label = "Empirical")
+	scatter!(xs, x -> cdf(Rpower, x), markersize = 2; label = "Fitted")
+
+end
+
+# ╔═╡ 4ad09ccf-4129-4e0d-9791-86a07b202eb0
+params(Rpower)
+
+# ╔═╡ 708c8a6d-6484-4048-9f24-84d4a0976a51
+(α, β)
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -1127,5 +1158,10 @@ version = "0.9.1+5"
 # ╠═15407c76-2493-487f-b3ee-650d76392839
 # ╠═a9be969a-28f2-4270-97c8-fe6c969883dc
 # ╠═ede41481-ab3e-47ca-914a-ad96a672a27b
+# ╟─7ba20d74-8ab7-4169-ae7c-ff85a5cc76dc
+# ╠═59aa7a12-b6fa-4194-9ffb-7863128347af
+# ╠═54d74dbf-12c5-420d-8f95-5d8c071c936d
+# ╠═4ad09ccf-4129-4e0d-9791-86a07b202eb0
+# ╠═708c8a6d-6484-4048-9f24-84d4a0976a51
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
