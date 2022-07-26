@@ -4,26 +4,26 @@
 
 \section{Firm Problem}
 
-Using equation (\ref{eq:functional_probability}), the problem of the firm boils down to maximising, with respect to $\mathcal{S}_{k, i} \subseteq \{(k-1, 0), (k-1, 1), \ldots (k-1, m)\}$, \notes{find a better way to write this}
+Using equation (\ref{eq:functional_probability}), the problem of the firm $(k, i)$ boils down to maximising the expected payoff, by picking a set of suppliers from those producing the previous good $\mathcal{S}_{k, i} \subseteq \{k - 1\} \times [m]$, 
 
 \begin{equation}
   \Big(1 - \P\big( \mathcal{F}_{k - 1} \cap \mathcal{S}_{k, i} = \emptyset \big) \Big) \ \pi  - \kappa \abs{\mathcal{S}_{k, i} }.
 \end{equation}
 
 
-To model supply chain uncertainty, we assume that a firm cannot observe, before making its supplier decision, the supplier decisions of the firms producing the necessary input good. This implies that a rational firm producing good $k$ can, first, infer the distribution of the number, $F^{(m)}_{k - 1} \coloneqq \abs{\mathcal{F}_{k - 1}}$, of functioning firms in the previous layer, second, based on this, select the optimal number, $s_{k, i} = \abs{\mathcal{S}_{k, i}}$, of firms from which to supply, and then, third, pick $s_{k, i}$ suppliers with equal probability. The randomness of the firms' choices arises since all potential suppliers producing good $k - 1$ are ex-ante equal. Hence, each firm in layer $k$ might pick a different set of suppliers, that is, $\mathcal{S}_{k, i}$ is not necessarily equal to $\mathcal{S}_{k, j}$ for some $i$ and $j$, but they will all pick the same number, $s_k$, of suppliers:
+To model supply chain uncertainty, we assume that a firm cannot observe, before making its supplier decision, the supplier decisions of the firms producing the necessary input good. This implies that a rational firm producing good $k$ can, first, infer the distribution of the number $F^{(m)}_{k - 1} \coloneqq \abs{\mathcal{F}_{k - 1}}$ of functioning firms in the previous layer, second, based on this, select the optimal number $s_{k, i} = \abs{\mathcal{S}_{k, i}}$ of firms from which to supply, and then, third, pick $s_{k, i}$ suppliers with equal probability. The randomness of the firms' choices arises since all potential suppliers producing good $k - 1$ are ex-ante equal. Hence, each firm in layer $k$ might pick a different set of suppliers, that is, $\mathcal{S}_{k, i}$ is not necessarily equal to $\mathcal{S}_{k, j}$ for some $i$ and $j$, but they will all pick the same number, $s_k$, of suppliers:
 
 \begin{equation}
   s_{k, i} = s_k \text{ for all } i.
 \end{equation}
 
-If two firms $(k, i)$ and $(k, j)$, pick two random sets of suppliers $\mathcal{S}_{k, i}$ and $\mathcal{S}_{k, j}$ with the same size $s_k$, the probability that each of them is functional, $p_{k, i}$ and $p_{k, j}$, will be a realization drawn from the same distribution. We can characterise this distribution by looking at the number of possible configurations in which, given a random set $\mathcal{S}_{k, i}$ of suppliers and a random set of functioning firms $\mathcal{F}_{k - 1}$, the overlap between them will be empty. This quantity will only depend on the sizes of the two sets, $s_k$ and $F^{(m)}_{k-1}$. Let $p_{k, i} = P_m(s_k, F^{(m)}_{k - 1})$ be the probability of the two sets overlapping (i.e. of a firm $(k, i)$ functioning). This can be written as 
+If two firms $(k, i)$ and $(k, j)$, pick two random sets of suppliers $\mathcal{S}_{k, i}$ and $\mathcal{S}_{k, j}$ with the same size $s_k$, the probability that each of them is functional, $p_{k, i}$ and $p_{k, j}$, will be a realization drawn from the same distribution. We can characterise this distribution by looking at the number of possible configurations in which, given a random set $\mathcal{S}_{k, i}$ of suppliers and a random set of functioning firms $\mathcal{F}_{k - 1}$, the overlap between them will be empty. This quantity only depends on the sizes of the two sets, $s_k$ and $F^{(m)}_{k-1}$. Let $p_{k, i} = P_m\left(s_k, F^{(m)}_{k - 1}\right)$ be the probability of the two sets overlapping (i.e. of a firm $(k, i)$ functioning). This can be written as 
 
 \begin{equation}
-  P_m(s_k, F_{k-1}) = 1 - \P\big( \mathcal{S}_{k, i} \cap \mathcal{F}_{k - 1} = \emptyset \big) =  1 - \overbrace{\binom{m - s_k}{F_{k-1}}}^{\substack{\text{non-overlapping} \\ \text{configurations}}} \Bigg/ \underbrace{\binom{m}{F_{k-1}}}_{\substack{\text{all possible} \\ \text{configurations}}}. 
+  1 - \P\big( \mathcal{S}_{k, i} \cap \mathcal{F}_{k - 1} = \emptyset \big) = P_m\left(s_k, F^{(m)}_{k - 1}\right) =  1 - \overbrace{\binom{m - s_k}{F_{k-1}}}^{\substack{\text{non-overlapping} \\ \text{configurations}}} \Bigg/ \underbrace{\binom{m}{F_{k-1}}}_{\substack{\text{all possible} \\ \text{configurations}}}. 
 \end{equation}
 
-This function depends on $m$ directly and indirectly, via the support of $F^{(m)}_{k-1}$. Furthermore, $F^{(m)}_{k - 1}$ is a random variable, which implies that $P_m(s_k, F_{k-1})$ too is a random variable. 
+This function depends on $m$ both explicitly and implicitly, via the support of $F^{(m)}_{k-1}$. Furthermore, $F^{(m)}_{k - 1}$ is a random variable, which implies that $P_m\left(s_k, F^{(m)}_{k - 1}\right)$ too is a random variable. 
 
 We can now make a claim regarding the distribution of $P_m$ and its relationship with that of $F^{(m)}_{k - 1}$. 
 
@@ -31,7 +31,7 @@ We can now make a claim regarding the distribution of $P_m$ and its relationship
 We will see that two distributions play a key role: the Beta$(\alpha, \beta)$ and the BetaBin($m, \alpha, \beta$). It is more intuitive, in the context of this model, to use an alternative parametrisation of the two distributions. I will henceforth write $\Beta(1 - \mu, \rho)$ and $\Beta\Bin(m, 1 - \mu, \rho)$ where $\mu = \frac{\beta}{\alpha + \beta}$ and $\rho = \frac{1}{\alpha + \beta + 1}$.
 
 \begin{lemma} \label{lemma:Ftop}
-  If $F^{(m)}_k$ is any r.v. taking values in $[m]$, then \begin{equation*}P(s_k, F^{(m)}_{k - 1}) \coloneqq \lim_{m \rightarrow \infty} P_m(s_k, F^{(m)}_{k - 1}) \sim \Beta(1 - \mu_k, \rho_k).\end{equation*} for some parameters $\mu_k$ and $\rho_k$.
+  If $F^{(m)}_k$ is any r.v. taking values in $[m]$, then \begin{equation*}P(s_k, F^{(m)}_{k - 1}) \coloneqq \lim_{m \rightarrow \infty} P_m\left(s_k, F^{(m)}_{k - 1}\right) \sim \Beta(1 - \mu_k, \rho_k).\end{equation*} for some parameters $\mu_k$ and $\rho_k$.
 \end{lemma}
 
 
