@@ -98,8 +98,8 @@
     \newcommand{\Beta}{\text{Beta}}
     \newcommand{\Bin}{\text{Bin}}
 
-    \DeclarePairedDelimiter\ceil{\lceil}{\rceil}
-  \DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+    \newcommand{\floor}[1]{\left\lfloor#1\right\rfloor}
+    \newcommand{\ceil}[1]{\left\lceil#1\right\rceil}
 
     % Bibliography
 
@@ -133,10 +133,10 @@
 \subfile{sections/socialplanner/socialplanner.tex}
 
 % Welfare Analysis
+\subfile{sections/welfare-analysis/welfare-analysis.tex}
 
 \newpage
-\nocite{*}
-% \printbibliography
+\printbibliography
 
 \pagenumbering{gobble} % stop page numbering
 \newpage
