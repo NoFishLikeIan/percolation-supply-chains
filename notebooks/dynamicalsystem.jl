@@ -343,7 +343,7 @@ md"
 
 ``r`` $(@bind r0 Slider(
 	range(0, 1 / ℯ + 0.3, length = 501), 
-	show_value = true, default = 1 / (ℯ + 0.01)
+	show_value = true, default = 1 / 8.41
 ))
 
 ``\mu_0`` $(@bind initμ Slider(
@@ -472,25 +472,28 @@ if SAVE savefig(evolfig, joinpath("../docs/plots", "one-dim-cobweb")) end
 
 # ╔═╡ fcac7287-a664-4c44-aba4-cb3ba607a558
 begin
+	divr = ℯ^(-1) + 0.009
+	convr = ℯ^(-1) - 0.009
+	
 	K₀ = 25
 	X₀ = Matrix{Float64}(undef, (K₀, 2))
 	X₀[1, :] .= 0.2
 	
 	for k ∈ 2:K₀
-		X₀[k, 1] = gstable(X₀[k - 1, 1])
-		X₀[k, 2] = gunstable(X₀[k - 1, 2])
+		X₀[k, 1] = g(X₀[k - 1, 1], r = convr)
+		X₀[k, 2] = g(X₀[k - 1, 2], r = divr)
 	end
 
 	onedimtraj = plot(
 		xlabel = latexstring("Layer, \$k\$"),
 		ylabel = L"\mu_k", margins = 5Plots.mm, legend = :topleft,
 		ylims = (0, 1 + εmargin),
-		xticks = 0:(K₀ - 1)
+		xticks = 0:(K₀ - 1), legendtitle = L"\kappa / \pi"
 	)
 
 	layers = 0:(K₀ - 1)
-	plot!(onedimtraj, layers, k -> X₀[k + 1, 1]; marker = :o, c = :darkgreen, label = highlabel)
-	plot!(onedimtraj, layers, k -> X₀[k + 1, 2]; marker = :o, c = :darkorange, label = lowlabel)
+	plot!(onedimtraj, layers, k -> X₀[k + 1, 1]; marker = :o, c = :darkgreen, label = L"e^{-1} - \varepsilon")
+	plot!(onedimtraj, layers, k -> X₀[k + 1, 2]; marker = :o, c = :darkorange, label = L"e^{-1} + \varepsilon")
 
 	if SAVE savefig(onedimtraj, joinpath("../docs/plots", "one-dim-trajectory")) end
 
@@ -517,7 +520,7 @@ begin
 		orbitfig, 
 		1/ℯ + 1e-2, 0.11, 
 		text(
-			latexstring("\$\\pi = e \\times \\kappa\$"), :black, 18, :left
+			latexstring("\$ e^{-1} \$"), :black, 18, :left
 		)
 	)
 	
@@ -2474,13 +2477,13 @@ version = "0.9.1+5"
 # ╠═dc3b28b0-def2-4c24-8104-51b9081d51e6
 # ╟─98904f31-4676-40a1-ab7c-da9c0b6911e0
 # ╟─ae7a7c1d-c3b6-4dc8-aeab-ef2af11ac25d
-# ╟─48b46e7a-5fc1-4b58-a9e8-73c2c532a3f9
+# ╠═48b46e7a-5fc1-4b58-a9e8-73c2c532a3f9
 # ╟─5a6baa64-9695-46cb-b59b-f289b0872ff7
 # ╟─23fbfae9-f653-4352-a238-55a27beabe99
 # ╠═e93c0097-0291-4c4e-bb3d-949d3e3ea3c6
 # ╠═0b6a227a-d904-4519-b61d-683b92ecccfa
 # ╠═fcac7287-a664-4c44-aba4-cb3ba607a558
-# ╟─59aff6b5-e80f-4aa4-99e0-21bc2b111434
+# ╠═59aff6b5-e80f-4aa4-99e0-21bc2b111434
 # ╠═2fc1f58d-bf22-497b-ab3f-4c28d95b5bf9
 # ╟─fc984dae-fa9f-43e1-abf9-9637563941fe
 # ╠═64ae50a7-00af-4c09-b363-7ac686096a50
