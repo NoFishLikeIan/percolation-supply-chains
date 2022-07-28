@@ -119,14 +119,13 @@
     The $k$-th moment of $X^s$ can be written as
 
     \begin{equation}
-        \E\left[\left(X^s\right)^k\right] = \E\Big[X^{(sk)}\Big] = \frac{\alpha \ (\alpha + 1) \ldots (\alpha + s - 1) \ldots (\alpha + s k - 1) }{(\alpha + \beta) \ (\alpha + \beta + 1) \ldots (\alpha + \beta + s - 1) \ldots (\alpha + \beta + s k - 1) }
+        \begin{split}
+            \E\left[\left(X^s\right)^k\right] &= \frac{\alpha (\alpha + 1) \ldots (\alpha + s - 1) (\alpha + s) \ldots (\alpha + s k - 1) }{(\alpha + \beta) (\alpha + \beta + 1) \ldots (\alpha + \beta + s - 1) (\alpha + \beta + s) \ldots (\alpha + \beta + s k - 1) } \\
+            &= \E[X^s] \ \E\left[Y^{(k - 1)s }\right]
+        \end{split}
     \end{equation}
 
-    Hence
-
-    \begin{equation}
-        \E\left[X^{(sk)}\right]
-    \end{equation}
+    where $Y \sim \Beta(\alpha + s, \beta)$
 
 \end{proof}
 
@@ -145,6 +144,12 @@
     
     \begin{equation}
         1 - P_m(s, R_m) = \frac{\big(m \ (1 - R_m)\big)_{(s)}}{\big( m \big)_{(s)}}.
+    \end{equation}
+
+    Taking the $k$-th moment
+
+    \begin{equation}
+        \E\left[ \frac{\big(m \ (1 - R_m)\big)^k_{(s)}}{\big( m \big)^k_{(s)}}\right]
     \end{equation}
 
     By considering only the leading terms in the falling factorial we have
