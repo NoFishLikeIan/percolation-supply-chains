@@ -17,33 +17,31 @@ To model supply chain uncertainty, we assume that a firm cannot observe, before 
   s_{k, i} = s_k \text{ for all } i.
 \end{equation}
 
-If two firms $(k, i)$ and $(k, j)$, pick two random sets of suppliers $\mathcal{S}_{k, i}$ and $\mathcal{S}_{k, j}$ with the same size $s_k$, the probability that each of them is functional, $p_{k, i}$ and $p_{k, j}$, will be a realization drawn from the same distribution. We can characterise this distribution by looking at the number of possible configurations in which, given a random set $\mathcal{S}_{k, i}$ of suppliers and a random set of functioning firms $\mathcal{F}_{k - 1}$, the overlap between them will be empty. This quantity only depends on the sizes of the two sets, $s_k$ and $F^{(m)}_{k-1}$. Let $p_{k, i} = P_m\left(s_k, F^{(m)}_{k - 1}\right)$ be the probability of the two sets overlapping (i.e. of a firm $(k, i)$ functioning). This can be written as 
+If two firms $(k, i)$ and $(k, j)$, pick two random sets of suppliers $\mathcal{S}_{k, i}$ and $\mathcal{S}_{k, j}$ with the same size $s_k$, the probability that each of them is functional, $p_{k, i}$ and $p_{k, j}$, will be a realization drawn from the same distribution. We can characterise this distribution by looking at the number of possible configurations in which, given a random set $\mathcal{S}_{k, i}$ of suppliers and a random set of functioning firms $\mathcal{F}_{k - 1}$, the overlap between them will be empty. This quantity only depends on the sizes of the two sets, $s_k$ and $F^{(m)}_{k-1}$. Let $p_{k, i} = P^{(m)}(s_k, F^{(m)}_{k - 1})$ be the probability of the two sets overlapping (i.e. of a firm $(k, i)$ functioning). This can be written as 
 
 \begin{equation}
-  1 - \P\big( \mathcal{S}_{k, i} \cap \mathcal{F}_{k - 1} = \emptyset \big) = P_m\left(s_k, F^{(m)}_{k - 1}\right) =  1 - \overbrace{\binom{m - s_k}{F_{k-1}}}^{\substack{\text{non-overlapping} \\ \text{configurations}}} \Bigg/ \underbrace{\binom{m}{F_{k-1}}}_{\substack{\text{all possible} \\ \text{configurations}}}. 
+  1 - \P\big( \mathcal{S}_{k, i} \cap \mathcal{F}_{k - 1} = \emptyset \big) = P^{(m)}\left(s_k, F^{(m)}_{k - 1}\right) =  1 - \overbrace{\binom{m - s_k}{F_{k-1}}}^{\substack{\text{non-overlapping} \\ \text{configurations}}} \Bigg/ \underbrace{\binom{m}{F_{k-1}}}_{\substack{\text{all possible} \\ \text{configurations}}}. 
 \end{equation}
 
-This function depends on $m$ both explicitly and implicitly, via the support of $F^{(m)}_{k-1}$. Furthermore, $F^{(m)}_{k - 1}$ is a random variable, which implies that $P_m\left(s_k, F^{(m)}_{k - 1}\right)$ too is a random variable. 
-
-We can now make a claim regarding the distribution of $P_m$ and its relationship with that of $F^{(m)}_{k - 1}$. 
-
-\notes{FIXME: Rewrite this paragraph}
-We will see that two distributions play a key role: the Beta$(\alpha, \beta)$ and the BetaBin($m, \alpha, \beta$). It is more intuitive, in the context of this model, to use an alternative parametrisation of the two distributions. I will henceforth write $\Beta(1 - \mu, \rho)$ and $\Beta\Bin(m, 1 - \mu, \rho)$ where $\mu = \frac{\beta}{\alpha + \beta}$ and $\rho = \frac{1}{\alpha + \beta + 1}$.
+This function depends on $m$ both implicitly, via the support of $F^{(m)}_{k-1}$, and explicitly. Furthermore, $F^{(m)}_{k - 1}$ is a random variable, which implies that $P^{(m)}(s_k, F^{(m)}_{k - 1})$ too is a random variable. We can now make a claim regarding the distribution of $P^{(m)}$ and its relationship with that of $F^{(m)}_{k - 1}$. To do so, first I show that, if the number of functioning suppliers follows a beta-binomial distribution, then the probability that a downstream firm functions follows a beta distribution (Lemma \ref{lemma:Ftop}). Second, I show that, if the functioning probability of each firm in a layer follows a beta distirbutin, then the number of firms functioning in that layer will follow a beta-binomial distribution (Theorem \ref{theorem:ptoF}).
 
 \begin{lemma} \label{lemma:Ftop}
-  If $F^{(m)}_k$ is any r.v. taking values in $[m]$, then \begin{equation*}P(s_k, F^{(m)}_{k - 1}) \coloneqq \lim_{m \rightarrow \infty} P_m\left(s_k, F^{(m)}_{k - 1}\right) \sim \Beta(1 - \mu_k, \rho_k).\end{equation*} for some parameters $\mu_k$ and $\rho_k$.
+  If $F^{(m)}_{k-1}$ is a beta-binomial r.v. taking values in $[m]$, then \begin{equation*}\lim_{m \rightarrow \infty} P^{(m)}\left(s_k, F^{(m)}_{k - 1}\right) \eqqcolon P_k \ \dot{\sim} \ \Beta(1 - \mu_k, \rho_k).\end{equation*} for some parameters $\mu_k$ and $\rho_k$.
+  \notes{Because of simulations, I am almost sure this holds true but I can't seem to prove it. Below I give the intuition behind the statement.}
 \end{lemma}
 
+The intuition behind Lemma \ref{lemma:Ftop} becomes clear once we enstablish a link between the role the beta distribution plays in the model and the one it plays in bayesian statistics.\footnote{For an extensive treatment and storiographical reference on the role of the beta distribution see, for example, \citein{gelman_bayesian_2004} }
+Whether a firm functions is a simple binary event $\left\{\mathcal{F}_{k - 1} \cap \mathcal{S}_{k, i} \neq \emptyset \right\}$ with an associated probability, which depends on the size of the two sets $\mathcal{F}_{k - 1}$ and $\mathcal{S}_{k, i}$. If a bayesian observer with uniform prior seeked to estimate such probability, taking into account the uncertainty around the size $F^{(m)}_{k-1}$ of the set of functioning upstream firms $\mathcal{F}_{k - 1}$, by observing more and more $m$ firms outcomes they will converge to a beta distributed posterior.
 
 
 \begin{theorem} \label{theorem:ptoF}
-  Consider a random variable $P \sim \Beta(1 - \mu_k, \rho_k)$, for some parameters $(\mu_k, \rho_k)$ and a random variable, defined conditionally on a realisation $p$ of $P$, 
+  Consider a r.v. $P_k \sim \Beta(1 - \mu_k, \rho_k)$, for some parameters $(\mu_k, \rho_k)$ and a r.v. defined conditionally on a realisation $p_k$ of $P_k$ as 
   
   \begin{equation}
-    F^{(m)}_k \vert P = p \sim \Bin(m, p).
+    F^{(m)}_k \vert P_k = p_k \sim \Bin(m, p_k).
   \end{equation}
 
-  Then, the unconditional distribution of $F^{(m)}_k$ is 
+  Then
 
   \begin{equation}
     F^{(m)}_k \sim \Beta\Bin(m, 1 - \mu_k, \rho_k)
@@ -52,21 +50,19 @@ We will see that two distributions play a key role: the Beta$(\alpha, \beta)$ an
   with
 
   \begin{equation} \label{eq:mean_of_F}
-    \E \big[F^{(m)}_k\big] = m \E \big[P_k\big] = m (1 - \mu_k)
+    \E \left[F^{(m)}_k\right] = m \E \left[P_k\right] = m (1 - \mu_k)
   \end{equation}
 
   and 
 
   \begin{equation} \label{eq:var_of_F}
-    \V \big[F^{(m)}_k\big] = m \mu_k (1 - \mu_k) \big(1 + (m - 1) \rho_k\big),
+    \V \left[F^{(m)}_k\right] = m \mu_k (1 - \mu_k) \big(1 + (m - 1) \rho_k\big),
   \end{equation}
 
   such that $F^{(m)}_k$ ``inherits'' its parameters from $P$.
 \end{theorem}
 
-\notes{Write $F^{(m)} \to F$}
-
-Lemma \ref*{lemma:Ftop} and Theorem \ref*{theorem:ptoF} combine into a powerful result: for large enough $m$, the number of firms that are able to operate at each stage of the production network, $\{F_k\}^{K}_{k = 0}$, all follow a BetaBin distribution, each with different parameters $(\mu_k, \rho_k)$. These distributions are fully determined by the initial one, $F_0$, and the supplier choice in each layer, $\{s_k\}^{K}_{k = 0}$. Notice that the initial distribution of functioning firms $F_0$ can be modeled in the same way by simply setting 
+This theorem follows directly from the definition of the beta-binomial distributionß. Lemma \ref*{lemma:Ftop} and Theorem \ref*{theorem:ptoF} combine into a powerful result: for large $m$, the number of firms that are able to operate $\{F_k\}^{K}_{k = 0}$ at each stage of the production network follows a beta-binomial distribution, each with different parameters $(\mu_k, \rho_k)$. These distributions are fully determined by the initial one, $F_0$, and the supplier choice in each layer, $\{s_k\}^{K}_{k = 0}$. Notice that the initial distribution of functioning firms $F_0$ can be modeled in the same way by simply setting 
 
 \begin{equation}
   F_0 \sim \Beta\Bin(m, 1 - \mu_0, \rho_0).
@@ -216,7 +212,7 @@ It is instructive to first consider the dynamics of risk in the case where there
    \lim_{\rho \rightarrow 0} \tilde{G}(\mu, \rho) = \begin{pmatrix} \mu^{\tilde{s}(\mu, 0)} \\ 0 \end{pmatrix} 
 \end{equation}
 
-First, the degenerate dynamical system characterised by the map $\tilde{g} \coloneqq \lim_{\rho \to 0} \tilde{G}_1$ allows us derive stronger analytical results and properties that can be later generalised to the map $\tilde{G}$ with $\rho > 0$. Second, it links our model to the case of simple goods studied by \citein{elliott_supply_2022}. Despite studying conceptually different problems (their model deals with edge percolation and investment in relationship), both model admit parameter regions with similar interpretations and cascading failures.
+First, the degenerate dynamical system characterised by the map $\tilde{g} \coloneqq \lim_{\rho \to 0} \tilde{G}_1$ allows us derive stronger analytical results and properties that can be later generalised to the map $\tilde{G}$ with $\rho > 0$. Second, it links our model to the case of simple goods studied by \citein{elliott_supply_2022}. Despite studying conceptually different problems (their model deals with edge percolation and investment in relationship), both models admit parameter regions with similar interpretations and cascading failures.
 
 In this case, the first order condition on the firms' optimisation problem\footnote{
   The first order condition remains valid in the limit, given the property
@@ -241,31 +237,30 @@ Plotting the function $\tilde{g}$ (Figure \ref{fig:one-dimensional:cobweb}) we c
 
 immediately highlights the qualitative difference between them. At the stable fixed point the ``value at risk'', $\mu \pi$, is smaller than the marginal diversification cost. Hence, it is optimal for the firms to respond to an increase in risk, $\mu$, by diversifying. On the other hand, at the unstable fixed point, the optimal response to an increase in risk is to cease production.
 
-As seen in (Figure \ref{fig:one-dimensional:trajectory}), there is a level of relative costs $\kappa / \pi$ at which, no matter the initial level of risk, firms do not diversify it. In basal industries this effect might appear negligible but risk compounds quickly and and arbitrary small increase in diversification costs $\kappa$ can lead to downstream cascading failures.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width = 0.8\textwidth]{../plots/one-dim-cobweb.png}
+  \caption{The function $\tilde{g}$ for low (orange) and high (green) profits.}
+  \label{fig:one-dimensional:cobweb}
+\end{figure}
+
+As seen in (Figure \ref{fig:one-dimensional:trajectory}), there is a level of relative costs $\kappa / \pi$ at which, no matter the initial level of risk, firms do not diversify it. In basal industries this effect might appear negligible but risk compounds quickly and and arbitrary small increase in diversification costs $\kappa$ can lead to downstream cascading failures. \notes{Expand section}
 
 
 \begin{figure}[H]
-  \begin{subfigure}{0.45\textwidth}
-    \centering
-    \includegraphics[width = 0.8\linewidth]{../plots/one-dim-cobweb.png}
-    \caption{The function $\tilde{g}$ for low (orange) and high (green) profits.}
-    \label{fig:one-dimensional:cobweb}
-  \end{subfigure} \hfill
-  \begin{subfigure}{0.45\textwidth}
-    \centering
-    \includegraphics[width = 0.8\linewidth]{../plots/one-dim-trajectory.png}
-    \caption{The propagation of risk $\mu_k$. A small decrease in relative profits can lead to cascading failures. }
-    \label{fig:one-dimensional:trajectory}
-  \end{subfigure}
-  \caption{Dynamics of risk as $\rho \rightarrow 0$}
-  \label{fig:one-dimensional}
+  \centering
+  \includegraphics[width = 0.8\textwidth]{../plots/one-dim-trajectory.png}
+  \caption{The propagation of risk $\mu_k$. A small decrease in relative profits can lead to cascading failures. }
+  \label{fig:one-dimensional:trajectory}
 \end{figure}
 
-A natural question is, at what level of $\kappa / \pi$ do we observe such bifurcation (as seen in Figure \ref{fig:one-dimensional-bifurcation})? It is not hard to see that this occurs if 
+A natural question is, at what level of $\kappa / \pi$ do we observe such change in firms' behaviour (as seen in Figure \ref{fig:one-dimensional-bifurcation})? It is not hard to see that this occurs if 
 
 \begin{equation}
-  \pi < e \ \kappa.
+  \kappa / \pi > e^{-1}.
 \end{equation}
+
+\notes{Linked to the secretary problem?}
 
 \begin{figure}[H]
   \centering
