@@ -31,8 +31,26 @@ begin
 	default(dpi = 180)
 end
 
+# ╔═╡ 20199761-25b3-45bd-a4d9-99469242be00
+using LinearAlgebra
+
+# ╔═╡ 7f70b7c4-128e-42c2-bc08-c89849fb85b8
+using Polynomials
+
+# ╔═╡ 25b51df6-d588-4b29-8c48-60320f1a538c
+html"""
+<style>
+	main {
+		margin: 0 auto;
+		max-width: 2000px;
+    	padding-left: max(160px, 10%);
+    	padding-right: max(160px, 10%);
+	}
+</style>
+"""
+
 # ╔═╡ 0459a2c6-9a46-4a80-ac7e-4f7d7b0ea5d0
-m = 100
+m = 50
 
 # ╔═╡ a4dca8a1-7281-4d70-866c-444746ff3d93
 function p(s, v)
@@ -62,14 +80,14 @@ md"
 "
 
 # ╔═╡ ea375284-84db-40a9-b5b7-418d61cf39cf
-psim = simulatep(2, α, β; N = 100_000)
+psim = simulatep(0.5, α, β; N = 100_000)
 
 # ╔═╡ c4457e91-d8ba-4ec3-bee0-2e6509425b85
 xs = range(0, 1; length = m)
 
 # ╔═╡ 4429b5c9-4502-47bf-b989-55b2a43fa4b8
 let
-	p̂ = fit(Beta, psim)
+	p̂ = StatsBase.fit(Beta, psim)
 	
 	plot(xs, x -> ecdf(psim)(x); label = "Empirical")
 	scatter!(xs, x -> cdf(p̂, x), markersize = 2; label = "Fitted")
@@ -105,7 +123,7 @@ end
 md"
 ## Powers of a Beta distribution
 
-``s_{\beta}``: $(@bind spower Slider(1:1:10, default = 1, show_value = true))
+``s_{\beta}``: $(@bind spower Slider(0.25:0.25:10, default = 1, show_value = true))
 
 ``\mu``: $(@bind μs Slider(range(0.01, 0.99, length = 101), default = 0.5, show_value = true))
 
@@ -116,8 +134,6 @@ md"
 function betapower(s, α, β; N = 100_000)
 	R = Beta(α, β)
 	R̂ = rand(R, N)
-
-
 	return R̂ .^s
 end
 
@@ -130,7 +146,7 @@ begin
 	N = 150_000
 		
 	Rsim = betapower(spower, αs, βs; N = N)
-	Rpower = fit_mle(Beta, Rsim)
+	Rpower = StatsBase.fit(Beta, Rsim)
 	
 	Fᵣ(x) = cdf(Rpower, x)
 	
@@ -139,13 +155,76 @@ begin
 
 end
 
+# ╔═╡ 7bad630b-a936-4d90-8e8c-a8c86fb86c26
+md"## Compare fit parameters
+
+...fixing 
+- ``\beta =`` $(@bind βcomp Slider(0.25:0.25:10, default = 1, show_value = true))
+"
+
+# ╔═╡ a58a8532-7d4b-40c0-8b3e-f87cb08022d2
+function α′ₛ(α, s; N = 100_000)
+	Rsim = betapower(s, α, βcomp; N = N)
+
+	return StatsBase.fit(Beta, Rsim) |> params
+end
+
+# ╔═╡ 4151f849-1966-4c48-a43b-0534723e92ac
+begin
+
+	Sspace = range(0.5, 2, length = 10)
+	slopes = Array{Float64}(undef, length(Sspace))
+	
+	lims = (0.01, 2βs)
+	A = range(lims...; length = 201)
+
+	αfig = plot(
+		x -> x;
+		label = nothing, linestyle = :dash, c = :black, 
+		xlims = lims,
+		legend = nothing,
+		xlabel = L"\alpha", ylabel = L"\alpha'_s"
+	)
+
+	βfig = hline(
+		[βcomp];
+		label = nothing, linestyle = :dash, c = :black, 
+		xlims = lims,
+		legendtitle = L"s",
+		xlabel = L"\alpha", ylabel = L"\beta'_s"
+	)
+	
+	for (i, s) ∈ Sspace |> enumerate
+		parameters = α′ₛ.(A, s; N = 10_000)
+
+		α′ = first.(parameters)
+		slope = inv(α′'α′) * (α′'A)
+
+		slopes[i] = slope
+		
+		plot!(αfig, A, α′; label = round(s, digits = 2))
+		
+		plot!(βfig, A, last.(parameters); label = round(s, digits = 2))
+	end
+
+	plot(αfig, βfig; size = (1300, 600), margins = 10Plots.mm)
+end
+
+# ╔═╡ cd7e4cd1-0c43-42f4-bc35-6a5c2909b2c1
+begin
+	plot(Sspace, slopes, marker = :o)
+	plot!(x -> x)
+end
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+Polynomials = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
@@ -155,6 +234,7 @@ Distributions = "~0.25.62"
 LaTeXStrings = "~1.3.0"
 Plots = "~1.30.0"
 PlutoUI = "~0.7.39"
+Polynomials = "~3.1.5"
 SpecialFunctions = "~2.1.6"
 StatsBase = "~0.33.16"
 """
@@ -643,6 +723,12 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 [[MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
 
+[[MutableArithmetics]]
+deps = ["LinearAlgebra", "SparseArrays", "Test"]
+git-tree-sha1 = "4e675d6e9ec02061800d6cfb695812becbd03cdf"
+uuid = "d8a4904e-b15c-11e9-3269-09a3773c0cb0"
+version = "1.0.4"
+
 [[NaNMath]]
 git-tree-sha1 = "737a5957f387b17e74d4ad2f440eb330b39a62c5"
 uuid = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
@@ -735,6 +821,12 @@ deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Hyperscript"
 git-tree-sha1 = "8d1f54886b9037091edf146b517989fc4a09efec"
 uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 version = "0.7.39"
+
+[[Polynomials]]
+deps = ["LinearAlgebra", "MutableArithmetics", "RecipesBase"]
+git-tree-sha1 = "d6de04fd2559ecab7e9a683c59dcbc7dbd20581a"
+uuid = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
+version = "3.1.5"
 
 [[Preferences]]
 deps = ["TOML"]
@@ -1151,10 +1243,12 @@ version = "0.9.1+5"
 """
 
 # ╔═╡ Cell order:
+# ╟─25b51df6-d588-4b29-8c48-60320f1a538c
 # ╠═d4bcc12e-2a18-43ba-a120-d98e349ca9f2
 # ╠═0d865174-ed7f-11ec-3f0b-59e9db69d9bc
 # ╠═dec7105c-afd8-48b7-b150-67f8bfe1780e
 # ╠═99c9f29d-082a-4205-a1d9-6a16114cf0cc
+# ╠═20199761-25b3-45bd-a4d9-99469242be00
 # ╠═0459a2c6-9a46-4a80-ac7e-4f7d7b0ea5d0
 # ╠═a4dca8a1-7281-4d70-866c-444746ff3d93
 # ╠═e343d82b-98fe-4c08-920c-4649f3a4ae8b
@@ -1166,7 +1260,12 @@ version = "0.9.1+5"
 # ╠═a9be969a-28f2-4270-97c8-fe6c969883dc
 # ╠═ede41481-ab3e-47ca-914a-ad96a672a27b
 # ╟─7ba20d74-8ab7-4169-ae7c-ff85a5cc76dc
-# ╟─59aa7a12-b6fa-4194-9ffb-7863128347af
+# ╠═59aa7a12-b6fa-4194-9ffb-7863128347af
 # ╠═54d74dbf-12c5-420d-8f95-5d8c071c936d
+# ╟─7bad630b-a936-4d90-8e8c-a8c86fb86c26
+# ╠═7f70b7c4-128e-42c2-bc08-c89849fb85b8
+# ╠═a58a8532-7d4b-40c0-8b3e-f87cb08022d2
+# ╠═4151f849-1966-4c48-a43b-0534723e92ac
+# ╠═cd7e4cd1-0c43-42f4-bc35-6a5c2909b2c1
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
