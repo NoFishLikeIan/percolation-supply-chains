@@ -111,7 +111,7 @@ m = 100; K = 50
 Norbit, Ttr = 2000, 2000
 
 # ╔═╡ 7bb7dd41-0768-476f-b815-536607ecbdf0
-unit = range(0.01, 0.99; length = 50)
+unit = range(0.01, 0.99; length = 101)
 
 # ╔═╡ 7253f132-6b20-43aa-8df8-fd8ef15cbcf5
 md"
@@ -588,23 +588,23 @@ end
 
 # ╔═╡ d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
 begin
-	conv = (b -> b > 0 ? 1 - resattractors[b] : 0).(basins)
+	conv = (b -> b > 0 ? resattractors[b] : 1).(basins)
 
 	
 	basinfig = contourf(
 		xbasin, ybasin, conv'; 
-		c = :viridis,
+		c = :coolwarm,
 		aspect_ratio = 1, linewidth = 0, dpi = 180, 
 		xticks = 0:0.1:1, yticks = 0:0.1:1,
 		xlims = extrema(xbasin), ylims = extrema(ybasin),
-		xlabel = L"\mu", ylabel = L"\rho", 
+		xlabel = L"\mu_0", ylabel = L"\rho_0", 
 		levels = 0:0.01:1, clims = (0, 1)
 	)
 
 	annotate!(basinfig,
 		1.2, 0.5, 
 		text(
-			latexstring("Attractors' resilience, \$1 - \\mu\$"), 
+			latexstring("Downstream risk \$ \\mu_k \$"), 
 			:black, 18, rotation = -90
 		)
 	)
@@ -619,12 +619,12 @@ begin
 end
 
 # ╔═╡ e901e035-1c0f-48ad-aae9-aee946027a04
-if SAVE savefig(basinfig, joinpath("../docs/plots", "basin_small")) end
+if true savefig(basinfig, joinpath("../docs/plots", "basin_small")) end
 
 # ╔═╡ 91b18abe-f770-4613-9c84-8ebe9041ec98
 begin
 
-	rschoice = 1 / 8
+	rschoice = 1 / 10
 
 	S̃space = ((t) -> agentoptimum(t[1], t[2]; m, r = rschoice)).(
 		product(unit, unit)
@@ -639,7 +639,7 @@ begin
 		levels = range(extremaS..., step = 0.1),
 		dpi = 180,
 		xlims = extrema(unit), ylims = extrema(unit),
-		xlabel = L"\mu", ylabel = L"\rho",
+		xlabel = L"\mu_{k - 1}", ylabel = L"\rho_{k - 1}",
 		xticks = 0:0.1:1, yticks = 0:0.1:1,
 		aspect_ratio = 1
 	)
@@ -653,13 +653,13 @@ begin
 
 	annotate!(
 		agentsfig, 
-		0.45, 0.75, text(L"\tilde{s} = 1", :white, FONT_SIZE)
+		0.45, 0.8, text(L"\tilde{s}_k = 1", :white, FONT_SIZE)
 	)
 
 	annotate!(agentsfig,
 		1.2, 0.5, 
 		text(
-			L"\tilde{s} \ (\mu, \rho)", 
+			L"\tilde{s}_k \ (\mu_{k - 1}, \rho_{k - 1})", 
 			:black, 18, rotation = -90
 		)
 	)
@@ -670,6 +670,32 @@ end
 
 # ╔═╡ c2057c0c-b8f6-4741-bbf9-a22267e1c645
 if SAVE savefig(agentsfig, joinpath("../docs/plots", "agents")) end
+
+# ╔═╡ b85b7232-7817-4dc5-b94d-bdbb40cea70e
+begin
+
+	Sspace = ((t) -> agentoptimum(t[1], t[2]; m, r = rschoice, integer = true)).(
+		product(denseunit, denseunit)
+	)
+
+
+	agentsintfig = contourf(
+		denseunit, denseunit, Sspace',
+		c = :viridis, linewidth = 0,
+		dpi = 180,
+		clims = (0, 4),
+		levels = [0, 1, 2, 3, 4],
+		xlims = extrema(denseunit), ylims = extrema(denseunit),
+		xlabel = L"\mu", ylabel = L"\rho",
+		xticks = 0:0.1:1, yticks = 0:0.1:1,
+		aspect_ratio = 1
+	)
+	
+	agentsintfig
+end
+
+# ╔═╡ f066c4fc-df63-41da-be76-4119684056a3
+if SAVE savefig(agentsintfig, joinpath("../docs/plots", "agents-integer")) end
 
 # ╔═╡ 777e44ed-5795-43c9-b90d-4bd1019f46ea
 md"### Bifurcation"
@@ -2491,10 +2517,12 @@ version = "0.9.1+5"
 # ╟─25c861f8-9103-4e4f-a76f-b1816d842e31
 # ╠═a20c0d6e-0e25-40d5-90bf-e156c4721b85
 # ╟─b5255c42-96a8-4c46-877c-18babf4e414a
-# ╟─d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
+# ╠═d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
 # ╠═e901e035-1c0f-48ad-aae9-aee946027a04
-# ╠═91b18abe-f770-4613-9c84-8ebe9041ec98
+# ╟─91b18abe-f770-4613-9c84-8ebe9041ec98
 # ╠═c2057c0c-b8f6-4741-bbf9-a22267e1c645
+# ╟─b85b7232-7817-4dc5-b94d-bdbb40cea70e
+# ╠═f066c4fc-df63-41da-be76-4119684056a3
 # ╟─777e44ed-5795-43c9-b90d-4bd1019f46ea
 # ╠═2d0b4c04-f29c-4fbd-ba29-c9b1a312c0f2
 # ╟─7cab141b-40cd-4906-91f2-9e33c19b9985
