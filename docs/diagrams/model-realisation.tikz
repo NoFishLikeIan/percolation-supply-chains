@@ -1,0 +1,45 @@
+\begin{tikzpicture}
+	\begin{pgfonlayer}{nodelayer}
+		\node [style=Red firm] (01) at (-4, 3) {};
+		\node [style=Red firm] (02) at (-2, 3) {};
+		\node [style=Red firm] (03) at (0, 3) {};
+		\node [style=Red firm] (04) at (2, 3) {};
+		\node [style=Yellow firm] (11) at (-4, 1) {};
+		\node [style=Yellow firm] (12) at (-2, 1) {};
+		\node [style=Yellow firm] (13) at (0, 1) {};
+		\node [style=Yellow firm] (14) at (2, 1) {};
+		\node [minimum height=2.5cm] (dots) at (-1, 0) {\Huge $\ldots$};
+		\node [style=Green firm] (21) at (-4, -1) {};
+		\node [style=Green firm] (22) at (-2, -1) {};
+		\node [style=Green firm] (23) at (0, -1) {};
+		\node [style=Green firm] (24) at (2, -1) {};
+		\node [style=Blue firm] (k1) at (-4, -3) {};
+		\node [style=Blue firm] (k2) at (-2, -3) {};
+		\node [style=Blue firm] (k3) at (0, -3) {};
+		\node [style=Blue firm] (k4) at (2, -3) {};
+	\end{pgfonlayer}
+	\begin{pgfonlayer}{edgelayer}
+		\draw [style=Supplies] (01) to (11);
+		\draw [style=Supplies] (02) to (11);
+		\draw [style=Supplies] (03) to (11);
+		\node [draw,dotted,fit=(01) (02) (03), inner sep=4pt] (S11) {};
+		\node [left, outer sep=10pt, inner sep=3pt] at (S11.west) {\huge $\mathcal{S}_{1, 0}$};
+
+		\draw [style=Supplies] (04) to (13);
+		\draw [style=Supplies] (02) to (13);
+		\draw [style=Supplies] (03) to (13);
+		\node [draw,dotted,fit=(02) (03) (04), inner sep=4pt] (S22) {};
+		\node [right, outer sep=10pt, inner sep=3pt] at (S22.east) {\huge $\mathcal{S}_{1, 2}$};
+
+
+		\draw [style=Supplies] (21) to (k2);
+		\draw [style=Supplies] (22) to (k2);
+		\node [draw,dotted,fit=(21) (22), inner sep=4pt] (SK2) {};
+		\node [left, outer sep=10pt, inner sep=3pt] at (SK2.west) {\huge $\mathcal{S}_{K, 1}$};
+
+
+		\draw [style=Supplies] (24) to (k4);
+		\node [draw,dotted,fit=(24), inner sep=4pt] (SK4) {};
+		\node [right, outer sep=10pt, inner sep=3pt] at (SK4.east) {\huge $\mathcal{S}_{K, 3}$};
+	\end{pgfonlayer}
+\end{tikzpicture}
