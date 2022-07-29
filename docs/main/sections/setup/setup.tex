@@ -5,7 +5,7 @@
 
 \subsection{Notation and Distributions}
 
-To study firms' decision in an opaque production network, I assume firms reason probabilistically about what is, at the core, a combinatorial problem. To talk about such a model, it is useful to introduce some notation and distributions that play a central role in describing these decisions. Consistently with the combinatorial and graph theory literature (\cite{harris_combinatorics_2008}), for a real number $x$ and a positive integer $n$, I  denote the rising factorial as
+To study firms' decision in an opaque production network, I assume firms reason probabilistically about what is, at the core, a combinatorial problem. To talk about such a model, it is useful to introduce some notation and distributions that play a central role in describing the reasoning and decisions of firms. Consistently with the combinatorial and graph theory literature (\cite{harris_combinatorics_2008}), for a real number $x$ and a positive integer $n$, I  denote the rising factorial as
 
 \begin{equation}
   (x)^{(n)} \coloneqq \underbrace{x(x + 1)(x + 2)\ldots(x + n - 1)}_{n \text{ terms}}.
@@ -21,14 +21,27 @@ Abusing notation, I  often extend this function to real exponents $s$ by using t
 
 \subsection{Model}
 
-Consider a vertical economy producing $K + 1$ goods (as displayed in Figure \ref{fig:vertical-economy-diagram}), indexed by $k \in [K] \coloneqq \{ 0, 1, 2, \ldots K \}$. Each firm produces a single good and each good is produced by $m$ firms. Good $k$ requires only good $k - 1$ as input, hence I  refer to them as good or layers interchangibly. Each firm picks a set of suppliers in the previous layer to source from. Establishing a relation with a supplier has a fixed cost $\kappa$. If no supplier is able to deliver the input good, then the firm is not ``functional'' and hence not able to deliver downstream. I assume that being functional yields an exogenous payoff $\pi$. This assumption can be relaxed by introducing market structure to endogenise $\pi$, yet this does not change the main model mechanics. Hence, for simplicity, I  focus on an exogenous payoff $\pi$. Finally, I assume that firms know the structure of the economy but do not observe the realised supplier relationship in upstream layers. The only source of risk in the model is an idiosyncratic probability $\mu_0$ that firms in layer $0$, which require no inputs, are not able to carry on production.
+Consider a vertical economy producing $K + 1$ goods (as displayed in Figure \ref{fig:vertical-economy-diagram}), indexed by $k \in [K] \coloneqq \{ 0, 1, 2, \ldots K \}$. Each firm produces a single good and each good is produced by $m$ firms. Good $k$ requires only good $k - 1$ as input, hence I  refer to them as good or layers interchangibly. Each firm picks a set of suppliers in the previous layer to source from. Establishing a relation with a supplier has a fixed cost $\kappa$. If no supplier is able to deliver the input good, then the firm is not ``functional'' and hence not able to deliver downstream. I assume that being functional yields an exogenous payoff $\pi$. This assumption can be relaxed by introducing market structure to endogenise $\pi$, yet this does not change the main model mechanics so, for simplicity, I  focus on an exogenous payoff $\pi$. Finally, I assume that firms know the structure of the economy but do not observe the realised supplier relationship in upstream layers. The only source of risk in the model is an idiosyncratic probability $\mu_0$ that basal firms in the zeroth layer are not able to carry on production.
+
 
 \begin{figure}[H]
   \centering
-  \inputTikZ{0.5}{../diagrams/model-presentation.tikz} 
-  \caption{$K$-layers vertical economy}
-  \label{fig:vertical-economy-diagram}
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \inputTikZ{0.6}{../diagrams/model-presentation.tikz} 
+    \caption{$K$-layers vertical economy}
+    \label{fig:vertical-economy-diagram}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \inputTikZ{0.6}{../diagrams/model-realisation.tikz} 
+    \caption{One instance of a supply chain realisation}
+    \label{fig:vertical-economy-diagram:suppliers}
+  \end{subfigure}
+  \caption{Example of a vertical economy}
+  \label{fig:gf}
 \end{figure}
+
 
 A firm is indexed with a tuple $(k, i)$, where $i \in [m]$ is an index and $k \in [K]$ is its layer. Letting $\mathcal{F}_k$ be the set of functioning firms in layer $k$ and $\mathcal{S}_{k, i}$ the set of suppliers of firm $(k, i)$, the probability that such firm is functioning is
 
