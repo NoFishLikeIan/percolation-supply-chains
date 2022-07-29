@@ -147,7 +147,7 @@ Lemma (\ref{lemma:exterior_fixed_points}) can be proven by looking at the defini
 
 \subsection{Firms' Optimal Diversification}
 
-Now that we characterised a map $G$ of risk $\mu$ and overdispersion $\rho$ between layers given a choice of suppliers $s$, in this section I will derive the choice of suppliers that firm make in equilibrium. This choice is obviously contrained to be an integer $s \in \mathbb{N}_{0}$ but I will further show that it is useful to consider the extension where $s$ is allowed to take any real positive value $\mathbb{R}_{\geq 0}$. Consider the problem of a firm in layer $k$, that is, based on the risk in the previous layer $(\mu_{k - 1}, \rho_{k - 1})$, choosing a number of suppliers $s_k$ to maximise profits $\Pi(s_k(\mu_{k - 1}, \rho_{k - 1}))$. We can hence write
+Now that we characterised a map $G$ of risk $\mu$ and overdispersion $\rho$ between layers given a choice of suppliers $s$, in this section I derive the choice of suppliers that firm make in equilibrium. This choice is obviously contrained to be an integer $s \in \mathbb{N}_{0}$ but I further show that it is useful to consider the extension where $s$ is allowed to take any real positive value $\mathbb{R}_{\geq 0}$. Consider the problem of a firm in layer $k$, that is, based on the risk in the previous layer $(\mu_{k - 1}, \rho_{k - 1})$, choosing a number of suppliers $s_k$ to maximise profits $\Pi(s_k(\mu_{k - 1}, \rho_{k - 1}))$. We can hence write
 
 \begin{equation} \label{eq:firm_problem}
   s_k(\mu_{k - 1}, \rho_{k - 1}) = \arg\max_{s \in \mathbb{N}_0} \Pi(s) = \arg\max_{s \in \mathbb{N}_0} \left\{ \pi \Big(1 - G_1(\mu_{k - 1}, \rho_{k - 1}, s)\Big) - \kappa \  s \right\}.
@@ -161,7 +161,7 @@ The function $(\mu, \rho) \mapsto G(\mu, \rho, s)$ has interior fixed points onl
   The distance between $\tilde{s}_k$ and $s_k$ is strictly smaller than 1.
 \end{lemma}
 
-This lemma follows from the fact that $\Pi(s)$ is strictly concave and admits a unique maximum\footnote{Since $\Pi$ admits a maximum and is strictly concave, it is guaranteed that a value $\bar{s}$, with the property that $\Pi(\bar{s}) = \Pi(\bar{s} + 1)$ exists. Both the maximum over the real and the integers are guaranteed then to be in the interval $\tilde{s}_k, s_k \in [\bar{s}, \bar{s} + 1]$. Hence, $\abs{\tilde{s}_k - s_k} < 1$.}. These results guarantee that the properties of the extended dynamical system over the real numbers will transfer over to that determined by integers $s_k$. Hence, for analytical convenience, letting
+This lemma follows from the fact that $\Pi(s)$ is strictly concave and admits a unique maximum\footnote{Since $\Pi$ admits a maximum and is strictly concave, it is guaranteed that a value $\bar{s}$, with the property that $\Pi(\bar{s}) = \Pi(\bar{s} + 1)$ exists. Both the maximum over the real and the integers are guaranteed then to be in the interval $\tilde{s}_k, s_k \in [\bar{s}, \bar{s} + 1]$. Hence, $\abs{\tilde{s}_k - s_k} < 1$.}. These results guarantee that the properties of the extended dynamical system over the real numbers transfers over to that determined by integers $s_k$. Hence, for analytical convenience, letting
 
 \begin{equation}
   \tilde{s}_k(\mu_{k - 1}, \rho_{k - 1}) \coloneqq \arg\max_{s \in \mathbb{R}_{\geq 0}} \Pi(s),
@@ -280,7 +280,7 @@ A natural question is, at what level of $\kappa / \pi$ do we observe such change
 
 \subsection{Introducing correlation risk}
 
-In this section I will now extend the study of the dynamics of risk $\tilde{G}$ to the case where there is correlation in the production network, that is $\rho_k > 0$ for some $k$. First Lemmas (\ref{lemma:interior_fixed_points}) and (\ref{lemma:exterior_fixed_points}) guarantee that the fixed points $(\bar{\mu}, \bar{\rho})$ of $\tilde{G}$ need to satisfy $\tilde{s}_k(\bar{\mu}, \bar{\rho})= 1$. Using this condition in the implicit definition of $\tilde{s}_k$ (\ref{eq:exact-foc}) allows us to write the manifold of fixed points as
+In this section I extend the study of the dynamics of risk $\tilde{G}$ to the case where there is correlation in the production network, that is $\rho_k > 0$ for some $k$. First Lemmas (\ref{lemma:interior_fixed_points}) and (\ref{lemma:exterior_fixed_points}) guarantee that the fixed points $(\bar{\mu}, \bar{\rho})$ of $\tilde{G}$ need to satisfy $\tilde{s}_k(\bar{\mu}, \bar{\rho})= 1$. Using this condition in the implicit definition of $\tilde{s}_k$ (\ref{eq:exact-foc}) allows us to write the manifold of fixed points as
 
 \begin{equation}
   -\frac{\kappa}{\pi} = \left( \psi_0\left(1 - \bar{\mu} + \frac{ \bar{\mu} }{\bar{\rho}} \right) - \psi_0\left(\frac{1}{\bar{\rho}} \right) \right) \bar{\mu},
