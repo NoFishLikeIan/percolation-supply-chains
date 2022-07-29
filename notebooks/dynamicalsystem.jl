@@ -726,11 +726,11 @@ begin
 
 	fig = plot(
 		paramspace[1:(tipping_point - 1)], μbars[1:(tipping_point - 1)];
-		c = :darkblue,
+		c = :darkgoldenrod,
 		ylabel = L"\mu",
-		yguidefontcolor = :darkblue,
+		yguidefontcolor = :darkgoldenrod,
 		xlabel = L"\kappa / \pi",
-		legend = false, rightmargin = 25Plots.mm,
+		legend = false, rightmargin = 30Plots.mm,
 		alpha = 0.8, dpi = 300,
 		ylims = (-0.01, 1.01),
 		margins = 5Plots.mm
@@ -738,7 +738,7 @@ begin
 
 	plot!(
 		fig, paramspace[tipping_point:end], μbars[tipping_point:end],
-		c = :darkblue
+		c = :darkgoldenrod
 	)
 
 	rtip = paramspace[tipping_point] 
@@ -749,20 +749,20 @@ begin
 		twinx(fig), 
 		paramspace[1:(tipping_point - 1)], ρbars[1:(tipping_point - 1)];
 		ylabel = L"\rho",
-		legend = false, c = :darkred,
+		legend = false, c = :darkgreen,
 		alpha = 0.8,
-		yguidefontcolor = :darkred)
+		yguidefontcolor = :darkgreen)
 
 	plot!(
 		fig, paramspace[tipping_point:end], ρbars[tipping_point:end],
-		c = :darkred
+		c = :darkgreen
 	)
 
 	
 end
 
 # ╔═╡ 33a48a25-d7b7-4947-bf31-0403e5b781f4
-if SAVE savefig(fig, joinpath("../docs/plots", "bifurcation")) end
+if true savefig(fig, joinpath("../docs/plots", "bifurcation")) end
 
 # ╔═╡ 782b9bd9-f78a-41f3-ad89-8fd222cfcac2
 md"## Stable manifold for small $\rho$"
@@ -2525,7 +2525,7 @@ version = "0.9.1+5"
 # ╠═f066c4fc-df63-41da-be76-4119684056a3
 # ╟─777e44ed-5795-43c9-b90d-4bd1019f46ea
 # ╠═2d0b4c04-f29c-4fbd-ba29-c9b1a312c0f2
-# ╟─7cab141b-40cd-4906-91f2-9e33c19b9985
+# ╠═7cab141b-40cd-4906-91f2-9e33c19b9985
 # ╠═33a48a25-d7b7-4947-bf31-0403e5b781f4
 # ╟─782b9bd9-f78a-41f3-ad89-8fd222cfcac2
 # ╟─5021c671-3515-4c94-96e1-797f287ce2f5
