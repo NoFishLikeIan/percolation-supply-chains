@@ -85,6 +85,9 @@ html"""
 </style>
 """
 
+# ╔═╡ a1943ade-2cd3-47b0-927f-6403d55a71a0
+TableOfContents()
+
 # ╔═╡ 1a39488c-43c8-47e3-a760-913962cb3703
 SAVE = false
 
@@ -552,7 +555,7 @@ if SAVE savefig(orbitfig, joinpath("../docs/plots", "one-dim-bif")) end
 
 # ╔═╡ fc984dae-fa9f-43e1-abf9-9637563941fe
 md"
-### Basin of attraction
+## Basin of attraction
 
 "
 
@@ -619,7 +622,175 @@ begin
 end
 
 # ╔═╡ e901e035-1c0f-48ad-aae9-aee946027a04
-if true savefig(basinfig, joinpath("../docs/plots", "basin_small")) end
+if SAVE savefig(basinfig, joinpath("../docs/plots", "basin_small")) end
+
+# ╔═╡ 8aa736b1-b3f1-4163-96b9-f1eeb85e448b
+md"## Distribution sequence plot"
+
+# ╔═╡ f7b519c4-975b-4e9b-a8ea-efe9a4244d96
+begin
+	Kdist = 9
+	idx = 1:(Kdist + 1)
+	scheme = :viridis
+
+	cpalette = palette(scheme, length(idx) + 1)
+end
+
+# ╔═╡ d3bf42d4-2879-458d-8ff3-9e408556b6f9
+begin
+	m_distplot = 200
+	ρ₀_distplot = 0.01
+	
+	μ₀_unstable = 0.8648
+	μ₀_stable = 0.8647
+	
+	ds_stable = DiscreteDynamicalSystem(G̃!, [μ₀_stable, ρ₀_distplot], [m_distplot, rbasin])
+	ds_unstable = DiscreteDynamicalSystem(G̃!, [μ₀_unstable, ρ₀_distplot], [m_distplot, rbasin])
+end
+
+# ╔═╡ f91ba40e-9bfb-4319-8c84-d12d0a3c8791
+begin
+	
+	
+	stable_traj = trajectory(ds_stable, Kdist)
+	ylims = (-1/1000, 0.07)
+
+	stabledistfig = plot(
+		xticks = 0:(m_distplot ÷ 10):m_distplot, 
+		margins = 5Plots.mm,
+		legend = nothing, ylims = ylims,
+		leftmargin = 15Plots.mm,
+		dpi = 180,
+		ylabel = latexstring("Probability mass function \$ \\mathbb{P}(F_k = n)\$"),
+		title = latexstring("Stable initial configuration\$"), 
+		titlefontsize = FONT_SIZE - FONT_SIZE ÷ 6
+	)
+
+	vline!(
+		stabledistfig, [m_distplot * (1 - μ₀_unstable)]; 
+		c = :black, linestyle = :dash, linewidth = 1
+	)
+
+	for (ci, i) ∈ enumerate(idx)		
+		μs, ρs = stable_traj[i, :]
+		αs, βs = fρtoαβ(1 - μs, max(ρs, 0.001))
+					
+		plot!(stabledistfig, 
+			0:m_distplot, x -> pdf(BetaBinomial(m_distplot, αs, βs), x); 
+			c = cpalette[ci],
+			linewidth = 3, alpha = 0.8
+		)
+	end
+	
+
+	unstable_traj = trajectory(ds_unstable, Kdist)
+
+	unstabledistfig = plot(
+		xticks = 0:(m_distplot ÷ 10):m_distplot, 
+		leftmargin = -5Plots.mm,
+		legend = false,
+		ylims = ylims, topmargin = 0Plots.mm,
+		ytickfontcolor = :white, ytickfontsize = 1,
+		title = "Unstable initial configuration", titlefontsize = FONT_SIZE - FONT_SIZE ÷ 6
+	)
+
+	vline!(
+		unstabledistfig, [m_distplot * (1 - μ₀_stable)]; 
+		c = :black, linestyle = :dash, linewidth = 1, label = nothing
+	)
+
+
+	for (ci, i) ∈ enumerate(idx)		
+		μs, ρs = unstable_traj[i, :]
+		αs, βs = fρtoαβ(1 - μs, max(ρs, 0.001))
+
+					
+		plot!(unstabledistfig, 
+			0:m_distplot, x -> pdf(BetaBinomial(m_distplot, αs, βs), x); 
+			c = cpalette[ci], legend = :right,
+			linewidth = 3, label = nothing,
+			alpha = 0.8
+		)
+	end
+
+end
+
+# ╔═╡ fd8d0cb0-0e9b-4947-89c1-ccb0851589f2
+begin
+
+	joinfig = plot(
+		stabledistfig, unstabledistfig; 
+		link = :y, layout = (1, 2),
+		size = (1200, 500)
+	)
+
+	Idx = Matrix{Int64}(undef, Kdist + 1, 1); Idx[:, 1] .= idx |> collect
+	
+	heatmap!(
+		joinfig, Idx'; 
+		c = cgrad(scheme), xticks = idx, yticks = nothing, legend = false,
+		inset = (1, bbox(-1, 0.85, 0.5, 0.075, :bottom, :right)),
+		xtickfontsize = 8, xlabel = latexstring("Layer \$k\$"), xlabelfontsize = 10,
+		subplot = 3
+	)
+
+end
+
+# ╔═╡ 40a68c4e-a2f1-4d9d-be64-d762018d6c7f
+begin
+	ymaximum = 0.05
+
+	tiporbitfig = contourf(
+		range(1e-4, 1 - 1e-4, length = 201), range(1e-3, ymaximum, length = 201),
+		(μ, ρ) -> agentoptimum(μ, ρ; m = m_distplot, r = 1/8),
+		linewidth = 0, c = :viridis, alpha = 0.9,
+		xlims = (0, 1), ylims = (1e-3, ymaximum),
+		xlabel = L"\mu", ylabel = L"\rho", dpi = 180,
+		margins = 5Plots.mm, rightmargins = 15Plots.mm
+	)
+	
+	annotate!(tiporbitfig,
+		1.2, 0.03, 
+		text(
+			"Number of suppliers", 
+			:center, :black, 15, rotation = -90
+		)
+	)
+
+	plot!(
+		tiporbitfig,
+		range(interior_boundaries..., length = 501), boundary;
+		c = :white, linewidth = 2, label = nothing
+	)
+
+	for i ∈ 1:(length(stable_traj) - 1)
+		arrow = i > 2
+		
+		plot!(tiporbitfig, 
+			[stable_traj[i, 1], stable_traj[i + 1, 1]], 
+			[stable_traj[i, 2], stable_traj[i + 1, 2]]; 
+			marker = :o, c = :red, label = nothing, markersize = 5,
+			arrow = arrow
+		)
+		plot!(tiporbitfig, 
+			[unstable_traj[i, 1], unstable_traj[i + 1, 1]], 
+			[unstable_traj[i, 2], unstable_traj[i + 1, 2]]; 
+			markersize = 5, marker = :o, c = :lightblue, label = nothing,
+			arrow = arrow
+		)
+	end
+
+	tiporbitfig
+end
+
+# ╔═╡ 1e2852c3-d11f-4b32-9be7-d80986aff531
+if true
+	savefig(tiporbitfig, joinpath("../docs/plots", "init_values_basin")) 
+	savefig(joinfig, joinpath("../docs/plots", "init_values_dist"))
+end
+
+# ╔═╡ 07e02bab-61a0-4e71-9262-45dac2a0d33f
+md"## Agent's choice plot"
 
 # ╔═╡ 91b18abe-f770-4613-9c84-8ebe9041ec98
 begin
@@ -697,8 +868,14 @@ end
 # ╔═╡ f066c4fc-df63-41da-be76-4119684056a3
 if SAVE savefig(agentsintfig, joinpath("../docs/plots", "agents-integer")) end
 
+# ╔═╡ e060a08b-4d0b-403b-9db6-fa69ef353fa0
+ymaximum
+
+# ╔═╡ 6d0320e7-92ca-4c38-b3a0-3fb58222fc8a
+if SAVE savefig(agentsintfig, joinpath("../docs/plots", "tip-distribution")) end
+
 # ╔═╡ 777e44ed-5795-43c9-b90d-4bd1019f46ea
-md"### Bifurcation"
+md"## Bifurcation"
 
 # ╔═╡ 2d0b4c04-f29c-4fbd-ba29-c9b1a312c0f2
 begin
@@ -838,6 +1015,9 @@ let
 	)
 	
 end
+
+# ╔═╡ df799c92-5461-415f-ac98-4233d2326792
+
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2477,6 +2657,7 @@ version = "0.9.1+5"
 # ╟─d3add18c-4845-4683-a82a-cbbe16f32b6f
 # ╠═8b32f51d-e1f7-489d-95af-5e25909d709d
 # ╠═963896ed-ae03-4b68-bec2-6b9917093454
+# ╠═a1943ade-2cd3-47b0-927f-6403d55a71a0
 # ╠═1a39488c-43c8-47e3-a760-913962cb3703
 # ╠═c87845ef-2a91-41c8-933a-b6e139739927
 # ╟─edf0c6f6-db46-11ec-19d0-f3a901cbdf5e
@@ -2513,19 +2694,29 @@ version = "0.9.1+5"
 # ╠═2fc1f58d-bf22-497b-ab3f-4c28d95b5bf9
 # ╟─fc984dae-fa9f-43e1-abf9-9637563941fe
 # ╠═64ae50a7-00af-4c09-b363-7ac686096a50
-# ╠═779daf41-9752-4653-b3f0-9fe7de089396
+# ╟─779daf41-9752-4653-b3f0-9fe7de089396
 # ╟─25c861f8-9103-4e4f-a76f-b1816d842e31
-# ╠═a20c0d6e-0e25-40d5-90bf-e156c4721b85
+# ╟─a20c0d6e-0e25-40d5-90bf-e156c4721b85
 # ╟─b5255c42-96a8-4c46-877c-18babf4e414a
 # ╠═d7ffac82-c55c-4e04-ac3b-efe8ad1d9fc6
 # ╠═e901e035-1c0f-48ad-aae9-aee946027a04
-# ╟─91b18abe-f770-4613-9c84-8ebe9041ec98
+# ╟─8aa736b1-b3f1-4163-96b9-f1eeb85e448b
+# ╟─f7b519c4-975b-4e9b-a8ea-efe9a4244d96
+# ╠═d3bf42d4-2879-458d-8ff3-9e408556b6f9
+# ╠═f91ba40e-9bfb-4319-8c84-d12d0a3c8791
+# ╠═fd8d0cb0-0e9b-4947-89c1-ccb0851589f2
+# ╟─40a68c4e-a2f1-4d9d-be64-d762018d6c7f
+# ╠═1e2852c3-d11f-4b32-9be7-d80986aff531
+# ╠═07e02bab-61a0-4e71-9262-45dac2a0d33f
+# ╠═91b18abe-f770-4613-9c84-8ebe9041ec98
 # ╠═c2057c0c-b8f6-4741-bbf9-a22267e1c645
 # ╟─b85b7232-7817-4dc5-b94d-bdbb40cea70e
 # ╠═f066c4fc-df63-41da-be76-4119684056a3
+# ╠═e060a08b-4d0b-403b-9db6-fa69ef353fa0
+# ╠═6d0320e7-92ca-4c38-b3a0-3fb58222fc8a
 # ╟─777e44ed-5795-43c9-b90d-4bd1019f46ea
 # ╠═2d0b4c04-f29c-4fbd-ba29-c9b1a312c0f2
-# ╠═7cab141b-40cd-4906-91f2-9e33c19b9985
+# ╟─7cab141b-40cd-4906-91f2-9e33c19b9985
 # ╠═33a48a25-d7b7-4947-bf31-0403e5b781f4
 # ╟─782b9bd9-f78a-41f3-ad89-8fd222cfcac2
 # ╟─5021c671-3515-4c94-96e1-797f287ce2f5
@@ -2537,5 +2728,6 @@ version = "0.9.1+5"
 # ╠═d85e6321-7afa-49aa-9cce-cd87f7db7960
 # ╟─ee127449-b7b3-4538-8db9-8c8bbafa4f38
 # ╠═30239771-7353-4352-aa93-45fea4e31b2b
+# ╠═df799c92-5461-415f-ac98-4233d2326792
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
