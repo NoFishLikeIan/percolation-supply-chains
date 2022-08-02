@@ -4,16 +4,13 @@
 
 \section{Firm Problem}
 
-In this section I lay down the problem of the firms. Furthermore, I leverage its symmetries to derive an analytical expression that describes the risk propagation in the supply chain when firms' sourcing decisions are endogenous. ,The problem of the firm $(k, i)$ is to maximise the expected payoff, which, using equation (\ref{eq:functional_probability}), we can write as
+In this section I lay down the problem of the firms. Furthermore, I leverage its symmetries to derive an analytical expression that describes the risk propagation in the supply chain when firms' sourcing decisions are endogenous.The problem of the firm $(k, i)$ is to maximise the expected payoff, which, using equation (\ref{eq:functional_probability}), we can write as
 
 \begin{equation}
   \Big(1 - \P\big( \mathcal{F}_{k - 1} \cap \mathcal{S}_{k, i} = \emptyset \big) \Big) \ \pi  - \kappa \abs{\mathcal{S}_{k, i} },
 \end{equation}
 
-by picking a set of suppliers from those producing the previous good $\mathcal{S}_{k, i} \subseteq \{k - 1\} \times [m]$
-
-
-To model supply chain uncertainty, we assume that a firm cannot observe, before making its supplier decision, the supplier decisions of the firms producing the necessary input good. Nevertheless, firms have knowledge of the position they occupy within the supply chain $k$ and the number of firms in each layer $m$. I assume firms estimate statistical properties of each layer of the production network and act probabilistically when making production decisions. This assumption captures the fact that firms, despite not knowing exactly the correlation of risk among producers of their input goods, have some information to estimate their suppliers' risk and make sourcing decisions. In particular, a firm producing good $k$ can, first, infer the distribution of the number $F_{k - 1} \coloneqq \abs{\mathcal{F}_{k - 1}}$ of functioning firms in the previous layer, second select the optimal number $s_{k, i} = \abs{\mathcal{S}_{k, i}}$ of firms from which to supply, and then, third, pick $s_{k, i}$ suppliers with equal probability. The randomness in the first step of the firms' choices arises since all potential suppliers producing good $k - 1$ are ex-ante equal. Hence, each firm in layer $k$ might pick a different set of suppliers, that is, $\mathcal{S}_{k, i}$ is not necessarily equal to $\mathcal{S}_{k, j}$ for some $i$ and $j$, but they do pick the same number, $s_k$, of suppliers:
+by picking a set of suppliers from those producing the previous good $\mathcal{S}_{k, i} \subseteq \{k - 1\} \times [m]$. To model supply chain uncertainty, we assume that a firm cannot observe, before making its supplier decision, the supplier decisions of the firms producing the necessary input good. Nevertheless, firms have knowledge of the position they occupy within the supply chain $k$ and the number of firms in each layer $m$. I assume firms estimate statistical properties of each layer of the production network and act probabilistically when making production decisions. This assumption captures the fact that firms, despite not knowing exactly the correlation of risk among producers of their input goods, have some information to estimate their suppliers' risk and make sourcing decisions. In particular, a firm producing good $k$ can, first, infer the distribution of the number $F_{k - 1} \coloneqq \abs{\mathcal{F}_{k - 1}}$ of functioning firms in the previous layer, second select the optimal number $s_{k, i} = \abs{\mathcal{S}_{k, i}}$ of firms from which to supply, and then, third, pick $s_{k, i}$ suppliers with equal probability. The randomness in the first step of the firms' choices arises since all potential suppliers producing good $k - 1$ are ex-ante equal. Hence, each firm in layer $k$ might pick a different set of suppliers, that is, $\mathcal{S}_{k, i}$ is not necessarily equal to $\mathcal{S}_{k, j}$ for some $i$ and $j$, but they do pick the same number, $s_k$, of suppliers:
 
 \begin{equation}
   s_{k, i} = s_k \text{ for all } i.
@@ -280,19 +277,24 @@ A natural question is, at what level of $\kappa / \pi$ do we observe such change
 
 \subsection{Introducing correlation risk}
 
-In this section I extend the study of the dynamics of risk $\tilde{G}$ to the case where there is correlation in the production network, that is $\rho_k > 0$ for some $k$. First Lemmas (\ref{lemma:interior_fixed_points}) and (\ref{lemma:exterior_fixed_points}) guarantee that the fixed points $(\bar{\mu}, \bar{\rho})$ of $\tilde{G}$ need to satisfy $\tilde{s}_k(\bar{\mu}, \bar{\rho})= 1$. Using this condition in the implicit definition of $\tilde{s}_k$ (\ref{eq:exact-foc}) allows us to write the manifold of fixed points as
+In this section I extend the study of the dynamics of risk $\tilde{G}$ to the case where there is correlation in the production network, or in other words $\rho_k > 0$ for some $k$. Conducting an analytical analysis of the dynamical system determined by $\tilde{G}$ is not as easy as done above for the system determined by $\tilde{g}$, hence I rely more on numerical solutions. The system is analysed by, first, deriving an implicit equation for the steady state levels of risk and overdispersion. Second, the basin of attractions are computed for all $\mu_0$ and $\rho_0$. Finally, implication are derived about sensitivity to initial conditions and cascading failures.
+
+Lemmas (\ref{lemma:interior_fixed_points}) and (\ref{lemma:exterior_fixed_points}) guarantee that the fixed points $(\bar{\mu}, \bar{\rho})$ of $\tilde{G}$ need to satisfy $\tilde{s}_k(\bar{\mu}, \bar{\rho})= 1$. Using this condition in the implicit definition of $\tilde{s}_k$ (\ref{eq:exact-foc}) allows us to write the manifold of fixed points as\footnote{Notice that $\lim_{\bar{\rho} \to 0} \psi_0\left(1 - \bar{\mu} + \frac{ \bar{\mu} }{\bar{\rho}} \right) - \psi_0\left(\frac{1}{\bar{\rho}} \right)= \log \bar{\mu} $ implies that in the limit the system converges to the one described above.}
 
 \begin{equation}
-  -\frac{\kappa}{\pi} = \left( \psi_0\left(1 - \bar{\mu} + \frac{ \bar{\mu} }{\bar{\rho}} \right) - \psi_0\left(\frac{1}{\bar{\rho}} \right) \right) \bar{\mu},
+  -\frac{\kappa}{\pi} = \left( \psi_0\left(1 - \bar{\mu} + \frac{ \bar{\mu} }{\bar{\rho}} \right) - \psi_0\left(\frac{1}{\bar{\rho}} \right) \right) \bar{\mu}.
 \end{equation}
 
-which can be approximated, for small $\bar{\rho}$, as
+This curve can be seen in Figure \ref{fig:two-dimensional:basin} 
 
-\begin{equation}
-  -\frac{\kappa}{\pi} = \bar{\mu}\log(\bar{\mu}) + \bar{\rho} \left( \bar{\mu}^2 - \frac{1}{2} \bar{\mu} + \frac{1}{2} \right)
-\end{equation}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width = \linewidth]{../plots/basin_small.png}
+  \caption{Basin of attraction of $\tilde{G}$ with $\pi = 10 \kappa$. The color of a point indicates the value $1 - \bar{\mu}$ of the attractor of that point.}
+  \label{fig:two-dimensional:basin}
+\end{figure}
 
-\begin{figure}[htp]
+\begin{figure}[H]
   \begin{subfigure}{\textwidth}
     \centering
     \includegraphics[width = \textwidth]{../plots/init_values_dist.png}
@@ -309,12 +311,6 @@ which can be approximated, for small $\bar{\rho}$, as
   \label{fig:small-init}
 \end{figure}
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[width = \linewidth]{../plots/basin_small.png}
-  \caption{Basin of attraction of $\tilde{G}$ with $\pi = 10 \kappa$. The color of a point indicates the value $1 - \bar{\mu}$ of the attractor of that point.}
-  \label{fig:two-dimensional:basin}
-\end{figure}
 
 \begin{figure}[H]
   \centering
