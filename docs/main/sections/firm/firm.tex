@@ -241,51 +241,56 @@ Plotting the function $\tilde{g}$ (Figure \ref{fig:one-dimensional:cobweb}) we c
   \mu \pi < \kappa,
 \end{equation}
 
-immediately highlights the qualitative difference between them. At the stable fixed point the ``value at risk'', $\mu \pi$, is smaller than the marginal diversification cost. Hence, it is optimal for the firms to respond to an increase in risk, $\mu$, by diversifying. On the other hand, at the unstable fixed point, the optimal response to an increase in risk is to cease production.
+immediately highlights the qualitative difference between them. At the stable fixed point the ``value at risk'', $\mu \pi$, is smaller than the marginal diversification cost. Hence, it is optimal for the firms to respond to an increase in risk, $\mu$, by diversifying. On the other hand, at the unstable fixed point, the optimal response to an increase in risk is to cease production. Furthermore, the figure highlights how, for sufficiently high levels of relative costs, diversifying is never optimal. In this case, an arbitrary small level of risk in the basal layer will propagate and the downstream risk will be such that no firm operates in equilibrium.
 
 \begin{figure}[H]
   \centering
   \includegraphics[width = 0.8\textwidth]{../plots/one-dim-cobweb.png}
-  \caption{The function $\tilde{g}$ for low (orange) and high (green) profits.}
+  \caption{The function $\tilde{g}$ for high (orange) and low (green) relative costs, $\kappa / \pi$.}
   \label{fig:one-dimensional:cobweb}
 \end{figure}
 
-As seen in (Figure \ref{fig:one-dimensional:trajectory}), there is a level of relative costs $\kappa / \pi$ at which, no matter the initial level of risk, firms do not diversify it. In basal industries this effect might appear negligible but risk compounds quickly and and arbitrary small increase in diversification costs $\kappa$ can lead to downstream cascading failures. \notes{Expand section}
 
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width = 0.8\textwidth]{../plots/one-dim-trajectory.png}
-  \caption{The propagation of risk $\mu_k$. A small decrease in relative profits can lead to cascading failures. }
-  \label{fig:one-dimensional:trajectory}
-\end{figure}
-
-A natural question is, at what level of $\kappa / \pi$ do we observe such change in firms' behaviour (as seen in Figure \ref{fig:one-dimensional-bifurcation})? It is not hard to see that this occurs if 
+A natural question that arises is, at what level of relative costs $\kappa / \pi$ is risk diversification never optimal and is hence the supply chain vulnerable to arbitrarily small shocks? It is not hard to see that this occurs if 
 
 \begin{equation}
   \kappa / \pi > e^{-1}.
 \end{equation}
 
-\notes{Linked to the secretary problem?}
+\notes{Significance of $1/e$}. 
+To summarise the behaviour of the system it is convenient to look at the bifurcation diagram in Figure \ref{fig:one-dimensional:bifurcation}. As mentioned above, if relative costs are low, most initial levels of risk are diversified and downstream risk settles to a stable level. As relative costs increase the stable initial conditions are reduced and smaller and smaller shocks can lead to downstream cascading failures. After the bifurcation point, any shock leads to a cascading failure. These results echo those presented by \citein{elliott_supply_2022}.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width = 0.85\linewidth]{../plots/one-dim-bif.png}
-  \caption{Bifurcation diagram of the limit system $\mu_{k + 1} = \tilde{g}(\mu_k)$.}
-  \label{fig:one-dimensional-bifurcation}
+  \includegraphics[width = \linewidth]{../plots/one-dim-bif.png}
+  \caption{Bifurcation diagram of $\tilde{g}$.}
+  \label{fig:one-dimensional:bifurcation}
 \end{figure}
+
+\iffalse
+
+Plotting the trajectory of an arbitrary starting level of risk around the bifurcation point $1/e$ (Figure \ref{fig:one-dimensional:trajectory}) we can see that upstream (for low $k$s) the level of risk in the two regimes is very close. Nevertheless, firms' underdiversification slowly allows risk to compound, until it diverges to $1$ downstream (for high $k$s).
+
+
+\begin{figure}[H]
+  \includegraphics[width = \linewidth]{../plots/one-dim-trajectory.png}
+  \caption{Trajectory $\mu_k$, around bifurcation.}
+  \label{fig:one-dimensional:trajectory}
+  \centering
+\end{figure}
+
+\fi
+
 
 \subsection{Introducing correlation risk}
 
-In this section I extend the study of the dynamics of risk $\tilde{G}$ to the case where there is correlation in the production network, or in other words $\rho_k > 0$ for some $k$. Conducting an analytical analysis of the dynamical system determined by $\tilde{G}$ is not as easy as done above for the system determined by $\tilde{g}$, hence I rely more on numerical solutions. The system is analysed by, first, deriving an implicit equation for the steady state levels of risk and overdispersion. Second, the basin of attractions are computed for all $\mu_0$ and $\rho_0$. Finally, implication are derived about sensitivity to initial conditions and cascading failures.
-
-Lemmas (\ref{lemma:interior_fixed_points}) and (\ref{lemma:exterior_fixed_points}) guarantee that the fixed points $(\bar{\mu}, \bar{\rho})$ of $\tilde{G}$ need to satisfy $\tilde{s}_k(\bar{\mu}, \bar{\rho})= 1$. Using this condition in the implicit definition of $\tilde{s}_k$ (\ref{eq:exact-foc}) allows us to write the manifold of fixed points as\footnote{Notice that $\lim_{\bar{\rho} \to 0} \psi_0\left(1 - \bar{\mu} + \frac{ \bar{\mu} }{\bar{\rho}} \right) - \psi_0\left(\frac{1}{\bar{\rho}} \right)= \log \bar{\mu} $ implies that in the limit the system converges to the one described above.}
+In this section I extend the study of the dynamics of risk $\tilde{G}$ to the case where there is correlation in the production network, or in other words $\rho_k > 0$ for some $k$. Conducting an analytical analysis of the dynamical system determined by $\tilde{G}$ is not as easy as done above for the system determined by $\tilde{g}$, hence I rely more on numerical solutions. The system is analysed by, first, deriving an implicit equation for the steady state levels of risk and overdispersion. Second, the basin of attractions are computed for all $\mu_0$ and $\rho_0$. Finally, implication are derived about sensitivity to initial conditions and cascading failures. Lemmas (\ref{lemma:interior_fixed_points}) and (\ref{lemma:exterior_fixed_points}) constrain the fixed points $(\bar{\mu}, \bar{\rho})$ to satisfy $\tilde{s}_k(\bar{\mu}, \bar{\rho})= 1$. Using this condition in the implicit definition of $\tilde{s}_k$ (\ref{eq:exact-foc}) allows us to write the manifold of fixed points as\footnote{Notice that $\lim_{\bar{\rho} \to 0} \psi_0\left(1 - \bar{\mu} + \frac{ \bar{\mu} }{\bar{\rho}} \right) - \psi_0\left(\frac{1}{\bar{\rho}} \right)= \log \bar{\mu} $ implies that in the limit the system converges to the one described above.}
 
 \begin{equation}
   -\frac{\kappa}{\pi} = \left( \psi_0\left(1 - \bar{\mu} + \frac{ \bar{\mu} }{\bar{\rho}} \right) - \psi_0\left(\frac{1}{\bar{\rho}} \right) \right) \bar{\mu}.
 \end{equation}
 
-This curve can be seen in Figure \ref{fig:two-dimensional:basin} 
+The interpretation of these fixed points is the same as the one dimensional case. An initial level of risk and overdispersion $(\mu_0, \rho_0)$ is called stable if, as we progress in the supply chain, the stable distribution of the number of failing firms, determined by $(\bar{\mu}, \bar{\rho})$, which is achieved if the number of suppliers is costantly one, is such that there is a positive probability that some firms produce $\bar{\mu} < 1$. In Figure \ref{fig:two-dimensional:basin} I plot for each pair of starting levels of risk and overdispersion $(\mu_0, \rho_0)$ the expected value of downstream failures $\mu_k$. 
 
 \begin{figure}[H]
   \centering
